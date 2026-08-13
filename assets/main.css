@@ -2532,17 +2532,11 @@ a, button, input, textarea, select, label { cursor: none; }
   box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
 }
 .dg-logo {
-  width: 52px; height: 52px;
+  width: 64px; height: 64px;
   border-radius: 16px;
-  background: #a855f7;
-  color: #fff;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.6rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: cover;
   margin-bottom: 20px;
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.35);
 }
 .dg-title {
   font-family: var(--font-display);
@@ -2612,4 +2606,10 @@ a, button, input, textarea, select, label { cursor: none; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.dg-linked-input {
+  color: rgba(255, 255, 255, 0.5) !important;
+  cursor: not-allowed;
+  background: rgba(88, 101, 242, 0.06) !important;
+  border-color: rgba(88, 101, 242, 0.25) !important;
 }
