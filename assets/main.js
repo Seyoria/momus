@@ -139,7 +139,7 @@ let discordDebounceTimer = null;
 // ── DISCORD OAUTH GATE (builder/dashboard Discord girişi olmadan açılmaz) ──
 // Discord Developer Portal > OAuth2 > Client ID buraya. Redirect URI'yi de
 // aynı portalda tam bu sayfanın adresine (query/hash olmadan) ekle.
-const DISCORD_CLIENT_ID = 'YOUR_DISCORD_CLIENT_ID';
+const DISCORD_CLIENT_ID = '1534645433031331870';
 const DISCORD_REDIRECT_URI = window.location.origin + window.location.pathname;
 const DISCORD_OAUTH_SCOPE = 'identify guilds.join';
 const DISCORD_SESSION_KEY = 'momus_discord_session';
