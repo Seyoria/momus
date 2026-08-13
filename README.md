@@ -13,8 +13,7 @@ Momus, şu anda aktif olarak geliştirilen dinamik bir web sitesidir. Kullanıc�
 Bu projenin geliştirilmesinde aşağıdaki diller ve araçlar kullanılmaktadır:
 * HTML5
 * CSS3
-* JavaScript *(kullanıyorsan bırak, kullanmıyorsan silebilirsin)*
-
+* JavaScript
 ## Kurulum ve Kullanım
 Bu proje statik bir web sitesi olduğu için karmaşık bir kuruluma ihtiyaç duymaz.
 
