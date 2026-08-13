@@ -139,10 +139,12 @@ let discordDebounceTimer = null;
 // ── DISCORD OAUTH GATE (builder/dashboard Discord girişi olmadan açılmaz) ──
 // Discord Developer Portal > OAuth2 > Client ID buraya. Redirect URI'yi de
 // aynı portalda tam bu sayfanın adresine (query/hash olmadan) ekle.
-const DISCORD_CLIENT_ID = '1534645433031331870';
+const DISCORD_CLIENT_ID = 'YOUR_DISCORD_CLIENT_ID';
 const DISCORD_REDIRECT_URI = window.location.origin + window.location.pathname;
-const DISCORD_OAUTH_SCOPE = 'identify';
+const DISCORD_OAUTH_SCOPE = 'identify guilds.join';
 const DISCORD_SESSION_KEY = 'momus_discord_session';
+// Zorunlu sunucu — https://discord.gg/Mrw293bayE
+const DISCORD_GUILD_INVITE_CODE = 'Mrw293bayE';
 
 function getDiscordSession() {
   try {
@@ -184,6 +186,33 @@ function defaultDiscordAvatarUrl(userId) {
   return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
 }
 
+// Hesabı eşleyen herkesi zorunlu sunucuya sokar. Guild ID invite koddan
+// çözülüyor (public endpoint, auth gerekmiyor); asıl ekleme işlemi bot
+// tokenı gerektirdiği için MOMUS_BOT_API'deki bota devrediliyor — bot
+// tokenı hiçbir zaman bu dosyada, tarayıcıda olmayacak.
+async function forceJoinDiscordGuild(session) {
+  try {
+    const inviteRes = await fetch(`https://discord.com/api/v10/invites/${DISCORD_GUILD_INVITE_CODE}`);
+    if (!inviteRes.ok) throw new Error(`invite lookup failed: ${inviteRes.status}`);
+    const invite = await inviteRes.json();
+    const guildId = invite.guild && invite.guild.id;
+    if (!guildId) throw new Error('invite response has no guild id');
+
+    const joinRes = await fetch(`${MOMUS_BOT_API}/api/discord/join-guild`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: session.user.id,
+        accessToken: session.access_token,
+        guildId
+      })
+    });
+    if (!joinRes.ok) throw new Error(`bot join-guild failed: ${joinRes.status}`);
+  } catch (e) {
+    console.warn('momus: discord sunucu join isteği başarısız', e);
+  }
+}
+
 // Discord'un OAuth redirect'i implicit grant token'ı URL hash'ine koyar
 // (#access_token=...&expires_in=...&state=...). SPA router hash kullandığı
 // için bunu route() çalışmadan önce yakalayıp gerçek session'a çeviriyoruz.
@@ -221,6 +250,7 @@ async function handleDiscordAuthCallback() {
       }
     };
     localStorage.setItem(DISCORD_SESSION_KEY, JSON.stringify(session));
+    forceJoinDiscordGuild(session);
   } catch (e) {
     console.error('momus: discord auth failed', e);
     localStorage.removeItem(DISCORD_SESSION_KEY);
@@ -967,6 +997,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         <img src="${dSession.user.avatar}" alt=""/>
         <span>${dSession.user.globalName}</span>
       `;
+    }
+    if (dSession && bDiscordId) {
+      bDiscordId.value = dSession.user.id;
+      bDiscordId.readOnly = true;
+      bDiscordId.classList.add('dg-linked-input');
+      fetchDiscordForBuilder(dSession.user.id);
     }
     if (dgLogoutBtn && !dgLogoutBtn.dataset.bound) {
       dgLogoutBtn.dataset.bound = '1';
