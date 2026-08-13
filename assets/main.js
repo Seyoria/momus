@@ -136,7 +136,101 @@ let bgMusicDataUrl = "";
 let lanyardInterval = null;
 let discordDebounceTimer = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+// ── DISCORD OAUTH GATE (builder/dashboard Discord girişi olmadan açılmaz) ──
+// Discord Developer Portal > OAuth2 > Client ID buraya. Redirect URI'yi de
+// aynı portalda tam bu sayfanın adresine (query/hash olmadan) ekle.
+const DISCORD_CLIENT_ID = '1534645433031331870';
+const DISCORD_REDIRECT_URI = window.location.origin + window.location.pathname;
+const DISCORD_OAUTH_SCOPE = 'identify';
+const DISCORD_SESSION_KEY = 'momus_discord_session';
+
+function getDiscordSession() {
+  try {
+    const raw = localStorage.getItem(DISCORD_SESSION_KEY);
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    if (!session.access_token || !session.expires_at) return null;
+    if (Date.now() >= session.expires_at) {
+      localStorage.removeItem(DISCORD_SESSION_KEY);
+      return null;
+    }
+    return session;
+  } catch (e) {
+    return null;
+  }
+}
+
+function isDiscordAuthenticated() {
+  return !!getDiscordSession();
+}
+
+function discordLogout() {
+  localStorage.removeItem(DISCORD_SESSION_KEY);
+}
+
+function startDiscordLogin(returnHash) {
+  const params = new URLSearchParams({
+    client_id: DISCORD_CLIENT_ID,
+    redirect_uri: DISCORD_REDIRECT_URI,
+    response_type: 'token',
+    scope: DISCORD_OAUTH_SCOPE,
+    state: returnHash || window.location.hash || '#builder'
+  });
+  window.location.href = `https://discord.com/oauth2/authorize?${params.toString()}`;
+}
+
+function defaultDiscordAvatarUrl(userId) {
+  const idx = Number((BigInt(userId) >> 22n) % 6n);
+  return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
+}
+
+// Discord'un OAuth redirect'i implicit grant token'ı URL hash'ine koyar
+// (#access_token=...&expires_in=...&state=...). SPA router hash kullandığı
+// için bunu route() çalışmadan önce yakalayıp gerçek session'a çeviriyoruz.
+async function handleDiscordAuthCallback() {
+  const rawHash = window.location.hash;
+  if (!rawHash.includes('access_token=')) return false;
+
+  const fragment = rawHash.startsWith('#') ? rawHash.substring(1) : rawHash;
+  const params = new URLSearchParams(fragment);
+  const accessToken = params.get('access_token');
+  const expiresIn = parseInt(params.get('expires_in'), 10) || 604800;
+  const restoreHash = params.get('state') || '#builder';
+
+  if (!accessToken) {
+    window.location.hash = restoreHash;
+    return true;
+  }
+
+  try {
+    const res = await fetch('https://discord.com/api/users/@me', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (!res.ok) throw new Error(`discord user fetch failed: ${res.status}`);
+    const user = await res.json();
+    const session = {
+      access_token: accessToken,
+      expires_at: Date.now() + expiresIn * 1000,
+      user: {
+        id: user.id,
+        username: user.username,
+        globalName: user.global_name || user.username,
+        avatar: user.avatar
+          ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
+          : defaultDiscordAvatarUrl(user.id)
+      }
+    };
+    localStorage.setItem(DISCORD_SESSION_KEY, JSON.stringify(session));
+  } catch (e) {
+    console.error('momus: discord auth failed', e);
+    localStorage.removeItem(DISCORD_SESSION_KEY);
+  }
+
+  window.location.hash = restoreHash;
+  return true;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
   // ── CUSTOM CURSOR ──
   const dot = document.getElementById('c-dot');
   const ring = document.getElementById('c-ring');
@@ -377,6 +471,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
   }
 
+  // ── DISCORD GATE UI ──
+  function renderDiscordGate(show) {
+    const gate = document.getElementById('discord-gate');
+    if (!gate) return;
+    gate.classList.toggle('hidden', !show);
+  }
+
+  const dgLoginBtn = document.getElementById('dg-login-btn');
+  if (dgLoginBtn) {
+    dgLoginBtn.addEventListener('click', () => startDiscordLogin('#builder'));
+  }
+
   // ── SPA ROUTER WITH ANIMATED TRANSITIONS ──
   let isFirstRoute = true;
   function route() {
@@ -402,14 +508,21 @@ document.addEventListener('DOMContentLoaded', () => {
       viewProfile.classList.add('hidden');
 
       if (hash === '#home' || hash === '') {
+        renderDiscordGate(false);
         stopProfileAudioImmediately();
         viewLanding.classList.remove('hidden');
         renderLandingMembers();
       } else if (hash === '#builder') {
+        if (!isDiscordAuthenticated()) {
+          renderDiscordGate(true);
+          return;
+        }
+        renderDiscordGate(false);
         fadeOutProfileAudio();
         viewBuilder.classList.remove('hidden');
         initBuilder();
       } else {
+        renderDiscordGate(false);
         const username = hash.replace('#', '').toLowerCase();
         const profiles = getProfiles();
         const profile = profiles[username];
@@ -805,6 +918,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+  });
+
   let customDropdownBound = false;
   function setupCustomDropdown() {
     const dropdown = document.getElementById('b-effect-dropdown');
@@ -843,6 +958,24 @@ document.addEventListener('DOMContentLoaded', () => {
   function initBuilder() {
     setupDashboardTabs();
     renderSocialIconGrid();
+
+    const dgBadge = document.getElementById('dg-session-badge');
+    const dgLogoutBtn = document.getElementById('dg-logout-btn');
+    const dSession = getDiscordSession();
+    if (dgBadge && dSession) {
+      dgBadge.innerHTML = `
+        <img src="${dSession.user.avatar}" alt=""/>
+        <span>${dSession.user.globalName}</span>
+      `;
+    }
+    if (dgLogoutBtn && !dgLogoutBtn.dataset.bound) {
+      dgLogoutBtn.dataset.bound = '1';
+      dgLogoutBtn.addEventListener('click', () => {
+        discordLogout();
+        window.location.hash = '#home';
+        route();
+      });
+    }
 
     const bViewsCount = document.getElementById('b-views-count');
     const myAcc = getMyAccount();
@@ -2109,5 +2242,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── INITIALIZE ROUTER AT END OF DOMContentLoaded ──
   window.addEventListener('hashchange', route);
+  await handleDiscordAuthCallback();
   route();
 });
