@@ -1,0 +1,315 @@
+/* ============================================================
+   profile.css — momus profil sayfası stilleri (ultra dark & clean)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --font:         'Inter', sans-serif;
+  --font-display: 'Syne', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --ease:         cubic-bezier(0.16, 1, 0.3, 1);
+  --user-color:   #ffffff;
+}
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: #060606;
+  color: #f2f2f2;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  cursor: none;
+}
+a { text-decoration: none; color: inherit; }
+
+/* ── CUSTOM CURSOR ── */
+#c-dot {
+  position: fixed;
+  width: 5px; height: 5px;
+  background: #fff;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+}
+#c-ring {
+  position: fixed;
+  width: 28px; height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99998;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s var(--ease), height 0.2s var(--ease);
+  mix-blend-mode: difference;
+}
+
+/* ── NOISE ── */
+#noise {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+}
+
+/* ── ARKA PLAN ── */
+#bg-media {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+#bg-video, #bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: brightness(0.45);
+}
+#bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(6,6,6,0.3) 0%, rgba(6,6,6,0.85) 100%);
+  z-index: 1;
+}
+
+/* ── GERİ BUTONU ── */
+#back-btn {
+  position: fixed;
+  top: 24px; left: 24px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  padding: 8px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.06em;
+  cursor: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.25s var(--ease);
+}
+#back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* ── ANA KART ── */
+#profile-page {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 40px;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(12, 12, 12, 0.65);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 24px;
+  padding: 40px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: card-in 0.7s var(--ease) both;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── AVATAR ── */
+.p-avatar-wrap {
+  position: relative;
+  margin-bottom: 20px;
+}
+.p-avatar {
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  display: block;
+  background: #141414;
+  transition: border-color 0.3s;
+}
+.p-avatar:hover { border-color: rgba(255, 255, 255, 0.3); }
+
+/* ── USERNAME ── */
+.p-username {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--user-color);
+  margin-bottom: 6px;
+  text-align: center;
+  text-shadow: 0 0 35px color-mix(in srgb, var(--user-color) 30%, transparent);
+}
+
+/* ── BIO ── */
+.p-bio {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  line-height: 1.55;
+  margin-bottom: 24px;
+  max-width: 330px;
+  font-weight: 300;
+}
+
+/* ── DIVIDER ── */
+.p-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin-bottom: 18px;
+}
+
+/* ── LİNK BUTONLARI ── */
+.p-links {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.p-link-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 20px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: none;
+  transition: all 0.25s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.p-link-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+.p-link-btn .btn-icon {
+  width: 18px; height: 18px;
+  opacity: 0.75;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+.p-link-btn:hover .btn-icon { opacity: 1; }
+.p-link-btn .btn-arrow {
+  margin-left: auto;
+  font-size: 0.72rem;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.2s var(--ease);
+}
+.p-link-btn:hover .btn-arrow {
+  opacity: 0.6;
+  transform: translateX(0);
+}
+
+/* ── SES SLIDER ── */
+.p-audio-section {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px;
+}
+.audio-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+.audio-slider-wrap {
+  flex: 1;
+  position: relative;
+}
+#volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 99px;
+  outline: none;
+  cursor: none;
+}
+#volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: none;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  transition: transform 0.15s;
+}
+#volume-slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+.audio-mute-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: none;
+  display: flex;
+  padding: 0;
+  transition: color 0.2s;
+}
+.audio-mute-btn:hover { color: #fff; }
+
+/* ── FOOTER ── */
+.p-footer {
+  margin-top: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+.p-footer a {
+  color: rgba(255, 255, 255, 0.35);
+  transition: color 0.2s;
+}
+.p-footer a:hover { color: rgba(255, 255, 255, 0.7); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  .profile-card { padding: 32px 20px 24px; max-width: 100%; }
+}

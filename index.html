@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>momus ✦ bio platform</title>
+  <meta name="description" content="momus — link in bio platform"/>
+  
+  <!-- Site Favicon (Tarayıcı Sekme İkonu) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='28' fill='%230e0e0e'/%3E%3Ctext x='50' y='68' font-family='sans-serif' font-weight='900' font-size='55' fill='%23a855f7' text-anchor='middle'%3Em%3C/text%3E%3C/svg%3E"/>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="assets/main.css"/>
+</head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div id="c-dot"></div>
+  <div id="c-ring"></div>
+
+  <!-- Guns.lol Custom Toast Notifications Container -->
+  <div id="toast-container"></div>
+
+  <!-- Noise Texture -->
+  <div id="noise"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- 1. LANDING VIEW (ANA SAYFA LİSTESİ)                       -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="view-landing" class="app-view">
+    <nav id="top-nav">
+      <a href="#home" class="nav-brand">momus</a>
+      <div class="nav-actions">
+        <button id="nav-create-btn" class="nav-btn hero-cta-btn">
+          <span class="btn-plus">+</span>
+          <span>Profil Oluştur</span>
+        </button>
+      </div>
+    </nav>
+
+    <section id="hero">
+      <div id="hero-bg">
+        <div class="h-line" style="--d:0s"></div>
+        <div class="h-line" style="--d:.3s"></div>
+        <div class="h-line" style="--d:.6s"></div>
+        <div class="h-line" style="--d:.9s"></div>
+        <div class="v-line" style="--d:.1s"></div>
+        <div class="v-line" style="--d:.4s"></div>
+        <div class="v-line" style="--d:.7s"></div>
+      </div>
+
+      <div id="hero-content">
+        <div id="hero-tag">the #1 bio platform ✦</div>
+        <!-- Temiz Harf Hover Efekti (Kutu/Arka plan olmadan doğrudan harf renk değişimi) -->
+        <h1 id="hero-title">
+          <span class="title-char">m</span><span class="title-char">o</span><span class="title-char">m</span><span class="title-char">u</span><span class="title-char">s</span>
+        </h1>
+        <p id="hero-sub">dijital kimliğini tek bir adreste topla.</p>
+        <div id="hero-meta">
+          <span class="meta-pill">
+            <span class="meta-dot"></span>
+            <span id="user-count">0</span> üye
+          </span>
+          <span class="meta-sep">&middot;</span>
+          <span class="meta-pill">minimalist bio</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÜYELER LİSTESİ -->
+    <section id="members-section">
+      <div id="members-grid">
+        <!-- JS dinamik doldurur -->
+      </div>
+      <div id="no-members" style="display:none;">
+        <p>Henüz kayıtlı üye bulunmuyor.</p>
+        <button id="trigger-create-empty" class="create-trigger-link">İlk profili sen oluştur &rarr;</button>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="site-footer">
+      <div class="footer-left">
+        <span class="footer-brand">momus</span>
+      </div>
+      <div class="footer-right">
+        <span class="footer-copy">&copy; 2026 &mdash; Tüm hakları saklıdır.</span>
+      </div>
+    </footer>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- 2. FULL-SCREEN BUILDER VIEW (ÖZELLEŞTİRME SAYFASI)         -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="view-builder" class="app-view hidden">
+    <div class="dash">
+      <!-- Sidebar -->
+      <div class="dash-sidebar">
+        <div class="dash-brand">
+          <span class="dash-brand-text">momus</span>
+        </div>
+
+        <nav class="dash-nav">
+          <button class="dash-nav-item active" data-tab="account">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Hesap</span>
+          </button>
+          <button class="dash-nav-item" data-tab="customize">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <span>Özelleştir</span>
+          </button>
+          <button class="dash-nav-item" data-tab="links">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <span>Linkler</span>
+          </button>
+        </nav>
+
+        <div class="dash-sidebar-bottom">
+          <a href="https://discord.gg/Mrw293bayE" target="_blank" class="dash-btn-help" style="padding:10px 16px; margin-bottom:4px;">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.84.49 3.56 1.34 5.05L2 22l5.09-1.31C8.52 21.53 10.21 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg>
+            Yardım Merkezi
+          </a>
+          <a id="dash-view-profile-btn" class="dash-btn-outline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Sayfam
+          </a>
+          <a href="#home" class="dash-btn-outline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            Ana Sayfa
+          </a>
+          <button id="dash-delete-account-btn" class="dash-btn-danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            Hesabı Sil
+          </button>
+        </div>
+      </div>
+
+      <!-- Content Panels -->
+      <div class="dash-content">
+
+        <!-- HESAP TAB -->
+        <div class="dash-panel active" id="dash-tab-account">
+          <h2 class="dash-title">Hesap Özeti</h2>
+
+          <div class="dash-stat-row">
+            <div class="dash-stat-card">
+              <div class="dash-stat-header"><span>Görüntülenme</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="3"/><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/></svg></div>
+              <div id="b-views-count" class="dash-stat-value-text">0 görüntüleme</div>
+            </div>
+            <div class="dash-stat-card">
+              <div class="dash-stat-header"><span>Kullanıcı adı</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              <input type="text" id="b-username" class="dash-stat-value-input" placeholder="Kullanıcı adını yaz..."/>
+            </div>
+            <div class="dash-stat-card">
+              <div class="dash-stat-header"><span>Discord ID</span><span class="discord-label-badge">DISCORD</span></div>
+              <input type="text" id="b-discord-id" class="dash-stat-value-input" placeholder="Discord User ID"/>
+            </div>
+            <div class="dash-stat-card">
+              <div class="dash-stat-header"><span>Durum / Biyografi</span></div>
+              <textarea id="b-bio" class="dash-stat-value-input dash-textarea" placeholder="Biyografini yaz..."></textarea>
+            </div>
+          </div>
+
+          <div class="dash-section-card">
+            <h3>Profili Kaydet</h3>
+            <p class="dash-muted">Değişikliklerini kaydedip profilini güncelle.</p>
+            <button id="b-save-btn" class="dash-btn-primary">Profili Kaydet</button>
+          </div>
+        </div>
+
+        <!-- ÖZELLEŞTİR TAB -->
+        <div class="dash-panel" id="dash-tab-customize">
+          <h2 class="dash-title">Dosya Yükleyici</h2>
+
+          <div class="dash-upload-grid">
+            <div class="dash-upload-card" id="b-bgvideo-card">
+              <div class="dash-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+              <span class="dash-upload-label">Arka Plan</span>
+              <span class="dash-upload-sub" id="b-bgvideo-file-name">Dosya yüklemek için tıkla</span>
+              <input type="file" id="b-bgvideo-file" accept="video/mp4,video/*,image/gif" class="dash-upload-input"/>
+              <button type="button" class="dash-upload-delete-btn" id="b-bgvideo-delete-btn" style="display:none;" title="Dosyayı Sil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Sil</button>
+            </div>
+            <div class="dash-upload-card" id="b-bgmusic-card">
+              <div class="dash-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+              <span class="dash-upload-label">Ses</span>
+              <span class="dash-upload-sub" id="b-bgmusic-file-name">Ses dosyası yükle</span>
+              <input type="file" id="b-bgmusic-file" accept="audio/mp3,audio/*" class="dash-upload-input"/>
+              <button type="button" class="dash-upload-delete-btn" id="b-bgmusic-delete-btn" style="display:none;" title="Ses Dosyasını Sil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Sil</button>
+            </div>
+            <div class="dash-upload-card" id="b-avatar-card">
+              <div class="dash-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+              <span class="dash-upload-label">Profil Avatarı</span>
+              <span class="dash-upload-sub" id="b-avatar-file-name">PNG, JPG, GIF</span>
+              <input type="file" id="b-avatar-file" accept="image/*" class="dash-upload-input"/>
+              <button type="button" class="dash-upload-delete-btn" id="b-avatar-delete-btn" style="display:none;" title="Avatarı Sil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Sil</button>
+            </div>
+            <div class="dash-upload-card" id="b-cursor-card">
+              <div class="dash-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><polyline points="12 12 12 21"/><polyline points="8 17 12 21 16 17"/></svg></div>
+              <span class="dash-upload-label">Özel İmleç</span>
+              <span class="dash-upload-sub" id="b-cursor-file-name">GIF veya PNG yükle</span>
+              <input type="file" id="b-cursor-file" accept="image/gif,image/png" class="dash-upload-input"/>
+              <button type="button" class="dash-upload-delete-btn" id="b-cursor-delete-btn" style="display:none;" title="İmleci Sil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Sil</button>
+            </div>
+          </div>
+
+          <h2 class="dash-title" style="margin-top:32px;">Genel Özelleştirme</h2>
+          <div class="dash-section-card">
+            <div class="dash-settings-grid">
+              <div class="dash-stat-card" style="padding:16px;">
+                <div class="dash-stat-header" style="margin-bottom:8px;"><span>Konum</span></div>
+                <input type="text" id="b-location" class="dash-stat-value-input" placeholder="Konumun (örn: İstanbul, TR)"/>
+              </div>
+              <div class="dash-slider-group" style="padding:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
+                <label>Profil Opaklığı</label>
+                <div class="dash-slider-row">
+                  <input type="range" id="b-opacity" min="20" max="100" value="80"/>
+                </div>
+                <div class="dash-slider-labels"><span>20%</span><span>50%</span><span>80%</span></div>
+              </div>
+              <div class="dash-slider-group" style="padding:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
+                <label>Profil Bulanıklığı</label>
+                <div class="dash-slider-row">
+                  <input type="range" id="b-blur" min="0" max="80" value="0"/>
+                </div>
+                <div class="dash-slider-labels"><span>0px</span><span>20px</span><span>50px</span><span>80px</span></div>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="dash-title" style="margin-top:32px;">Rozetler (Badges)</h2>
+          <div class="dash-section-card">
+            <p class="dash-muted">Hazır rozetlerden seç veya kendine özel rozetini tasarla.</p>
+            <div class="dash-badge-row">
+              <button type="button" class="badge-toggle-btn og" data-badge="og" id="b-badge-og">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                OG
+              </button>
+              <button type="button" class="badge-toggle-btn verified" data-badge="verified" id="b-badge-verified">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                VERIFIED
+              </button>
+              <button type="button" class="badge-toggle-btn premium" data-badge="premium" id="b-badge-premium">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><polygon points="12 2 2 9 12 22 22 9 12 2"/></svg>
+                PREMIUM
+              </button>
+              <button type="button" class="badge-toggle-btn dev" data-badge="dev" id="b-badge-dev">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                DEV
+              </button>
+            </div>
+
+            <!-- Özel Rozet Oluşturucu -->
+            <div class="dash-custom-badge-form" style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06);">
+              <h4 style="font-size:0.85rem; color:var(--white); margin-bottom:12px;">Özel Rozet Oluştur</h4>
+              <div class="dash-custom-badge-inputs" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input type="text" id="b-custom-badge-text" class="dash-stat-value-input" style="width:160px;" placeholder="Rozet Adı (örn: VIP)"/>
+                <div class="dash-color-picker">
+                  <input type="color" id="b-custom-badge-color" value="#a855f7"/>
+                  <input type="text" id="b-custom-badge-color-hex" class="dash-color-hex" value="#a855f7" placeholder="#a855f7"/>
+                </div>
+                <button type="button" id="b-add-custom-badge-btn" class="dash-btn-outline" style="padding:10px 16px;">+ Rozet Ekle</button>
+              </div>
+              <div id="b-custom-badges-list" class="p-badges-row" style="margin-top:14px;"></div>
+            </div>
+          </div>
+
+          <h2 class="dash-title" style="margin-top:32px;">Renk Özelleştirme</h2>
+          <div class="dash-section-card">
+            <div class="dash-color-grid">
+              <div class="dash-color-item">
+                <span>Vurgu Rengi</span>
+                <div class="dash-color-picker">
+                  <input type="color" id="b-color" value="#ffffff"/>
+                  <input type="text" id="b-color-hex" class="dash-color-hex" value="#ffffff" placeholder="#ffffff"/>
+                </div>
+              </div>
+              <div class="dash-color-item">
+                <span>Metin Rengi</span>
+                <div class="dash-color-picker">
+                  <input type="color" id="b-text-color" value="#ffffff"/>
+                  <input type="text" id="b-text-color-hex" class="dash-color-hex" value="#ffffff" placeholder="#ffffff"/>
+                </div>
+              </div>
+              <div class="dash-color-item">
+                <span>Arka Plan Rengi</span>
+                <div class="dash-color-picker">
+                  <input type="color" id="b-bg-color" value="#080808"/>
+                  <input type="text" id="b-bg-color-hex" class="dash-color-hex" value="#080808" placeholder="#080808"/>
+                </div>
+              </div>
+              <div class="dash-color-item">
+                <span>İkon Rengi</span>
+                <div class="dash-color-picker">
+                  <input type="color" id="b-icon-color" value="#ffffff"/>
+                  <input type="text" id="b-icon-color-hex" class="dash-color-hex" value="#ffffff" placeholder="#ffffff"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="dash-title" style="margin-top:32px;">Arka Plan Efektleri</h2>
+          <div class="dash-section-card">
+            <div class="dash-custom-dropdown" id="b-effect-dropdown">
+              <div class="dash-dropdown-trigger" id="b-effect-trigger">
+                <div class="dash-dropdown-trigger-content">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" width="18" height="18"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.21 1.21 0 0 0 1.72 0L21.64 5.36a1.21 1.21 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v1"/><path d="M19 17v1"/><path d="M10 2v1"/><path d="M7 3h1"/><path d="M21 14h1"/></svg>
+                  <span id="b-effect-selected-label">Bir seçenek seç (Yok)</span>
+                </div>
+                <svg class="dash-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="dash-dropdown-menu" id="b-effect-menu">
+                <div class="dash-dropdown-item active" data-value="none"><span>Yok</span></div>
+                <div class="dash-dropdown-item" data-value="snowfall"><span>Kar Taneleri</span></div>
+                <div class="dash-dropdown-item" data-value="rain"><span>Yağmur</span></div>
+                <div class="dash-dropdown-item" data-value="particles"><span>Parçacıklar</span></div>
+                <div class="dash-dropdown-item" data-value="matrix"><span>Matrix</span></div>
+                <div class="dash-dropdown-item" data-value="starfield"><span>Yıldızlar</span></div>
+                <div class="dash-dropdown-item" data-value="neonwaves"><span>Neon Dalgası</span></div>
+                <div class="dash-dropdown-item" data-value="fireflies"><span>Ateş Böcekleri</span></div>
+                <div class="dash-dropdown-item" data-value="cybernet"><span>Siber Ağ</span></div>
+                <div class="dash-dropdown-item" data-value="plasma"><span>Plasma</span></div>
+                <div class="dash-dropdown-item" data-value="aurora"><span>Aurora</span></div>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="dash-title" style="margin-top:32px;">Diğer Özelleştirmeler</h2>
+          <div class="dash-section-card">
+            <div class="dash-toggle-grid">
+              <div class="dash-toggle-item">
+                <span>Ses Kontrolü</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-audio">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dash-toggle-item">
+                <span>Discord Avatarını Kullan</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-discord-avatar">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dash-toggle-item">
+                <span>Animasyonlu Başlık</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-animated-title">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dash-toggle-item">
+                <span>Görüntülenme Sayacı</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-views-count" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dash-toggle-item">
+                <span>Rozet Alanı</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-badges-display" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dash-toggle-item">
+                <span>Sosyal İkon Parıltısı</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-social-glow" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dash-toggle-item">
+                <span>Canlı Ses Dalgaları</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-audio-spectrum" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-section-card" style="margin-top:24px;">
+            <button id="b-save-btn-2" class="dash-btn-primary">Değişiklikleri Kaydet</button>
+          </div>
+        </div>
+
+        <!-- LİNKLER TAB -->
+        <div class="dash-panel" id="dash-tab-links">
+          <h2 class="dash-title">Sosyal medya profillerini bağla.</h2>
+          <p class="dash-muted">Profiline eklemek için bir sosyal medya seç.</p>
+
+          <div class="dash-social-grid" id="dash-social-icons">
+            <!-- Social icons will be dynamically generated -->
+          </div>
+
+          <!-- Guns.lol Style Social Link Modal Popup -->
+          <div id="dash-link-modal" class="link-modal-overlay" style="display:none;">
+            <div class="link-modal">
+              <div class="link-modal-header">
+                <div class="link-modal-title-row">
+                  <span id="link-modal-icon" class="link-modal-platform-icon"></span>
+                  <h3 id="dash-link-form-title">Sosyalini ekle</h3>
+                </div>
+                <button id="dash-link-modal-close" class="link-modal-close">&times;</button>
+              </div>
+              <div class="link-modal-body">
+                <input type="hidden" id="b-link-label"/>
+                <div class="link-modal-input-row">
+                  <span id="link-modal-input-icon" class="link-modal-input-ico"></span>
+                  <input type="text" id="b-link-url" class="link-modal-input" placeholder="https://..."/>
+                </div>
+              </div>
+              <div class="link-modal-footer">
+                <button id="b-link-add-btn" class="link-modal-add-btn">Ekle</button>
+                <span class="link-modal-help">Yardıma mı ihtiyacın var?</span>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="dash-title" style="margin-top:32px;">Eklenen Linkler</h3>
+          <div id="b-links-list" class="dash-added-links"></div>
+
+          <div class="dash-section-card" style="margin-top:24px;">
+            <button id="b-save-btn-3" class="dash-btn-primary">Linkleri Kaydet</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- 3. PROFILE VIEW (DİNAMİK PROFİL SAYFASI - GUNS.LOL LAYOUT) -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="view-profile" class="app-view hidden">
+    <!-- Guns.lol Exact Click to Enter Overlay -->
+    <div id="p-click-overlay" class="click-overlay">
+      <span class="click-text">click to enter...</span>
+    </div>
+
+    <!-- Arka plan medya -->
+    <div id="p-bg-media">
+      <video id="p-bg-video" autoplay muted loop playsinline style="display:none"></video>
+      <img id="p-bg-img" alt="" style="display:none"/>
+      <div id="p-bg-overlay"></div>
+      <canvas id="p-particles-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"></canvas>
+    </div>
+    <audio id="p-bg-audio" loop></audio>
+
+    <a id="p-back-btn" href="#home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+      momus
+    </a>
+
+    <!-- Top Right Settings Gear Button -->
+    <a id="p-settings-btn" class="p-settings-gear-btn" href="#builder" title="Profil Ayarlarını Düzenle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Ayarlar</span>
+    </a>
+
+    <div id="p-profile-page">
+      <div id="p-card" class="profile-card guns-card">
+
+        <!-- Discord Banner Görseli -->
+        <div id="view-banner" class="p-banner-wrap" style="display:none;">
+          <img id="view-banner-img" class="p-banner-img" src="" alt="banner"/>
+        </div>
+
+        <!-- Guns.lol Badge Header (Avatar + Username + Status Text) -->
+        <div class="guns-header-badge">
+          <div class="p-avatar-wrap">
+            <img id="view-avatar-img" class="p-avatar" src="" alt="avatar"/>
+          </div>
+          <div class="guns-user-info">
+            <div class="p-username-row">
+              <div id="view-username" class="p-username"></div>
+              <span id="view-status-dot" class="inline-status-dot offline"></span>
+              <span id="view-status-label" class="inline-status-label"></span>
+            </div>
+            <div id="view-badges" class="p-badges-row"></div>
+            <div id="view-bio" class="p-bio"></div>
+            <div id="view-location" class="p-location" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span id="view-location-text"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Discord Live Status & Activity & Spotify Widget -->
+        <div id="view-discord-box" class="discord-activity-box" style="display:none;">
+          <!-- Spotify Card -->
+          <div id="view-spotify-card" class="spotify-card" style="display:none;">
+            <div class="sp-icon-col">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="color:#1db954;"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            </div>
+            <div class="sp-info-col">
+              <span class="sp-status-tag">LISTENING TO SPOTIFY</span>
+              <span id="view-sp-song" class="sp-title-text">—</span>
+              <span id="view-sp-artist" class="sp-artist-text">—</span>
+            </div>
+            <div class="sp-bars">
+              <span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+
+          <!-- Activity / Game Card -->
+          <div id="view-activity-card" class="activity-card" style="display:none;">
+            <span class="act-tag">ACTIViTY</span>
+            <span id="view-act-text" class="act-text">—</span>
+            <span id="view-act-timer" class="act-timer" style="font-size:0.75rem; color:#a855f7; font-family:var(--font-mono); margin-top:2px;"></span>
+          </div>
+        </div>
+
+        <!-- Guns.lol Style Glowing Social Icon Row -->
+        <div id="view-links" class="p-icon-row"></div>
+
+        <div class="p-audio-section">
+          <canvas id="p-audio-visualizer-canvas" class="p-audio-visualizer" width="100" height="24"></canvas>
+          <span class="audio-label">ses</span>
+          <div class="audio-slider-wrap">
+            <input type="range" id="p-volume-slider" min="0" max="100" value="30"/>
+          </div>
+          <button class="audio-mute-btn" id="p-mute-btn" title="Sessiz">
+            <span id="p-mute-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <div class="p-footer">
+          <a href="#home">momus</a>
+          <div id="view-views-badge" class="p-views-badge" title="Görüntülenme Sayısı">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            <span id="view-views-count">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- DELETE ACCOUNT MODAL POPUP                                 -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="dash-delete-modal" class="link-modal-overlay" style="display:none;">
+    <div class="link-modal">
+      <div class="link-modal-header">
+        <div class="link-modal-title-row">
+          <span class="link-modal-platform-icon" style="color:#ef4444; background:rgba(239,68,68,0.12);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </span>
+          <h3 style="color:#ef4444;">Hesabı Sil</h3>
+        </div>
+        <button id="dash-delete-modal-close" class="link-modal-close">&times;</button>
+      </div>
+      <div class="link-modal-body">
+        <p style="font-size:0.88rem; color:var(--white); margin-bottom:8px;"><strong>Hesabınızı ve tüm profil verilerinizi silmek istediğinizden emin misiniz?</strong></p>
+        <p style="font-size:0.78rem; color:rgba(255,255,255,0.4); line-height:1.5;">Bu işlem geri alınamaz. Profiliniz, yüklediğiniz tüm medyalar ve özelleştirme ayarlarınız kalıcı olarak silinecektir.</p>
+      </div>
+      <div class="link-modal-footer" style="justify-content:space-between; gap:12px;">
+        <button id="b-confirm-delete-btn" class="dash-btn-danger" style="padding:10px 20px; font-weight:700;">Evet, Hesabımı Sil</button>
+        <button id="b-cancel-delete-btn" class="dash-btn-outline" style="padding:10px 20px;">Vazgeç</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- ANIMATED PAGE TRANSITION OVERLAY                            -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="page-transition" class="page-transition-overlay">
+    <div class="page-transition-brand">
+      <span class="pt-letter">m</span><span class="pt-letter">o</span><span class="pt-letter">m</span><span class="pt-letter">u</span><span class="pt-letter">s</span>
+    </div>
+  </div>
+
+  <script src="assets/main.js"></script>
+</body>
+</html>
