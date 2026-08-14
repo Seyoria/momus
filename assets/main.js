@@ -73,12 +73,9 @@ function showToast(message, type = 'success') {
 }
 
 // ── PROFILES (SUPABASE-BACKED, HERKESE AÇIK VERİTABANI) ──
-// profilesCache: senkron kod tarafından okunan yerel önbellek.
-// DOMContentLoaded'da refreshProfilesCache() ile Supabase'den doldurulur.
 let profilesCache = {};
 
 function getProfiles() {
-  // Senkron okuma — mevcut önbelleği döner (uygulama açılışında bir kez dolduruldu).
   return profilesCache;
 }
 
@@ -98,8 +95,6 @@ async function refreshProfilesCache() {
   return profilesCache;
 }
 
-// Tek bir kullanıcıyı doğrudan sunucudan çeker (önbellek güncel olmasa bile
-// paylaşılan bir profil linkinin her zaman doğru açılmasını sağlar).
 async function getProfileByUsername(username) {
   if (!supabaseClient) return profilesCache[username] || null;
   try {
@@ -120,9 +115,6 @@ async function getProfileByUsername(username) {
   }
 }
 
-// NOT: async ama önbellek güncellemesi ilk satırda (await'ten önce) yapılıyor,
-// bu yüzden çağıran kodlar `await` etmeden de anında güncel senkron okuma alır;
-// Supabase'e yazma arka planda devam eder.
 async function saveProfileData(profile) {
   const key = profile.username.toLowerCase();
   profilesCache[key] = profile;
@@ -188,14 +180,11 @@ let bgMusicDataUrl = "";
 let lanyardInterval = null;
 let discordDebounceTimer = null;
 
-// ── DISCORD OAUTH GATE (builder/dashboard Discord girişi olmadan açılmaz) ──
-// Discord Developer Portal > OAuth2 > Client ID buraya. Redirect URI'yi de
-// aynı portalda tam bu sayfanın adresine (query/hash olmadan) ekle.
+// ── DISCORD OAUTH GATE ──
 const DISCORD_CLIENT_ID = '1534645433031331870';
 const DISCORD_REDIRECT_URI = window.location.origin + window.location.pathname;
 const DISCORD_OAUTH_SCOPE = 'identify guilds.join';
 const DISCORD_SESSION_KEY = 'momus_discord_session';
-// Zorunlu sunucu — https://discord.gg/Mrw293bayE
 const DISCORD_GUILD_INVITE_CODE = 'Mrw293bayE';
 
 function getDiscordSession() {
@@ -238,10 +227,6 @@ function defaultDiscordAvatarUrl(userId) {
   return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
 }
 
-// Hesabı eşleyen herkesi zorunlu sunucuya sokar. Guild ID invite koddan
-// çözülüyor (public endpoint, auth gerekmiyor); asıl ekleme işlemi bot
-// tokenı gerektirdiği için MOMUS_BOT_API'deki bota devrediliyor — bot
-// tokenı hiçbir zaman bu dosyada, tarayıcıda olmayacak.
 async function forceJoinDiscordGuild(session) {
   try {
     const inviteRes = await fetch(`https://discord.com/api/v10/invites/${DISCORD_GUILD_INVITE_CODE}`);
@@ -265,9 +250,6 @@ async function forceJoinDiscordGuild(session) {
   }
 }
 
-// Discord'un OAuth redirect'i implicit grant token'ı URL hash'ine koyar
-// (#access_token=...&expires_in=...&state=...). SPA router hash kullandığı
-// için bunu route() çalışmadan önce yakalayıp gerçek session'a çeviriyoruz.
 async function handleDiscordAuthCallback() {
   const rawHash = window.location.hash;
   if (!rawHash.includes('access_token=')) return false;
@@ -350,7 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // ── BUILDER DOM ELEMENTS (Declared first to avoid TDZ errors) ──
+  // ── BUILDER DOM ELEMENTS ──
   const bBackBtn = document.getElementById('builder-back-btn');
   const bGoProfBtn = document.getElementById('builder-go-profile-btn');
   const bSaveBtn = document.getElementById('b-save-btn');
@@ -579,7 +561,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!viewLanding || !viewBuilder || !viewProfile) return;
 
     async function applyRoute() {
-      // Ensure builder modals (Hesabı Sil) never display over profile pages
       const dashDeleteModal = document.getElementById('dash-delete-modal');
       if (dashDeleteModal && hash !== '#builder') {
         dashDeleteModal.style.display = 'none';
@@ -619,7 +600,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Skip transition on initial page load, animate on subsequent navigations
     if (isFirstRoute) {
       isFirstRoute = false;
       applyRoute();
@@ -693,7 +673,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const triggerEmpty = document.getElementById('trigger-create-empty');
   if (navCreateBtn) navCreateBtn.addEventListener('click', () => { window.location.hash = '#builder'; });
   if (triggerEmpty) triggerEmpty.addEventListener('click', () => { window.location.hash = '#builder'; });
-  
+
   function goToProfilePage(un) {
     saveCurrentBuilder();
     const targetHash = `#${un.toLowerCase()}`;
@@ -773,7 +753,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Close modal — X button
   const linkModalClose = document.getElementById('dash-link-modal-close');
   if (linkModalClose) {
     linkModalClose.addEventListener('click', () => {
@@ -781,7 +760,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (modal) modal.style.display = 'none';
     });
   }
-  // Close modal — click overlay background
+
   const linkModalOverlay = document.getElementById('dash-link-modal');
   if (linkModalOverlay) {
     linkModalOverlay.addEventListener('click', (e) => {
@@ -789,8 +768,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // "Sayfam" button in sidebar — gerçek https linkini yeni sekmede açar,
-  // mevcut builder sekmesindeki hash yönlendirmesiyle karışmaz.
   const dashViewProfBtn = document.getElementById('dash-view-profile-btn');
   if (dashViewProfBtn) {
     dashViewProfBtn.addEventListener('click', (e) => {
@@ -805,14 +782,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // "Hesabı Sil" modal popup logic
   const dashDeleteAccountBtn = document.getElementById('dash-delete-account-btn');
   const dashDeleteModal = document.getElementById('dash-delete-modal');
   const dashDeleteModalClose = document.getElementById('dash-delete-modal-close');
   const bConfirmDeleteBtn = document.getElementById('b-confirm-delete-btn');
   const bCancelDeleteBtn = document.getElementById('b-cancel-delete-btn');
 
-  // Helper: get the target username to delete (saved account OR typed username)
   function getDeleteTargetUser() {
     const myAcc = getMyAccount();
     if (myAcc) return myAcc.username;
@@ -866,14 +841,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         deleteProfileRemote(unKey);
         localStorage.removeItem(`momus_owner_${unKey}`);
 
-        // Clean IndexedDB stored media items
         saveMediaItem(`video_${unKey}`, null);
         saveMediaItem(`music_${unKey}`, null);
         saveMediaItem(`avatar_${unKey}`, null);
         saveMediaItem(`cursor_${unKey}`, null);
       }
 
-      // Clear all builder inputs
       if (bUsername) bUsername.value = '';
       if (bBio) bBio.value = '';
       if (bDiscordId) bDiscordId.value = '';
@@ -891,8 +864,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-
-  // Badge Selection State & Handlers
   let selectedBadges = [];
   document.addEventListener('click', (e) => {
     const badgeBtn = e.target.closest('.badge-toggle-btn');
@@ -908,8 +879,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Custom Badges State & Handlers
-  let customBadges = []; // Array of { text: string, color: string }
+  let customBadges = [];
 
   const bCustomBadgeText = document.getElementById('b-custom-badge-text');
   const bCustomBadgeColor = document.getElementById('b-custom-badge-color');
@@ -960,7 +930,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Range Slider Value Label Sync
   if (bOpacity) {
     bOpacity.addEventListener('input', () => {
       const valEl = document.getElementById('b-opacity-val');
@@ -974,7 +943,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Color Pickers Sync
   function bindColorPicker(picker, hex) {
     if (picker && hex) {
       picker.addEventListener('input', () => { hex.value = picker.value; });
@@ -986,7 +954,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindColorPicker(bBgColor, bBgColorHex);
   bindColorPicker(bIconColor, bIconColorHex);
 
-  // All save buttons (there are 3 - one per tab)
   document.querySelectorAll('#b-save-btn, #b-save-btn-2, #b-save-btn-3').forEach(btn => {
     if (btn) {
       btn.addEventListener('click', (e) => {
@@ -1054,7 +1021,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         <span>${dSession.user.globalName}</span>
       `;
     }
-    // Kullanıcı adına/avatara tıklayınca "Hesabı Sil" ve "Discord'dan Çık" menüsü açılır
     if (dgBadge && dgMenu && !dgBadge.dataset.bound) {
       dgBadge.dataset.bound = '1';
       dgBadge.addEventListener('click', () => {
@@ -1151,7 +1117,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentLinksState = [];
     }
 
-    // Setup Guns.lol Custom Dropdown UI
     setupCustomDropdown();
     const dropdown = document.getElementById('b-effect-dropdown');
     const label = document.getElementById('b-effect-selected-label');
@@ -1164,7 +1129,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Sync badge buttons UI & render custom badges list
     document.querySelectorAll('.badge-toggle-btn').forEach(btn => {
       const badge = btn.getAttribute('data-badge');
       if (selectedBadges.includes(badge)) btn.classList.add('active');
@@ -1236,24 +1200,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderAddedLinks();
   }
 
-  // PLATFORM CHIPS SELECTION
-  function setupPlatformChips() {
-    const chips = document.querySelectorAll('.p-chip');
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        chips.forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        currentSelectedPlatform = chip.getAttribute('data-platform');
-        
-        if (bLinkLabel) {
-          bLinkLabel.placeholder = `${chip.textContent.trim()} Bağlantısı`;
-          bLinkLabel.value = chip.textContent.trim();
-        }
-      });
-    });
-  }
-
-  // DISCORD BOT FETCH FOR BUILDER PREVIEW
   function fetchDiscordForBuilder(id) {
     if (!id) {
       fetchedDiscordAvatar = '';
@@ -1266,7 +1212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    fetch(`http://localhost:3001/presence/${id}`)
+    fetch(`${MOMUS_BOT_API}/presence/${id}`)
       .then(r => r.json())
       .then(res => {
         if (res && res.success && res.data) {
@@ -1279,13 +1225,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           const st = d.status || 'offline';
           if (prevStatusDot) prevStatusDot.className = `inline-status-dot ${st}`;
 
-          const statusTextMap = {
-            online:  'online',
-            idle:    'idle',
-            dnd:     'do not disturb',
-            offline: ''
-          };
-          // Builder Preview Spotify widget
           const prevSpWidget = document.getElementById('prev-spotify-widget');
           const prevSpSong   = document.getElementById('prev-sp-song');
           const prevSpArtist = document.getElementById('prev-sp-artist');
@@ -1315,7 +1254,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // FILE UPLOAD & DELETE HANDLERS
   let cursorDataUrl = '';
 
   if (bAvatarFile) {
@@ -1428,7 +1366,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Color picker sync
   if (bColor && bColorHex) {
     bColor.addEventListener('input', () => {
       bColorHex.value = bColor.value;
@@ -1447,7 +1384,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (bBio) bBio.addEventListener(evt, updateLivePreview);
   });
 
-  // Add Link
   if (bLinkAddBtn) {
     bLinkAddBtn.addEventListener('click', () => {
       const platform = currentSelectedPlatform || 'youtube';
@@ -1460,7 +1396,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderAddedLinks();
       updateLivePreview();
 
-      // Close modal after adding
       const modal = document.getElementById('dash-link-modal');
       if (modal) modal.style.display = 'none';
     });
@@ -1492,7 +1427,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // LIVE PREVIEW UPDATE (GUNS.LOL STYLE)
   function updateLivePreview() {
     const un = (bUsername && bUsername.value.trim()) || 'seyoria_o';
     const color = (bColor && bColor.value) || '#ffffff';
@@ -1505,7 +1439,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (prevBio) prevBio.textContent = bio;
 
-    // Avatar Priority: Uploaded File > Custom Avatar URL > Fetched Discord Avatar > DiceBear
     const displayAvatar = avatarDataUrl || customUrl || fetchedDiscordAvatar || `https://api.dicebear.com/9.x/pixel-art/svg?seed=${un}&backgroundColor=111111`;
     if (prevAvatar) {
       prevAvatar.src = displayAvatar;
@@ -1520,7 +1453,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Guns.lol Style Glowing Icon Row Rendering
     if (prevLinks) {
       prevLinks.innerHTML = '';
       currentLinksState.forEach(l => {
@@ -1539,31 +1471,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     const unKey = un.toLowerCase();
     const discordIdVal = (bDiscordId && bDiscordId.value.trim()) || '';
 
-    // ── UNIQUE ACCOUNT CHECK (Only 1 account per Username & Discord ID) ──
     const existingProfiles = getProfiles();
     for (const key in existingProfiles) {
       const p = existingProfiles[key];
-      // Check username collision with another profile
       if (key !== unKey && p.username && p.username.toLowerCase() === unKey) {
         showToast(`"${un}" kullanıcı adı başka bir hesap tarafından kullanılıyor!`, 'error');
         return false;
       }
-      // Check Discord ID collision with another profile
       if (discordIdVal && key !== unKey && p.discordId && p.discordId === discordIdVal) {
         showToast(`Discord User ID "${discordIdVal}" zaten "${p.username}" hesabına tanımlı!`, 'error');
         return false;
       }
     }
 
-    // Save heavy media to IndexedDB (supports 1GB+ large MP4/MP3 files without quota errors)
     if (bgVideoDataUrl) saveMediaItem(`video_${unKey}`, bgVideoDataUrl);
     if (bgMusicDataUrl) saveMediaItem(`music_${unKey}`, bgMusicDataUrl);
     if (avatarDataUrl)  saveMediaItem(`avatar_${unKey}`, avatarDataUrl);
     if (cursorDataUrl)  saveMediaItem(`cursor_${unKey}`, cursorDataUrl);
 
-    // Preserve existing views count
     const existingProfile = existingProfiles[unKey];
-    // Save active selected effect
     const profile = {
       username: un,
       color: (bColor && bColor.value) || '#ffffff',
@@ -1598,7 +1524,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       views: (existingProfile && existingProfile.views) || 0
     };
     saveProfileData(profile);
-    // Bind current session as the owner of this profile
     localStorage.setItem(`momus_owner_${unKey}`, getSessionToken());
     updateNavButton();
     return true;
@@ -1986,7 +1911,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.documentElement.style.setProperty('--user-color', profile.color || '#ffffff');
     document.title = `${profile.username} | momus`;
 
-    // ── PROFILE VIEW COUNTER (sahibi hariç, sadece ziyaretçiler için artar) ──
+    // ── PROFILE VIEW COUNTER ──
     if (!isProfileOwner(unKey)) {
       profile.views = (profile.views || 0) + 1;
       saveProfileData(profile);
@@ -2006,7 +1931,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
     }
 
-    // ── CLICK TO ENTER OVERLAY (guns.lol exact) ──
+    // ── CLICK TO ENTER OVERLAY ──
     const clickOverlay = document.getElementById('p-click-overlay');
     const audioEl = document.getElementById('p-bg-audio');
     const bgVidEl = document.getElementById('p-bg-video');
@@ -2017,10 +1942,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const handleClick = () => {
         clickOverlay.classList.add('fade-out');
-        // Start video after user interaction
         if (bgVidEl && bgVidEl.src) bgVidEl.play().catch(() => {});
         
-        // Smooth audio volume fade-in (yavaş yavaş açılma)
         if (audioEl && audioEl.src) {
           audioEl.volume = 0;
           audioEl.play().then(() => {
@@ -2052,7 +1975,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       pCard.style.webkitBackdropFilter = `blur(${profile.blur || 0}px)`;
     }
 
-    // Render Preset & Custom Badges
+    // Render Badges
     const viewBadges = document.getElementById('view-badges');
     if (viewBadges) {
       viewBadges.innerHTML = '';
@@ -2090,13 +2013,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Apply Audio Toggle
+    // Toggle Audio Section Visibility
     const pAudioSec = document.querySelector('.p-audio-section');
     if (pAudioSec) {
       pAudioSec.style.display = (profile.toggleAudio !== false) ? 'flex' : 'none';
     }
 
-    // Apply Animated Title
+    // Animated Title
     if (window.titleAnimInterval) clearInterval(window.titleAnimInterval);
     if (profile.toggleAnimatedTitle) {
       let titleText = `${profile.username} | momus `;
@@ -2107,246 +2030,157 @@ document.addEventListener('DOMContentLoaded', async () => {
       }, 300);
     }
 
-    // Apply Canvas Background Effect Engine (Scrollable Selector)
+    // Background Canvas Effect
     const activeEffect = profile.effect || (profile.toggleSnowfall ? 'snowfall' : (profile.toggleParticles ? 'particles' : 'none'));
     startBackgroundEffect(activeEffect);
 
+    // Profile Elements Binding
     const viewAvatar = document.getElementById('view-avatar-img');
     const viewBanner = document.getElementById('view-banner');
     const viewBannerImg = document.getElementById('view-banner-img');
     const viewName   = document.getElementById('view-username');
     const viewBio    = document.getElementById('view-bio');
-    const viewLinks  = document.getElementById('view-links');
+    const viewLinks  = document.getElementById('view-links-container');
 
-    if (viewName) viewName.textContent = profile.username;
-    if (viewBio) viewBio.textContent = profile.bio || 'currently doing nothing';
-
-    // Retrieve Custom Cursor from IndexedDB if stored
-    const storedCursor = await getMediaItem(`cursor_${unKey}`);
-    const viewProfContainer = document.getElementById('view-profile');
-    if (storedCursor && viewProfContainer) {
-      viewProfContainer.style.cursor = `url(${storedCursor}), auto`;
-    } else if (viewProfContainer) {
-      viewProfContainer.style.cursor = 'default';
+    if (viewName) {
+      viewName.textContent = profile.username;
+      viewName.style.color = profile.color || '#ffffff';
+    }
+    if (viewBio) {
+      viewBio.textContent = profile.bio || '';
+      viewBio.style.color = profile.textColor || '#ffffff';
     }
 
-    // Retrieve Custom Avatar from IndexedDB if stored, or profile
-    const storedAvatar = await getMediaItem(`avatar_${unKey}`);
-    let displayAvatar = storedAvatar || profile.avatar || profile.customAvatarUrl;
-    if (profile.toggleDiscordAvatar && profile.discordAvatar) {
-      displayAvatar = profile.discordAvatar;
-    }
-    if (!displayAvatar) {
-      displayAvatar = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${profile.username}&backgroundColor=111111`;
-    }
-    if (viewAvatar) viewAvatar.src = displayAvatar;
-
-    if (profile.discordBanner && viewBanner && viewBannerImg) {
-      viewBannerImg.src = profile.discordBanner;
-      viewBanner.style.display = 'block';
-    } else if (viewBanner) {
-      viewBanner.style.display = 'none';
+    // Avatar Media Priority (IndexedDB > Stored Data > DiceBear)
+    const loadedAvatar = await getMediaItem(`avatar_${unKey}`);
+    const displayAvatar = loadedAvatar || profile.avatar || profile.discordAvatar || profile.customAvatarUrl || `https://api.dicebear.com/9.x/pixel-art/svg?seed=${profile.username}&backgroundColor=111111`;
+    if (viewAvatar) {
+      viewAvatar.src = displayAvatar;
     }
 
-    // Media — Load large MP4 Video from IndexedDB or profile data
-    const bgVid = document.getElementById('p-bg-video');
-    const bgImg = document.getElementById('p-bg-img');
-
-    const storedVideo = await getMediaItem(`video_${unKey}`);
-    const videoSource = storedVideo || profile.bgVideo;
-
-    if (videoSource && bgVid) {
-      bgVid.style.display = 'block';
-      bgVid.src = videoSource;
-      if (bgImg) bgImg.style.display = 'none';
-    } else {
-      if (bgVid) bgVid.style.display = 'none';
-      if (bgImg) bgImg.style.display = 'none';
-    }
-
-    // Audio — Load MP3 Music from IndexedDB or profile data
-    const storedMusic = await getMediaItem(`music_${unKey}`);
-    const musicSource = storedMusic || profile.music;
-    // audioEl is already declared at the top of renderProfilePage
-    const slider  = document.getElementById('p-volume-slider');
-    const muteBtn = document.getElementById('p-mute-btn');
-
-    const canvasVisualizer = document.getElementById('p-audio-visualizer-canvas');
-    if (canvasVisualizer) {
-      if (profile.toggleAudioSpectrum !== false) {
-        canvasVisualizer.style.display = 'block';
-        startAudioVisualizer(profile.color || '#a855f7');
+    if (viewBanner && viewBannerImg) {
+      if (profile.discordBanner) {
+        viewBannerImg.src = profile.discordBanner;
+        viewBanner.style.display = 'block';
       } else {
-        canvasVisualizer.style.display = 'none';
-        stopAudioVisualizer();
+        viewBanner.style.display = 'none';
       }
     }
 
-    if (musicSource && audioEl) {
-      audioEl.src = musicSource;
-      audioEl.volume = 0.3;
-      audioEl.play().catch(() => {});
-    } else if (audioEl) {
-      audioEl.pause();
+    // Video & Music Retrieval from IndexedDB
+    const loadedVideo = await getMediaItem(`video_${unKey}`);
+    const videoSrc = loadedVideo || profile.bgVideo;
+    if (bgVidEl) {
+      if (videoSrc) {
+        bgVidEl.src = videoSrc;
+        bgVidEl.style.display = 'block';
+      } else {
+        bgVidEl.removeAttribute('src');
+        bgVidEl.style.display = 'none';
+      }
+    }
+
+    const loadedMusic = await getMediaItem(`music_${unKey}`);
+    const musicSrc = loadedMusic || profile.music;
+    if (audioEl) {
+      if (musicSrc) {
+        audioEl.src = musicSrc;
+      } else {
+        audioEl.removeAttribute('src');
+      }
+    }
+
+    // Audio Visualizer Spectrum Engine
+    if (profile.toggleAudioSpectrum !== false) {
+      startAudioVisualizer(profile.color);
+    } else {
       stopAudioVisualizer();
     }
 
-    if (slider && audioEl) {
-      slider.value = 30;
-      slider.oninput = () => { audioEl.volume = slider.value / 100; };
-    }
-    if (muteBtn && audioEl) {
-      muteBtn.onclick = () => { audioEl.muted = !audioEl.muted; };
+    // Custom Cursor Setup
+    const loadedCursor = await getMediaItem(`cursor_${unKey}`);
+    if (loadedCursor) {
+      document.body.style.cursor = `url(${loadedCursor}), auto`;
+    } else {
+      document.body.style.cursor = 'default';
     }
 
-    // GUNS.LOL STYLE GLOWING ICON ROW RENDERING
+    // Display Toggles (Badges & View Counts)
+    const badgesWrap = document.getElementById('view-badges-wrap');
+    if (badgesWrap) {
+      badgesWrap.style.display = (profile.toggleBadgesDisplay !== false) ? 'flex' : 'none';
+    }
+    const viewsWrap = document.getElementById('view-views-count-wrap');
+    if (viewsWrap) {
+      viewsWrap.style.display = (profile.toggleViewsCount !== false) ? 'flex' : 'none';
+    }
+
+    // Social Links Rendering
     if (viewLinks) {
       viewLinks.innerHTML = '';
       if (profile.links && profile.links.length > 0) {
-        profile.links.forEach(link => {
+        profile.links.forEach(l => {
           const a = document.createElement('a');
           a.className = 'p-icon-link';
-          a.href = link.url || '#';
+          if (profile.toggleSocialGlow !== false) {
+            a.classList.add('glow');
+          }
+          a.href = l.url || '#';
           a.target = '_blank';
-          a.rel = 'noopener';
-          a.title = link.label;
-          a.innerHTML = getPlatformIconSVG(link.platform);
+          a.rel = 'noopener noreferrer';
+          a.title = l.label;
+          a.style.color = profile.iconColor || '#ffffff';
+          a.innerHTML = getPlatformIconSVG(l.platform);
           viewLinks.appendChild(a);
         });
       }
     }
 
-    // DISCORD LANYARD REAL-TIME INTEGRATION
-    const discordBox  = document.getElementById('view-discord-box');
-    const statusDot   = document.getElementById('view-status-dot');
-    const statusLabel = document.getElementById('view-status-label');
-    const spCard      = document.getElementById('view-spotify-card');
-    const spSong      = document.getElementById('view-sp-song');
-    const spArtist    = document.getElementById('view-sp-artist');
-    const actCard     = document.getElementById('view-activity-card');
-    const actText     = document.getElementById('view-act-text');
-
+    // Live Discord Presence Updates via Bot API
     if (profile.discordId) {
-      fetchPresence(profile.discordId);
-      lanyardInterval = setInterval(() => fetchPresence(profile.discordId), 5000);
-    } else {
-      const sdot = document.getElementById('view-status-dot');
-      const slabel = document.getElementById('view-status-label');
-      if (sdot) { sdot.className = 'inline-status-dot offline'; }
-      if (slabel) slabel.textContent = '';
-    }
+      const updatePresence = () => {
+        fetch(`${MOMUS_BOT_API}/presence/${profile.discordId}`)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success && res.data) {
+              const d = res.data;
+              const pStatusDot = document.getElementById('p-status-dot');
+              const pStatusText = document.getElementById('p-status-text');
+              const st = d.status || 'offline';
+              if (pStatusDot) pStatusDot.className = `inline-status-dot ${st}`;
+              if (pStatusText) pStatusText.textContent = st.toUpperCase();
 
-    function fetchPresence(id) {
-      fetch(`${MOMUS_BOT_API}/presence/${id}`)
-        .then(res => res.json())
-        .then(res => {
-          if (!res.success || !res.data) {
-            // Bot API başarısız → sessizce offline göster
-            if (statusDot) statusDot.className = 'inline-status-dot offline';
-            if (statusLabel) { statusLabel.textContent = ''; statusLabel.className = 'inline-status-label offline'; }
-            return;
-          }
-
-          const d = res.data;
-
-          // Avatar — bottan gelen URL'yi kullan (manuel yükleme yoksa)
-          if (!profile.avatar && d.avatar) {
-            if (viewAvatar) viewAvatar.src = d.avatar;
-          }
-
-          // Banner
-          if (d.banner && viewBanner && viewBannerImg) {
-            viewBannerImg.src = d.banner;
-            viewBanner.style.display = 'block';
-          }
-
-          // Status dot + label (username yanında)
-          const st = d.status || 'offline';
-          if (statusDot) statusDot.className = `inline-status-dot ${st}`;
-
-          const statusTextMap = {
-            online:  'online',
-            idle:    'idle',
-            dnd:     'do not disturb',
-            offline: ''
-          };
-          if (statusLabel) {
-            statusLabel.textContent = statusTextMap[st] || '';
-            statusLabel.className = `inline-status-label ${st}`;
-          }
-
-          // Discord Activity Box — sadece bir şey varsa göster
-          if (discordBox) {
-            if (d.spotify || d.activity || d.customStatus) {
-              discordBox.style.display = 'flex';
-            } else {
-              discordBox.style.display = 'none';
-            }
-          }
-
-          // Spotify
-          if (d.spotify && spCard) {
-            spCard.style.display = 'flex';
-            if (spSong)   spSong.textContent   = d.spotify.song   || '—';
-            if (spArtist) spArtist.textContent = d.spotify.artist || '—';
-
-            // Albüm kapağı varsa göster
-            if (d.spotify.albumArt) {
-              let albumImg = spCard.querySelector('.sp-album-art');
-              if (!albumImg) {
-                albumImg = document.createElement('img');
-                albumImg.className = 'sp-album-art';
-                spCard.insertBefore(albumImg, spCard.firstChild);
+              if (d.avatar && !loadedAvatar && !profile.hasCustomAvatar) {
+                if (viewAvatar) viewAvatar.src = d.avatar;
               }
-              albumImg.src = d.spotify.albumArt;
-            }
-          } else if (spCard) {
-            spCard.style.display = 'none';
-          }
-
-          // Game / Activity & Live Elapsed Time Counter
-          const actTimer = document.getElementById('view-act-timer');
-          if (window.gameTimerInterval) clearInterval(window.gameTimerInterval);
-
-          if (d.activity && actCard) {
-            actCard.style.display = 'flex';
-            if (actText) {
-              let text = `playing ${d.activity.name}`;
-              if (d.activity.details) text += ` — ${d.activity.details}`;
-              actText.textContent = text;
-            }
-
-            if (d.activity.startTimestamp && actTimer) {
-              function updateGameTimer() {
-                const now = Date.now();
-                const diffSec = Math.floor(Math.max(0, now - d.activity.startTimestamp) / 1000);
-                const h = Math.floor(diffSec / 3600);
-                const m = Math.floor((diffSec % 3600) / 60);
-                const s = diffSec % 60;
-                const pad = (n) => String(n).padStart(2, '0');
-                const timeStr = h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
-                actTimer.textContent = `${timeStr} elapsed`;
+              if (d.banner && viewBanner && viewBannerImg) {
+                viewBannerImg.src = d.banner;
+                viewBanner.style.display = 'block';
               }
-              updateGameTimer();
-              window.gameTimerInterval = setInterval(updateGameTimer, 1000);
-            } else if (actTimer) {
-              actTimer.textContent = '';
+
+              // Live Spotify Integration
+              const pSpWidget = document.getElementById('p-spotify-widget');
+              const pSpSong = document.getElementById('p-sp-song');
+              const pSpArtist = document.getElementById('p-sp-artist');
+              if (d.spotify && pSpWidget) {
+                pSpWidget.style.display = 'flex';
+                if (pSpSong) pSpSong.textContent = d.spotify.song || '—';
+                if (pSpArtist) pSpArtist.textContent = d.spotify.artist || '—';
+              } else if (pSpWidget) {
+                pSpWidget.style.display = 'none';
+              }
             }
-          } else if (actCard) {
-            actCard.style.display = 'none';
-          }
-        })
-        .catch(() => {
-          // Bot çalışmıyor — offline göster, hata vermez
-          if (statusDot) statusDot.className = 'inline-status-dot offline';
-          if (statusLabel) { statusLabel.textContent = ''; statusLabel.className = 'inline-status-label offline'; }
-        });
+          })
+          .catch(() => {});
+      };
+      updatePresence();
+      lanyardInterval = setInterval(updatePresence, 10000);
     }
   }
 
-  // ── INITIALIZE ROUTER AT END OF DOMContentLoaded ──
-  window.addEventListener('hashchange', route);
-  await refreshProfilesCache(); // profilleri Supabase'den çek, ilk render'dan önce hazır olsun
-  await handleDiscordAuthCallback();
+  // ── ROUTER INITIALIZATION ──
+  const isAuthCallback = await handleDiscordAuthCallback();
   route();
+
+  window.addEventListener('hashchange', route);
 });
