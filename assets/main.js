@@ -6,6 +6,8 @@ const MOMUS_BOT_API = 'http://localhost:3001';
 const SUPABASE_URL = 'https://qmzryknxlfebmopfgeuz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_bu0d1wyTaKGScvHuIqI3rg_zVcEkiC8';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SAVE_PROFILE_FN_URL = `${SUPABASE_URL}/functions/v1/save-profile`;
+const DELETE_PROFILE_FN_URL = `${SUPABASE_URL}/functions/v1/delete-profile`;
 
 // Senkron kod (renderLandingMembers, isProfileOwner vb.) hâlâ eskisi gibi
 // çalışabilsin diye profiller bellekte de tutuluyor; refreshProfilesCache()
@@ -109,15 +111,28 @@ async function saveProfileData(profile) {
   const dbProfile = { ...profile, bgVideo: '', music: '' };
   if (dbProfile.avatar && dbProfile.avatar.length > 300000) dbProfile.avatar = '';
 
+  const session = getDiscordSession();
+  if (!session) {
+    showToast('Kaydetmek için Discord ile giriş yapmalısın.', 'error');
+    return false;
+  }
+
   try {
-    const { error } = await supabaseClient.from('profiles').upsert({
-      username: key,
-      discord_id: profile.discordId || null,
-      data: dbProfile,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'username' });
-    if (error) throw error;
-    profilesCache[key] = profile;
+    const res = await fetch(SAVE_PROFILE_FN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({
+        accessToken: session.access_token,
+        username: key,
+        profile: dbProfile
+      })
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || `save-profile ${res.status}`);
+    profilesCache[key] = { ...profile, discordId: session.user.id };
     return true;
   } catch (e) {
     console.error('momus: profil kaydedilemedi', e);
@@ -127,9 +142,26 @@ async function saveProfileData(profile) {
 }
 
 async function deleteProfileFromDB(unKey) {
+  const session = getDiscordSession();
+  if (!session) {
+    showToast('Hesap silmek için Discord ile giriş yapmalısın.', 'error');
+    return false;
+  }
+
   try {
-    const { error } = await supabaseClient.from('profiles').delete().eq('username', unKey);
-    if (error) throw error;
+    const res = await fetch(DELETE_PROFILE_FN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({
+        accessToken: session.access_token,
+        username: unKey
+      })
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || `delete-profile ${res.status}`);
     delete profilesCache[unKey];
     return true;
   } catch (e) {
@@ -340,6 +372,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const bSaveBtn = document.getElementById('b-save-btn');
 
   const bUsername = document.getElementById('b-username');
+  if (bUsername) {
+    bUsername.addEventListener('input', () => {
+      const val = bUsername.value.trim();
+      const bad = val.length > 0 && validateUsername(val) !== null;
+      bUsername.classList.toggle('dg-input-invalid', bad);
+    });
+  }
   const bColor = document.getElementById('b-color');
   const bColorHex = document.getElementById('b-color-hex');
   const bTextColor = document.getElementById('b-text-color');
@@ -1511,10 +1550,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  const RESERVED_USERNAMES = new Set([
+    'admin', 'administrator', 'momus', 'moderator', 'mod', 'staff', 'support',
+    'help', 'api', 'builder', 'home', 'login', 'logout', 'auth', 'discord',
+    'settings', 'dashboard', 'root', 'system', 'null', 'undefined', 'seyoria',
+    'about', 'terms', 'privacy', 'contact', 'official', 'security', 'billing'
+  ]);
+  const USERNAME_REGEX = /^[a-z0-9_.]{3,20}$/;
+
+  function validateUsername(un) {
+    const key = un.toLowerCase();
+    if (!USERNAME_REGEX.test(key)) {
+      return '3-20 karakter, sadece harf/rakam/_/. kullanabilirsin.';
+    }
+    if (RESERVED_USERNAMES.has(key)) {
+      return `"${un}" adı ayrılmış, başka bir ad seç.`;
+    }
+    return null;
+  }
+
   async function saveCurrentBuilder() {
     const un = (bUsername && bUsername.value.trim()) || 'seyoria_o';
     const unKey = un.toLowerCase();
     const discordIdVal = (bDiscordId && bDiscordId.value.trim()) || '';
+
+    const usernameError = validateUsername(un);
+    if (usernameError) {
+      showToast(usernameError, 'error');
+      return false;
+    }
 
     // ── UNIQUE ACCOUNT CHECK (Only 1 account per Username & Discord ID) ──
     const existingProfiles = getProfiles();
