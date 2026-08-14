@@ -1,6 +1,37 @@
 // ── GLOBAL CONFIG ──
 const MOMUS_BOT_API = 'http://localhost:3001';
 
+// ── SUPABASE (ORTAK VERİTABANI — profiller artık tarayıcıda değil,
+// herkesin görebildiği tek bir yerde saklanıyor) ──
+const SUPABASE_URL = 'https://qmzryknxlfebmopfgeuz.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_bu0d1wyTaKGScvHuIqI3rg_zVcEkiC8';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Senkron kod (renderLandingMembers, isProfileOwner vb.) hâlâ eskisi gibi
+// çalışabilsin diye profiller bellekte de tutuluyor; refreshProfilesCache()
+// her route değişiminde bu önbelleği veritabanından tazeliyor.
+let profilesCache = {};
+
+async function refreshProfilesCache() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('profiles')
+      .select('username, discord_id, data');
+    if (error) throw error;
+    const next = {};
+    (data || []).forEach(row => {
+      const p = row.data || {};
+      p.username = p.username || row.username;
+      p.discordId = p.discordId || row.discord_id || '';
+      next[row.username.toLowerCase()] = p;
+    });
+    profilesCache = next;
+  } catch (e) {
+    console.error('momus: profiller yüklenemedi', e);
+  }
+  return profilesCache;
+}
+
 // ── INDEXEDDB MEDIA STORAGE (For large MP4 background videos & MP3 audio) ──
 function getIDB() {
   return new Promise((resolve) => {
@@ -64,47 +95,52 @@ function showToast(message, type = 'success') {
 const INITIAL_PROFILES = {};
 
 function getProfiles() {
-  const stored = localStorage.getItem('momus_profiles');
-  if (stored) {
-    try { 
-      return JSON.parse(stored); 
-    } catch (e) {
-      localStorage.removeItem('momus_profiles');
-    }
-  }
-  return INITIAL_PROFILES;
+  // Artık senkron kaynak Supabase'den taze çekilen önbellek (profilesCache).
+  // route()/initBuilder() öncesi refreshProfilesCache() ile güncellenir.
+  return profilesCache;
 }
 
-function saveProfileData(profile) {
-  const profiles = getProfiles();
+async function saveProfileData(profile) {
   const key = profile.username.toLowerCase();
-  profiles[key] = profile;
+
+  // Video/müzik/özel imleç gibi ağır base64 dosyalar zaten cihazda IndexedDB'de
+  // duruyor (device-only). Bunları veritabanı satırına gömmüyoruz — hem
+  // Supabase'in satır boyutu limitini aşar hem de gereksiz yavaşlatır.
+  const dbProfile = { ...profile, bgVideo: '', music: '' };
+  if (dbProfile.avatar && dbProfile.avatar.length > 300000) dbProfile.avatar = '';
 
   try {
-    localStorage.setItem('momus_profiles', JSON.stringify(profiles));
+    const { error } = await supabaseClient.from('profiles').upsert({
+      username: key,
+      discord_id: profile.discordId || null,
+      data: dbProfile,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'username' });
+    if (error) throw error;
+    profilesCache[key] = profile;
+    return true;
   } catch (e) {
-    console.warn('LocalStorage quota exceeded, stripping large base64 files...', e);
-    // Heavy media base64 strings exceeded 5MB localStorage limit.
-    // Strip giant video/music base64 strings and save essential profile data.
-    const sanitizedProfile = { ...profile, bgVideo: '', music: '' };
-    profiles[key] = sanitizedProfile;
-    try {
-      localStorage.setItem('momus_profiles', JSON.stringify(profiles));
-    } catch (err) {
-      // If still too large, also strip heavy custom uploaded avatar base64
-      const minimalProfile = { ...sanitizedProfile, avatar: '' };
-      profiles[key] = minimalProfile;
-      try {
-        localStorage.setItem('momus_profiles', JSON.stringify(profiles));
-      } catch (finalErr) {
-        console.error('Failed to save profile to localStorage:', finalErr);
-      }
-    }
+    console.error('momus: profil kaydedilemedi', e);
+    showToast('Profil kaydedilemedi, internet bağlantını kontrol et.', 'error');
+    return false;
+  }
+}
+
+async function deleteProfileFromDB(unKey) {
+  try {
+    const { error } = await supabaseClient.from('profiles').delete().eq('username', unKey);
+    if (error) throw error;
+    delete profilesCache[unKey];
+    return true;
+  } catch (e) {
+    console.error('momus: profil silinemedi', e);
+    showToast('Hesap silinemedi, internet bağlantını kontrol et.', 'error');
+    return false;
   }
 }
 
 function clearAllProfiles() {
-  localStorage.removeItem('momus_profiles');
+  profilesCache = {};
 }
 
 // ── PLATFORM ICONS (SVG for Guns.lol style icon row) ──
@@ -356,32 +392,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (bBackBtn) bBackBtn.addEventListener('click', () => { window.location.hash = '#home'; });
 
-  // ── SESSION & OWNER PROTECTION ──
-  function getSessionToken() {
-    let token = localStorage.getItem('momus_session_token');
-    if (!token) {
-      token = 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-      localStorage.setItem('momus_session_token', token);
-    }
-    return token;
-  }
-
+  // ── SAHİPLİK KONTROLÜ — artık cihaz bazlı rastgele token yerine
+  // Discord hesabına bağlı (profil.discordId === giriş yapan kullanıcının id'si).
+  // Bu sayede aynı hesapla hangi cihazdan girersen gir "senin" profilin tanınır.
   function isProfileOwner(unKey) {
     if (!unKey) return true;
     const profiles = getProfiles();
     const profile = profiles[unKey.toLowerCase()];
     if (!profile) return true;
-    const myToken = getSessionToken();
-    const ownerToken = localStorage.getItem(`momus_owner_${unKey.toLowerCase()}`);
-    return !ownerToken || ownerToken === myToken;
+    const session = getDiscordSession();
+    if (!session) return false;
+    return !profile.discordId || profile.discordId === session.user.id;
   }
 
   function getMyAccount() {
-    const myToken = getSessionToken();
+    const session = getDiscordSession();
+    if (!session) return null;
     const profiles = getProfiles();
     for (const key in profiles) {
-      const ownerToken = localStorage.getItem(`momus_owner_${key}`);
-      if (ownerToken === myToken) {
+      if (profiles[key].discordId && profiles[key].discordId === session.user.id) {
         return profiles[key];
       }
     }
@@ -639,8 +668,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (navCreateBtn) navCreateBtn.addEventListener('click', () => { window.location.hash = '#builder'; });
   if (triggerEmpty) triggerEmpty.addEventListener('click', () => { window.location.hash = '#builder'; });
   
-  function goToProfilePage(un) {
-    saveCurrentBuilder();
+  async function goToProfilePage(un) {
+    await saveCurrentBuilder();
     const targetHash = `#${un.toLowerCase()}`;
     if (window.location.hash === targetHash) {
       route();
@@ -802,16 +831,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (bConfirmDeleteBtn) {
-    bConfirmDeleteBtn.addEventListener('click', () => {
+    bConfirmDeleteBtn.addEventListener('click', async () => {
       const targetUser = getDeleteTargetUser();
       const deletedName = targetUser || 'Profil';
 
       if (targetUser) {
         const unKey = targetUser.toLowerCase();
-        const profiles = getProfiles();
-        delete profiles[unKey];
-        localStorage.setItem('momus_profiles', JSON.stringify(profiles));
-        localStorage.removeItem(`momus_owner_${unKey}`);
+        const ok = await deleteProfileFromDB(unKey);
+        if (!ok) return;
 
         // Clean IndexedDB stored media items
         saveMediaItem(`video_${unKey}`, null);
@@ -936,17 +963,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   // All save buttons (there are 3 - one per tab)
   document.querySelectorAll('#b-save-btn, #b-save-btn-2, #b-save-btn-3').forEach(btn => {
     if (btn) {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.preventDefault();
         const un = bUsername ? bUsername.value.trim() : '';
         if (!un) {
           showToast('Lütfen önce Hesap sekmesinden kullanıcı adı girin.', 'error');
           return;
         }
-        const success = saveCurrentBuilder();
+        btn.textContent = 'Kaydediliyor...';
+        const success = await saveCurrentBuilder();
         if (success) {
           btn.textContent = 'Kaydedildi!';
           setTimeout(() => { btn.textContent = 'Kaydet'; }, 1500);
+        } else {
+          btn.textContent = 'Kaydet';
         }
       });
     }
@@ -1481,7 +1511,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function saveCurrentBuilder() {
+  async function saveCurrentBuilder() {
     const un = (bUsername && bUsername.value.trim()) || 'seyoria_o';
     const unKey = un.toLowerCase();
     const discordIdVal = (bDiscordId && bDiscordId.value.trim()) || '';
@@ -1544,9 +1574,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       links: [...currentLinksState],
       views: (existingProfile && existingProfile.views) || 0
     };
-    saveProfileData(profile);
-    // Bind current session as the owner of this profile
-    localStorage.setItem(`momus_owner_${unKey}`, getSessionToken());
+    const ok = await saveProfileData(profile);
+    if (!ok) return false;
     updateNavButton();
     return true;
   }
@@ -1936,7 +1965,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ── PROFILE VIEW COUNTER (sahibi hariç, sadece ziyaretçiler için artar) ──
     if (!isProfileOwner(unKey)) {
       profile.views = (profile.views || 0) + 1;
-      saveProfileData(profile);
+      await saveProfileData(profile);
     }
     const viewViewsCount = document.getElementById('view-views-count');
     if (viewViewsCount) viewViewsCount.textContent = profile.views || 0;
@@ -2292,7 +2321,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ── INITIALIZE ROUTER AT END OF DOMContentLoaded ──
-  window.addEventListener('hashchange', route);
+  // Her hash değişiminde (profil linkine tıklama, geri/ileri gitme vb.)
+  // önce Supabase'den taze veri çekiyoruz, sonra route() çalışıyor —
+  // böylece başka birinin oluşturduğu profil de görünür oluyor.
+  async function routeWithFreshData() {
+    await refreshProfilesCache();
+    route();
+  }
+  window.addEventListener('hashchange', routeWithFreshData);
   await handleDiscordAuthCallback();
+  await refreshProfilesCache();
   route();
 });
