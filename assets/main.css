@@ -2602,13 +2602,49 @@ a, button, input, textarea, select, label { cursor: none; }
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.12);
 }
+.dg-session-badge.dg-menu-open {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(168, 85, 247, 0.3);
+  border-radius: 10px 10px 4px 4px;
+  margin-bottom: 0;
+}
 .dg-session-badge:empty { display: none; }
+.dg-chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.35);
+  transition: transform 0.25s var(--ease);
+}
+.dg-session-badge.dg-menu-open .dg-chevron {
+  transform: rotate(180deg);
+  color: rgba(255, 255, 255, 0.7);
+}
 .dg-session-menu {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s var(--ease);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+}
+.dg-session-menu.dg-menu-open {
+  grid-template-rows: 1fr;
+  border-color: rgba(168, 85, 247, 0.3);
+  margin-bottom: 8px;
+}
+.dg-session-menu-inner {
+  overflow: hidden;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  padding: 0 8px;
+  transition: padding 0.2s var(--ease);
 }
-.dg-session-menu.hidden { display: none; }
+.dg-session-menu.dg-menu-open .dg-session-menu-inner {
+  padding: 8px;
+}
 .dg-session-badge img {
   width: 24px; height: 24px;
   border-radius: 50%;
