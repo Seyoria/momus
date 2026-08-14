@@ -2583,6 +2583,9 @@ a, button, input, textarea, select, label { cursor: none; }
 .dg-back:hover { color: rgba(255, 255, 255, 0.7); }
 
 /* Sidebar session badge */
+.dg-session-wrap {
+  position: relative;
+}
 .dg-session-badge {
   display: flex;
   align-items: center;
@@ -2592,8 +2595,20 @@ a, button, input, textarea, select, label { cursor: none; }
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.dg-session-badge:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 .dg-session-badge:empty { display: none; }
+.dg-session-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dg-session-menu.hidden { display: none; }
 .dg-session-badge img {
   width: 24px; height: 24px;
   border-radius: 50%;
