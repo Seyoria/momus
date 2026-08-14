@@ -734,17 +734,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // "Sayfam" button in sidebar
+  // "Sayfam" button in sidebar — gerçek https linkini yeni sekmede açar,
+  // mevcut builder sekmesindeki hash yönlendirmesiyle karışmaz.
   const dashViewProfBtn = document.getElementById('dash-view-profile-btn');
   if (dashViewProfBtn) {
     dashViewProfBtn.addEventListener('click', (e) => {
       e.preventDefault();
       const un = bUsername ? bUsername.value.trim() : '';
-      if (un) {
-        goToProfilePage(un);
-      } else {
+      if (!un) {
         showToast('Lütfen önce Hesap sekmesinden kullanıcı adı girin.', 'error');
+        return;
       }
+      const fullUrl = `${window.location.origin}${window.location.pathname}#${un.toLowerCase()}`;
+      window.open(fullUrl, '_blank', 'noopener');
     });
   }
 
@@ -990,6 +992,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderSocialIconGrid();
 
     const dgBadge = document.getElementById('dg-session-badge');
+    const dgMenu = document.getElementById('dg-session-menu');
     const dgLogoutBtn = document.getElementById('dg-logout-btn');
     const dSession = getDiscordSession();
     if (dgBadge && dSession) {
@@ -997,6 +1000,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         <img src="${dSession.user.avatar}" alt=""/>
         <span>${dSession.user.globalName}</span>
       `;
+    }
+    // Kullanıcı adına/avatara tıklayınca "Hesabı Sil" ve "Discord'dan Çık" menüsü açılır
+    if (dgBadge && dgMenu && !dgBadge.dataset.bound) {
+      dgBadge.dataset.bound = '1';
+      dgBadge.addEventListener('click', () => {
+        dgMenu.classList.toggle('hidden');
+      });
+      document.addEventListener('click', (e) => {
+        if (!dgBadge.contains(e.target) && !dgMenu.contains(e.target)) {
+          dgMenu.classList.add('hidden');
+        }
+      });
     }
     if (dSession && bDiscordId) {
       bDiscordId.value = dSession.user.id;
