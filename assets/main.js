@@ -1068,17 +1068,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       dgBadge.innerHTML = `
         <img src="${dSession.user.avatar}" alt=""/>
         <span>${dSession.user.globalName}</span>
+        <svg class="dg-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
       `;
     }
-    // Kullanıcı adına/avatara tıklayınca "Hesabı Sil" ve "Discord'dan Çık" menüsü açılır
+    // Kullanıcı adına/avatara tıklayınca "Hesabı Sil" ve "Discord'dan Çık" menüsü
+    // sekme gibi aşağı açılıyor — chevron da yönünü değiştiriyor.
     if (dgBadge && dgMenu && !dgBadge.dataset.bound) {
       dgBadge.dataset.bound = '1';
       dgBadge.addEventListener('click', () => {
-        dgMenu.classList.toggle('hidden');
+        const willOpen = !dgMenu.classList.contains('dg-menu-open');
+        dgMenu.classList.toggle('dg-menu-open', willOpen);
+        dgBadge.classList.toggle('dg-menu-open', willOpen);
       });
       document.addEventListener('click', (e) => {
         if (!dgBadge.contains(e.target) && !dgMenu.contains(e.target)) {
-          dgMenu.classList.add('hidden');
+          dgMenu.classList.remove('dg-menu-open');
+          dgBadge.classList.remove('dg-menu-open');
         }
       });
     }
