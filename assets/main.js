@@ -1,6 +1,18 @@
 // ── GLOBAL CONFIG ──
 const MOMUS_BOT_API = 'http://localhost:3001';
 
+// ── SUPABASE CONFIG (PROFİLLERİN HERKESE AÇIK BACKEND'İ) ──
+// SUPABASE_URL: Supabase panelinde Project Settings > Data API'den kopyala (https://xxxxx.supabase.co)
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co'; // TODO: kendi Project URL'ini buraya yapıştır
+const SUPABASE_ANON_KEY = 'sb_publishable_bu0d1wyTaKGScvHuIqI3rg_zVcEkiC8'; // publishable/anon key, tarayıcıda güvenle kullanılabilir
+const supabaseClient = (window.supabase && SUPABASE_URL && !SUPABASE_URL.includes('YOUR-PROJECT'))
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+if (!supabaseClient) {
+  console.warn('[momus] Supabase bağlantısı kurulmadı — SUPABASE_URL ayarlanmamış. Profiller sadece bu tarayıcıda görünecek.');
+}
+
 // ── INDEXEDDB MEDIA STORAGE (For large MP4 background videos & MP3 audio) ──
 function getIDB() {
   return new Promise((resolve) => {
@@ -60,51 +72,91 @@ function showToast(message, type = 'success') {
   }, 3200);
 }
 
-// ── INITIAL PROFILES ──
-const INITIAL_PROFILES = {};
+// ── PROFILES (SUPABASE-BACKED, HERKESE AÇIK VERİTABANI) ──
+// profilesCache: senkron kod tarafından okunan yerel önbellek.
+// DOMContentLoaded'da refreshProfilesCache() ile Supabase'den doldurulur.
+let profilesCache = {};
 
 function getProfiles() {
-  const stored = localStorage.getItem('momus_profiles');
-  if (stored) {
-    try { 
-      return JSON.parse(stored); 
-    } catch (e) {
-      localStorage.removeItem('momus_profiles');
-    }
-  }
-  return INITIAL_PROFILES;
+  // Senkron okuma — mevcut önbelleği döner (uygulama açılışında bir kez dolduruldu).
+  return profilesCache;
 }
 
-function saveProfileData(profile) {
-  const profiles = getProfiles();
-  const key = profile.username.toLowerCase();
-  profiles[key] = profile;
-
+async function refreshProfilesCache() {
+  if (!supabaseClient) return profilesCache;
   try {
-    localStorage.setItem('momus_profiles', JSON.stringify(profiles));
+    const { data, error } = await supabaseClient
+      .from('momus_profiles')
+      .select('username, data');
+    if (error) throw error;
+    const next = {};
+    (data || []).forEach(row => { next[row.username] = row.data; });
+    profilesCache = next;
   } catch (e) {
-    console.warn('LocalStorage quota exceeded, stripping large base64 files...', e);
-    // Heavy media base64 strings exceeded 5MB localStorage limit.
-    // Strip giant video/music base64 strings and save essential profile data.
-    const sanitizedProfile = { ...profile, bgVideo: '', music: '' };
-    profiles[key] = sanitizedProfile;
-    try {
-      localStorage.setItem('momus_profiles', JSON.stringify(profiles));
-    } catch (err) {
-      // If still too large, also strip heavy custom uploaded avatar base64
-      const minimalProfile = { ...sanitizedProfile, avatar: '' };
-      profiles[key] = minimalProfile;
-      try {
-        localStorage.setItem('momus_profiles', JSON.stringify(profiles));
-      } catch (finalErr) {
-        console.error('Failed to save profile to localStorage:', finalErr);
-      }
+    console.warn('Supabase profil listesi alınamadı, mevcut önbellek kullanılıyor:', e);
+  }
+  return profilesCache;
+}
+
+// Tek bir kullanıcıyı doğrudan sunucudan çeker (önbellek güncel olmasa bile
+// paylaşılan bir profil linkinin her zaman doğru açılmasını sağlar).
+async function getProfileByUsername(username) {
+  if (!supabaseClient) return profilesCache[username] || null;
+  try {
+    const { data, error } = await supabaseClient
+      .from('momus_profiles')
+      .select('data')
+      .eq('username', username)
+      .maybeSingle();
+    if (error) throw error;
+    if (data && data.data) {
+      profilesCache[username] = data.data;
+      return data.data;
     }
+    return null;
+  } catch (e) {
+    console.warn('Profil Supabase\'den alınamadı:', e);
+    return profilesCache[username] || null;
+  }
+}
+
+// NOT: async ama önbellek güncellemesi ilk satırda (await'ten önce) yapılıyor,
+// bu yüzden çağıran kodlar `await` etmeden de anında güncel senkron okuma alır;
+// Supabase'e yazma arka planda devam eder.
+async function saveProfileData(profile) {
+  const key = profile.username.toLowerCase();
+  profilesCache[key] = profile;
+
+  if (!supabaseClient) {
+    console.warn('Supabase bağlı değil, profil sadece bu tarayıcıda saklandı.');
+    return;
+  }
+  try {
+    const { error } = await supabaseClient
+      .from('momus_profiles')
+      .upsert({ username: key, data: profile, updated_at: new Date().toISOString() });
+    if (error) throw error;
+  } catch (e) {
+    console.error('Profil Supabase\'e kaydedilemedi:', e);
+    if (typeof showToast === 'function') {
+      showToast('Profil sunucuya kaydedilemedi, internet bağlantını kontrol et.', 'error');
+    }
+  }
+}
+
+async function deleteProfileRemote(unKey) {
+  delete profilesCache[unKey];
+  if (!supabaseClient) return;
+  try {
+    const { error } = await supabaseClient.from('momus_profiles').delete().eq('username', unKey);
+    if (error) throw error;
+  } catch (e) {
+    console.error('Profil Supabase\'den silinemedi:', e);
   }
 }
 
 function clearAllProfiles() {
-  localStorage.removeItem('momus_profiles');
+  profilesCache = {};
 }
 
 // ── PLATFORM ICONS (SVG for Guns.lol style icon row) ──
@@ -526,7 +578,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!viewLanding || !viewBuilder || !viewProfile) return;
 
-    function applyRoute() {
+    async function applyRoute() {
       // Ensure builder modals (Hesabı Sil) never display over profile pages
       const dashDeleteModal = document.getElementById('dash-delete-modal');
       if (dashDeleteModal && hash !== '#builder') {
@@ -554,8 +606,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         renderDiscordGate(false);
         const username = hash.replace('#', '').toLowerCase();
-        const profiles = getProfiles();
-        const profile = profiles[username];
+        let profile = profilesCache[username];
+        if (!profile) {
+          profile = await getProfileByUsername(username);
+        }
         if (profile) {
           viewProfile.classList.remove('hidden');
           renderProfilePage(profile);
@@ -575,12 +629,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ── LANDING VIEW ──
-  function renderLandingMembers() {
+  async function renderLandingMembers() {
     const grid = document.getElementById('members-grid');
     const noMembers = document.getElementById('no-members');
     const userCount = document.getElementById('user-count');
     if (!grid) return;
 
+    await refreshProfilesCache();
     const profiles = getProfiles();
     const keys = Object.keys(profiles);
 
@@ -808,9 +863,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (targetUser) {
         const unKey = targetUser.toLowerCase();
-        const profiles = getProfiles();
-        delete profiles[unKey];
-        localStorage.setItem('momus_profiles', JSON.stringify(profiles));
+        deleteProfileRemote(unKey);
         localStorage.removeItem(`momus_owner_${unKey}`);
 
         // Clean IndexedDB stored media items
@@ -2293,6 +2346,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── INITIALIZE ROUTER AT END OF DOMContentLoaded ──
   window.addEventListener('hashchange', route);
+  await refreshProfilesCache(); // profilleri Supabase'den çek, ilk render'dan önce hazır olsun
   await handleDiscordAuthCallback();
   route();
 });
