@@ -1063,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (myAcc) {
       if (bUsername) bUsername.value = myAcc.username || '';
       if (bBio) bBio.value = myAcc.bio || '';
-      if (bDiscordId) bDiscordId.value = myAcc.discordId || '';
+      if (bDiscordId) bDiscordId.value = myAcc.discordId || (dSession ? dSession.user.id : '');
       if (bColor) bColor.value = myAcc.color || '#ffffff';
       if (bColorHex) bColorHex.value = myAcc.color || '#ffffff';
       if (bTextColor) bTextColor.value = myAcc.textColor || '#ffffff';
@@ -1101,7 +1101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       selectedEffect = 'none';
       if (bUsername) bUsername.value = '';
       if (bBio) bBio.value = '';
-      if (bDiscordId) bDiscordId.value = '';
+      if (bDiscordId) bDiscordId.value = dSession ? dSession.user.id : '';
       if (bColor) bColor.value = '#ffffff';
       if (bColorHex) bColorHex.value = '#ffffff';
       if (bTextColor) bTextColor.value = '#ffffff';
