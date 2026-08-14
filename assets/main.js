@@ -1,3 +1,25 @@
+// --- MOMUS BAKIM MODU ---
+const BAKIM_DURUM = true; // true yaparsan site kapanır, false yaparsan açılır.
+
+if (BAKIM_DURUM) {
+  // Sayfa yüklendiğinde mevcut tüm içeriği gizleyip bakım ekranını basıyoruz
+  document.addEventListener("DOMContentLoaded", () => {
+    document.body.innerHTML = `
+      <div style="position: fixed; inset: 0; z-index: 999999; background: #080808; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;">
+          <!-- Custom Cursor (Opsiyonel: Eğer bakımda cursor gözüksün dersen kalsın) -->
+          <div id="c-dot" style="display: block;"></div>
+          <div id="c-ring" style="display: block;"></div>
+          
+          <h1 style="font-family: 'Syne', sans-serif; font-size: 5rem; font-weight: 900; color: #a855f7; margin: 0; line-height: 1;">m</h1>
+          <h2 style="font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 700; margin-top: 15px; letter-spacing: -0.5px;">Sistem Bakımda</h2>
+          <p style="font-family: 'Inter', sans-serif; font-size: 1rem; color: rgba(255,255,255,0.6); max-width: 400px; line-height: 1.5; margin-top: 10px;">
+            Şu anda altyapıda bazı güncellemeler yapıyoruz. Kısa süre sonra tekrar aktif olacağız!
+          </p>
+      </div>
+    `;
+  });
+}
+// ------------------------
 // ── GLOBAL CONFIG ──
 const MOMUS_BOT_API = 'http://localhost:3001';
 
