@@ -1,5 +1,5 @@
 // --- MOMUS BAKIM MODU ---
-const BAKIM_DURUM = true; // true yaparsan site kapanır, false yaparsan açılır.
+const BAKIM_DURUM = false; // true yaparsan site kapanır, false yaparsan açılır.
 
 if (BAKIM_DURUM) {
   // Sayfa yüklendiğinde mevcut tüm içeriği gizleyip bakım ekranını basıyoruz
