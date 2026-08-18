@@ -1278,37 +1278,52 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let customDropdownBound = false;
   function setupCustomDropdown() {
-    const dropdown = document.getElementById('b-effect-dropdown');
-    const trigger = document.getElementById('b-effect-trigger');
-    const menu = document.getElementById('b-effect-menu');
-    const label = document.getElementById('b-effect-selected-label');
-    if (!dropdown || !trigger || !menu) return;
+    if (customDropdownBound) return;
+    customDropdownBound = true;
 
-    if (!customDropdownBound) {
-      customDropdownBound = true;
-      trigger.addEventListener('click', (e) => {
+    // Delegate click for all dropdown triggers
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('.dash-dropdown-trigger');
+      if (trigger) {
         e.stopPropagation();
-        dropdown.classList.toggle('open');
-      });
+        const dropdown = trigger.closest('.dash-custom-dropdown');
+        if (dropdown) {
+          // Close other open dropdowns first
+          document.querySelectorAll('.dash-custom-dropdown.open').forEach(d => {
+            if (d !== dropdown) d.classList.remove('open');
+          });
+          dropdown.classList.toggle('open');
+        }
+        return;
+      }
 
-      document.addEventListener('click', () => {
-        dropdown.classList.remove('open');
-      });
-
-      menu.querySelectorAll('.dash-dropdown-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-          e.stopPropagation();
+      // If clicked inside dropdown menu item
+      const item = e.target.closest('.dash-dropdown-item');
+      if (item) {
+        e.stopPropagation();
+        const dropdown = item.closest('.dash-custom-dropdown');
+        if (dropdown) {
           const val = item.getAttribute('data-value');
-          selectedEffect = val || 'none';
-          
-          menu.querySelectorAll('.dash-dropdown-item').forEach(i => i.classList.remove('active'));
+          dropdown.querySelectorAll('.dash-dropdown-item').forEach(i => i.classList.remove('active'));
           item.classList.add('active');
 
+          const label = dropdown.querySelector('.dash-dropdown-trigger-content span');
           if (label) label.textContent = item.textContent.trim();
           dropdown.classList.remove('open');
-        });
-      });
-    }
+
+          if (dropdown.id === 'b-effect-dropdown') {
+            selectedEffect = val || 'none';
+          } else if (dropdown.id === 'b-sound-dropdown') {
+            selectedEnterSound = val || 'none';
+          }
+          triggerAutoSave();
+        }
+        return;
+      }
+
+      // Close all dropdowns when clicking outside
+      document.querySelectorAll('.dash-custom-dropdown.open').forEach(d => d.classList.remove('open'));
+    });
   }
 
   function initBuilder() {
@@ -1440,7 +1455,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Setup Sound Dropdown
+    // Sync Sound Dropdown initial UI
     const soundDropdown = document.getElementById('b-sound-dropdown');
     const soundLabel = document.getElementById('b-sound-selected-label');
     if (soundDropdown) {
@@ -1454,25 +1469,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (soundLabel) soundLabel.textContent = item.textContent.trim();
         }
       });
-      soundItems.forEach(item => {
-        if (!item.dataset.soundBound) {
-          item.dataset.soundBound = '1';
-          item.addEventListener('click', () => {
-            soundItems.forEach(si => si.classList.remove('active'));
-            item.classList.add('active');
-            selectedEnterSound = item.getAttribute('data-value');
-            if (soundLabel) soundLabel.textContent = item.textContent.trim();
-            soundDropdown.classList.remove('open');
-            triggerAutoSave();
-          });
-        }
-      });
     }
+
     // Sound preview button
     const soundPreviewBtn = document.getElementById('b-sound-preview-btn');
     if (soundPreviewBtn && !soundPreviewBtn.dataset.bound) {
       soundPreviewBtn.dataset.bound = '1';
-      soundPreviewBtn.addEventListener('click', () => {
+      soundPreviewBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         playEnterSound(selectedEnterSound);
       });
     }
