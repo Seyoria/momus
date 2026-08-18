@@ -249,6 +249,37 @@ function isDiscordAuthenticated() {
   return !!getDiscordSession();
 }
 
+// Kayıt anında session'daki avatarı Discord'un kendi /users/@me endpoint'i
+// ile taze doğrular. Session login sırasında cache'lenmiş olabilir (7 güne
+// kadar); kullanıcı o süre içinde avatarını değiştirmiş olabilir. Bot API'ye
+// hiç bağımlı değil — doğrudan Discord'dan, guild üyeliğinden bağımsız.
+async function refreshDiscordSessionAvatar() {
+  const session = getDiscordSession();
+  if (!session || !session.access_token) return null;
+  try {
+    const res = await withTimeout(
+      fetch('https://discord.com/api/users/@me', {
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      }),
+      6000,
+      'Discord /users/@me'
+    );
+    if (!res.ok) return session.user.avatar || null;
+    const user = await res.json();
+    const freshAvatar = user.avatar
+      ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
+      : defaultDiscordAvatarUrl(user.id);
+    session.user.avatar = freshAvatar;
+    session.user.username = user.username;
+    session.user.globalName = user.global_name || user.username;
+    localStorage.setItem(DISCORD_SESSION_KEY, JSON.stringify(session));
+    return freshAvatar;
+  } catch (e) {
+    console.warn('momus: avatar doğrulama başarısız, önbellekteki session avatarı kullanılıyor:', e);
+    return session.user.avatar || null;
+  }
+}
+
 function discordLogout() {
   localStorage.removeItem(DISCORD_SESSION_KEY);
 }
@@ -1926,6 +1957,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (avatarDataUrl)  await saveMediaItem(`avatar_${unKey}`, avatarDataUrl);
     if (cursorDataUrl)  await saveMediaItem(`cursor_${unKey}`, cursorDataUrl);
 
+    // Discord'un kendi API'sinden taze avatar doğrulaması — bot presence
+    // fetch'ine güvenmiyoruz, guild üyeliğinden veya bot uptime'ından bağımsız.
+    const verifiedDiscordAvatar = await refreshDiscordSessionAvatar();
+
     // Preserve existing views count
     const existingProfile = existingProfiles[unKey];
     // Save active selected effect
@@ -1954,8 +1989,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       hasCustomAvatar: !!avatarDataUrl,
       hasBgVideo: !!bgVideoDataUrl,
       hasBgMusic: !!bgMusicDataUrl,
-      avatar: avatarDataUrl || (dSession && dSession.user && dSession.user.avatar) || fetchedDiscordAvatar || (existingProfile && existingProfile.avatar) || '',
-      discordAvatar: fetchedDiscordAvatar || (dSession && dSession.user && dSession.user.avatar) || (existingProfile && existingProfile.discordAvatar) || '',
+      avatar: avatarDataUrl || verifiedDiscordAvatar || fetchedDiscordAvatar || (existingProfile && existingProfile.avatar) || '',
+      discordAvatar: verifiedDiscordAvatar || fetchedDiscordAvatar || (existingProfile && existingProfile.discordAvatar) || '',
       discordBanner: fetchedDiscordBanner || (existingProfile && existingProfile.discordBanner) || '',
       bgVideo: bgVideoDataUrl || '',
       music: bgMusicDataUrl || '',
