@@ -668,6 +668,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const storedAvatar = await getMediaItem(`avatar_${k.toLowerCase()}`);
       let av = storedAvatar || p.avatar || p.discordAvatar || p.customAvatarUrl;
+      if (!av && p.discordId) {
+        av = defaultDiscordAvatarUrl(p.discordId);
+      }
       if (!av) av = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${p.username}&backgroundColor=111111`;
 
       let badgesHtml = '';
@@ -1291,15 +1294,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ── UNIFIED DISCORD PRESENCE ENGINE (Lanyard Global + Local Bot fallback) ──
+  const lanyardUnmonitoredUsers = new Set();
   async function getUnifiedDiscordPresence(id) {
     if (!id) return null;
 
     // 1. Try Lanyard API (Globally works on GitHub Pages without localhost)
-    try {
-      const res = await fetch(`https://api.lanyard.rest/v1/users/${id}`);
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.data) {
+    if (!lanyardUnmonitoredUsers.has(id)) {
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${id}`);
+        if (res.status === 404) {
+          lanyardUnmonitoredUsers.add(id);
+        } else if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
           const ld = json.data;
           const u = ld.discord_user;
           const avatarUrl = u.avatar
@@ -1344,6 +1351,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
     } catch(e){}
+  }
 
     // 2. Fallback to Local Bot API
     try {
@@ -1720,9 +1728,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       hasCustomAvatar: !!avatarDataUrl,
       hasBgVideo: !!bgVideoDataUrl,
       hasBgMusic: !!bgMusicDataUrl,
-      avatar: avatarDataUrl || '',
-      discordAvatar: fetchedDiscordAvatar || '',
-      discordBanner: fetchedDiscordBanner || '',
+      avatar: avatarDataUrl || (session && session.user && session.user.avatar) || fetchedDiscordAvatar || (existingProfile && existingProfile.avatar) || '',
+      discordAvatar: fetchedDiscordAvatar || (session && session.user && session.user.avatar) || (existingProfile && existingProfile.discordAvatar) || '',
+      discordBanner: fetchedDiscordBanner || (existingProfile && existingProfile.discordBanner) || '',
       bgVideo: bgVideoDataUrl || '',
       music: bgMusicDataUrl || '',
       links: [...currentLinksState],
