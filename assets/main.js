@@ -364,6 +364,62 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // ── NEON SPARKLE CURSOR TRAIL ENGINE ──
+  let cursorTrailActive = true;
+  const trailParticles = [];
+  const trailCanvas = document.createElement('canvas');
+  trailCanvas.id = 'cursor-trail-canvas';
+  trailCanvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:9998;';
+  document.body.appendChild(trailCanvas);
+  const trailCtx = trailCanvas.getContext('2d');
+
+  function resizeTrailCanvas() {
+    trailCanvas.width = window.innerWidth;
+    trailCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeTrailCanvas);
+  resizeTrailCanvas();
+
+  document.addEventListener('mousemove', (e) => {
+    if (!cursorTrailActive) return;
+    const userColor = getComputedStyle(document.documentElement).getPropertyValue('--user-color').trim() || '#a855f7';
+    for (let i = 0; i < 2; i++) {
+      trailParticles.push({
+        x: e.clientX + (Math.random() - 0.5) * 6,
+        y: e.clientY + (Math.random() - 0.5) * 6,
+        size: Math.random() * 2.5 + 1.2,
+        alpha: 1,
+        color: userColor,
+        vx: (Math.random() - 0.5) * 1.2,
+        vy: (Math.random() - 0.5) * 1.2 + 0.2
+      });
+    }
+  });
+
+  (function renderCursorTrail() {
+    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+    for (let i = trailParticles.length - 1; i >= 0; i--) {
+      const p = trailParticles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha -= 0.04;
+      if (p.alpha <= 0) {
+        trailParticles.splice(i, 1);
+        continue;
+      }
+      trailCtx.save();
+      trailCtx.globalAlpha = p.alpha;
+      trailCtx.fillStyle = p.color;
+      trailCtx.shadowColor = p.color;
+      trailCtx.shadowBlur = 6;
+      trailCtx.beginPath();
+      trailCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      trailCtx.fill();
+      trailCtx.restore();
+    }
+    requestAnimationFrame(renderCursorTrail);
+  })();
+
   // ── BUILDER DOM ELEMENTS (Declared first to avoid TDZ errors) ──
   const bBackBtn = document.getElementById('builder-back-btn');
   const bGoProfBtn = document.getElementById('builder-go-profile-btn');
@@ -534,6 +590,84 @@ document.addEventListener('DOMContentLoaded', async () => {
       const ctx = canvas.getContext('2d');
       if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
+  }
+
+  // ── WEB AUDIO SYNTHESIZER FOR CLICK-TO-ENTER SOUNDS ──
+  let audioCtx = null;
+  function getAudioContext() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  function playEnterSound(soundType) {
+    if (!soundType || soundType === 'none') return;
+    try {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      if (soundType === 'cyber-bass') {
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.exponentialRampToValueAtTime(35, now + 0.45);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(now); osc.stop(now + 0.55);
+      } else if (soundType === 'glass-ping') {
+        [1200, 2400, 3600].forEach((freq, i) => {
+          const osc = ctx.createOscillator(); const gain = ctx.createGain();
+          osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.25 / (i + 1), now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8 + i * 0.2);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(now); osc.stop(now + 1.0);
+        });
+      } else if (soundType === 'laser-zap') {
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(1800, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.22);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(now); osc.stop(now + 0.28);
+      } else if (soundType === 'retro-8bit') {
+        [261.63, 329.63, 392.00, 523.25].forEach((freq, i) => {
+          const osc = ctx.createOscillator(); const gain = ctx.createGain();
+          osc.type = 'square'; osc.frequency.setValueAtTime(freq, now + i * 0.07);
+          gain.gain.setValueAtTime(0.2, now + i * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.1);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(now + i * 0.07); osc.stop(now + i * 0.07 + 0.12);
+        });
+      } else if (soundType === 'camera-snap') {
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(now); osc.stop(now + 0.12);
+      } else if (soundType === 'ambient-whoosh') {
+        const bufferSize = ctx.sampleRate * 0.5;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = ctx.createBufferSource(); noise.buffer = buffer;
+        const filter = ctx.createBiquadFilter(); filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(200, now);
+        filter.frequency.exponentialRampToValueAtTime(1600, now + 0.25);
+        filter.frequency.exponentialRampToValueAtTime(150, now + 0.5);
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.35, now + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+        noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+        noise.start(now); noise.stop(now + 0.52);
+      }
+    } catch(e) { console.warn('Sound error:', e); }
   }
 
   // ── AUDIO CONTROL ──
@@ -709,6 +843,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         <span class="mc-arrow">&nearr;</span>
       `;
       grid.appendChild(card);
+
+      if (p.discordId && (!av || av.includes('embed/avatars') || av.includes('dicebear'))) {
+        getUnifiedDiscordPresence(p.discordId).then(d => {
+          if (d && d.avatar) {
+            const imgEl = card.querySelector('.mc-avatar');
+            if (imgEl) imgEl.src = d.avatar;
+          }
+        });
+      }
     });
   }
 
@@ -825,6 +968,90 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       const fullUrl = `${window.location.origin}${window.location.pathname}#${un.toLowerCase()}`;
       window.open(fullUrl, '_blank', 'noopener');
+    });
+  }
+
+  // ── QR CODE GENERATOR & MODAL ──
+  const dashQrBtn = document.getElementById('dash-qr-btn');
+  const dashQrModal = document.getElementById('dash-qr-modal');
+  const dashQrModalClose = document.getElementById('dash-qr-modal-close');
+  const qrCanvas = document.getElementById('qr-canvas');
+  const qrUsernameLabel = document.getElementById('qr-username-label');
+  const qrDownloadBtn = document.getElementById('qr-download-btn');
+  const qrCopyBtn = document.getElementById('qr-copy-btn');
+
+  function generateCanvasQR(canvas, text) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width;
+    
+    // Draw modern styled QR Code
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}&margin=2&color=000000&bgcolor=ffffff`;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      ctx.clearRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+    };
+    img.onerror = () => {
+      // Fallback simple grid if offline
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = '#000000';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('momus', size / 2, size / 2);
+    };
+    img.src = qrApiUrl;
+  }
+
+  if (dashQrBtn) {
+    dashQrBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const un = bUsername ? bUsername.value.trim() : '';
+      if (!un) {
+        showToast('Lütfen önce bir kullanıcı adı belirleyin.', 'error');
+        return;
+      }
+      const profileUrl = `${window.location.origin}${window.location.pathname}#${un.toLowerCase()}`;
+      if (qrUsernameLabel) qrUsernameLabel.textContent = `@${un}`;
+      generateCanvasQR(qrCanvas, profileUrl);
+      if (dashQrModal) dashQrModal.style.display = 'flex';
+    });
+  }
+
+  if (dashQrModalClose) {
+    dashQrModalClose.addEventListener('click', () => {
+      if (dashQrModal) dashQrModal.style.display = 'none';
+    });
+  }
+  if (dashQrModal) {
+    dashQrModal.addEventListener('click', (e) => {
+      if (e.target === dashQrModal) dashQrModal.style.display = 'none';
+    });
+  }
+
+  if (qrDownloadBtn) {
+    qrDownloadBtn.addEventListener('click', () => {
+      if (!qrCanvas) return;
+      const un = bUsername ? bUsername.value.trim() : 'momus';
+      const link = document.createElement('a');
+      link.download = `${un}-momus-qr.png`;
+      link.href = qrCanvas.toDataURL('image/png');
+      link.click();
+      showToast('QR Kod indirildi!', 'success');
+    });
+  }
+
+  if (qrCopyBtn) {
+    qrCopyBtn.addEventListener('click', () => {
+      const un = bUsername ? bUsername.value.trim() : '';
+      const profileUrl = `${window.location.origin}${window.location.pathname}#${un.toLowerCase()}`;
+      navigator.clipboard.writeText(profileUrl).then(() => {
+        showToast('Profil linki panoya kopyalandı!', 'success');
+      }).catch(() => {
+        showToast('Link kopyalanamadı.', 'error');
+      });
     });
   }
 
@@ -1210,6 +1437,53 @@ document.addEventListener('DOMContentLoaded', async () => {
         dropdown.querySelectorAll('.dash-dropdown-item').forEach(i => i.classList.remove('active'));
         activeItem.classList.add('active');
         if (label) label.textContent = activeItem.textContent.trim();
+      }
+    }
+
+    // Setup Sound Dropdown
+    const soundDropdown = document.getElementById('b-sound-dropdown');
+    const soundLabel = document.getElementById('b-sound-selected-label');
+    if (soundDropdown) {
+      const soundItems = soundDropdown.querySelectorAll('.dash-dropdown-item');
+      const savedSound = myAcc ? (myAcc.enterSound || 'none') : 'none';
+      selectedEnterSound = savedSound;
+      soundItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-value') === savedSound) {
+          item.classList.add('active');
+          if (soundLabel) soundLabel.textContent = item.textContent.trim();
+        }
+      });
+      soundItems.forEach(item => {
+        if (!item.dataset.soundBound) {
+          item.dataset.soundBound = '1';
+          item.addEventListener('click', () => {
+            soundItems.forEach(si => si.classList.remove('active'));
+            item.classList.add('active');
+            selectedEnterSound = item.getAttribute('data-value');
+            if (soundLabel) soundLabel.textContent = item.textContent.trim();
+            soundDropdown.classList.remove('open');
+            triggerAutoSave();
+          });
+        }
+      });
+    }
+    // Sound preview button
+    const soundPreviewBtn = document.getElementById('b-sound-preview-btn');
+    if (soundPreviewBtn && !soundPreviewBtn.dataset.bound) {
+      soundPreviewBtn.dataset.bound = '1';
+      soundPreviewBtn.addEventListener('click', () => {
+        playEnterSound(selectedEnterSound);
+      });
+    }
+
+    // Cursor trail toggle restore
+    const bToggleCursorTrail = document.getElementById('b-toggle-cursor-trail');
+    if (bToggleCursorTrail) {
+      if (myAcc) {
+        bToggleCursorTrail.checked = myAcc.toggleCursorTrail !== false;
+      } else {
+        bToggleCursorTrail.checked = true;
       }
     }
 
@@ -1731,6 +2005,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       toggleBadgesDisplay: bToggleBadgesDisplay ? bToggleBadgesDisplay.checked : true,
       toggleSocialGlow: bToggleSocialGlow ? bToggleSocialGlow.checked : true,
       toggleAudioSpectrum: document.getElementById('b-toggle-audio-spectrum') ? document.getElementById('b-toggle-audio-spectrum').checked : true,
+      toggleCursorTrail: document.getElementById('b-toggle-cursor-trail') ? document.getElementById('b-toggle-cursor-trail').checked : true,
+      enterSound: selectedEnterSound || 'none',
       bio: (bBio && bBio.value.trim()) || 'currently doing nothing',
       discordId: discordIdVal,
       customAvatarUrl: '',
@@ -1751,8 +2027,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
-  // ── EFFECT SELECTION STATE ──
+  // ── EFFECT & SOUND SELECTION STATE ──
   let selectedEffect = 'none';
+  let selectedEnterSound = 'none';
 
   // ── CANVAS BACKGROUND EFFECT ENGINES ──
   let particleAnimId = null;
@@ -2153,6 +2430,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const handleClick = () => {
         clickOverlay.classList.add('fade-out');
+        // Play click-to-enter sound
+        if (profile.enterSound && profile.enterSound !== 'none') playEnterSound(profile.enterSound);
         // Start video after user interaction
         if (bgVidEl && bgVidEl.src) bgVidEl.play().catch(() => {});
         
@@ -2187,6 +2466,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       pCard.style.backdropFilter = `blur(${profile.blur || 0}px)`;
       pCard.style.webkitBackdropFilter = `blur(${profile.blur || 0}px)`;
     }
+
+    // ── CURSOR TRAIL FROM PROFILE SETTING ──
+    cursorTrailActive = profile.toggleCursorTrail !== false;
 
     // Render Preset & Custom Badges
     const viewBadges = document.getElementById('view-badges');
