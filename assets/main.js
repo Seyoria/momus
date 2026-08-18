@@ -118,7 +118,6 @@ async function saveProfileData(profile) {
   const key = profile.username.toLowerCase();
 
   const dbProfile = { ...profile, bgVideo: '', music: '' };
-  if (dbProfile.avatar && dbProfile.avatar.length > 300000) dbProfile.avatar = '';
 
   const session = getDiscordSession();
   const discordId = session ? session.user.id : (profile.discordId || '');
@@ -1020,6 +1019,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // ── AUTO-SAVE ENGINE (Otomatik Kaydetme) ──
+  let autoSaveTimer = null;
+  function triggerAutoSave() {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(async () => {
+      const un = bUsername ? bUsername.value.trim() : '';
+      if (!un) return;
+      await saveCurrentBuilder();
+    }, 600);
+  }
+
+  // Attach auto-save to builder view inputs
+  const builderViewEl = document.getElementById('view-builder');
+  if (builderViewEl) {
+    builderViewEl.addEventListener('input', triggerAutoSave);
+    builderViewEl.addEventListener('change', triggerAutoSave);
+  }
+
   let customDropdownBound = false;
   function setupCustomDropdown() {
     const dropdown = document.getElementById('b-effect-dropdown');
@@ -1273,8 +1290,77 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // ── UNIFIED DISCORD PRESENCE ENGINE (Lanyard Global + Local Bot fallback) ──
+  async function getUnifiedDiscordPresence(id) {
+    if (!id) return null;
+
+    // 1. Try Lanyard API (Globally works on GitHub Pages without localhost)
+    try {
+      const res = await fetch(`https://api.lanyard.rest/v1/users/${id}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          const ld = json.data;
+          const u = ld.discord_user;
+          const avatarUrl = u.avatar
+            ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${u.avatar.startsWith('a_') ? 'gif' : 'png'}?size=256`
+            : null;
+          const bannerUrl = u.banner
+            ? `https://cdn.discordapp.com/banners/${u.id}/${u.banner}.${u.banner.startsWith('a_') ? 'gif' : 'png'}?size=600`
+            : null;
+
+          let activity = null;
+          let customStatus = null;
+          (ld.activities || []).forEach(act => {
+            if (act.type === 4) {
+              customStatus = act.state || null;
+            } else if (act.type === 0 || act.type === 1 || act.type === 2) {
+              activity = {
+                name: act.name,
+                details: act.details || act.state || null,
+                startTimestamp: act.timestamps ? act.timestamps.start : null
+              };
+            }
+          });
+
+          let spotify = null;
+          if (ld.listening_to_spotify && ld.spotify) {
+            spotify = {
+              song: ld.spotify.song,
+              artist: ld.spotify.artist,
+              albumArt: ld.spotify.album_art_url
+            };
+          }
+
+          return {
+            username: u.username,
+            avatar: avatarUrl,
+            banner: bannerUrl,
+            status: ld.discord_status || 'offline',
+            customStatus,
+            activity,
+            spotify
+          };
+        }
+      }
+    } catch(e){}
+
+    // 2. Fallback to Local Bot API
+    try {
+      const res = await fetch(`${MOMUS_BOT_API}/presence/${id}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          return json.data;
+        }
+      }
+    } catch(e){}
+
+    return null;
+  }
+
   // DISCORD BOT FETCH FOR BUILDER PREVIEW
-  function fetchDiscordForBuilder(id) {
+  async function fetchDiscordForBuilder(id) {
     if (!id) {
       fetchedDiscordAvatar = '';
       fetchedDiscordBanner = '';
@@ -1286,41 +1372,41 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    fetch(`http://localhost:3001/presence/${id}`)
-      .then(r => r.json())
-      .then(res => {
-        if (res && res.success && res.data) {
-          const d = res.data;
-          if (d.avatar) fetchedDiscordAvatar = d.avatar;
-          if (d.banner) fetchedDiscordBanner = d.banner;
+    const d = await getUnifiedDiscordPresence(id);
+    if (d) {
+      if (d.avatar) fetchedDiscordAvatar = d.avatar;
+      if (d.banner) fetchedDiscordBanner = d.banner;
 
-          const prevStatusDot = document.getElementById('prev-status-dot');
-          const prevStatusLabel = document.getElementById('prev-status-label');
-          const st = d.status || 'offline';
-          if (prevStatusDot) prevStatusDot.className = `inline-status-dot ${st}`;
+      const prevStatusDot = document.getElementById('prev-status-dot');
+      const prevStatusLabel = document.getElementById('prev-status-label');
+      const st = d.status || 'offline';
+      if (prevStatusDot) prevStatusDot.className = `inline-status-dot ${st}`;
 
-          const statusTextMap = {
-            online:  'online',
-            idle:    'idle',
-            dnd:     'do not disturb',
-            offline: ''
-          };
-          // Builder Preview Spotify widget
-          const prevSpWidget = document.getElementById('prev-spotify-widget');
-          const prevSpSong   = document.getElementById('prev-sp-song');
-          const prevSpArtist = document.getElementById('prev-sp-artist');
-          if (d.spotify && prevSpWidget) {
-            prevSpWidget.style.display = 'flex';
-            if (prevSpSong)   prevSpSong.textContent   = d.spotify.song   || '—';
-            if (prevSpArtist) prevSpArtist.textContent = d.spotify.artist || '—';
-          } else if (prevSpWidget) {
-            prevSpWidget.style.display = 'none';
-          }
+      const statusTextMap = {
+        online:  'online',
+        idle:    'idle',
+        dnd:     'do not disturb',
+        offline: ''
+      };
+      if (prevStatusLabel) {
+        prevStatusLabel.textContent = statusTextMap[st] || '';
+        prevStatusLabel.className = `inline-status-label ${st}`;
+      }
 
-          updateLivePreview();
-        }
-      })
-      .catch(() => {});
+      // Builder Preview Spotify widget
+      const prevSpWidget = document.getElementById('prev-spotify-widget');
+      const prevSpSong   = document.getElementById('prev-sp-song');
+      const prevSpArtist = document.getElementById('prev-sp-artist');
+      if (d.spotify && prevSpWidget) {
+        prevSpWidget.style.display = 'flex';
+        if (prevSpSong)   prevSpSong.textContent   = d.spotify.song   || '—';
+        if (prevSpArtist) prevSpArtist.textContent = d.spotify.artist || '—';
+      } else if (prevSpWidget) {
+        prevSpWidget.style.display = 'none';
+      }
+
+      updateLivePreview();
+    }
   }
 
   if (bDiscordId) {
@@ -2172,7 +2258,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!displayAvatar) {
       displayAvatar = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${profile.username}&backgroundColor=111111`;
     }
-    if (viewAvatar) viewAvatar.src = displayAvatar;
+    if (viewAvatar) {
+      viewAvatar.src = displayAvatar;
+      viewAvatar.onerror = () => {
+        viewAvatar.src = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${profile.username}&backgroundColor=111111`;
+      };
+    }
 
     if (profile.discordBanner && viewBanner && viewBannerImg) {
       viewBannerImg.src = profile.discordBanner;
@@ -2269,53 +2360,48 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (slabel) slabel.textContent = '';
     }
 
-    function fetchPresence(id) {
-      fetch(`${MOMUS_BOT_API}/presence/${id}`)
-        .then(res => res.json())
-        .then(res => {
-          if (!res.success || !res.data) {
-            // Bot API başarısız → sessizce offline göster
-            if (statusDot) statusDot.className = 'inline-status-dot offline';
-            if (statusLabel) { statusLabel.textContent = ''; statusLabel.className = 'inline-status-label offline'; }
-            return;
-          }
+    async function fetchPresence(id) {
+      const d = await getUnifiedDiscordPresence(id);
+      if (!d) {
+        if (statusDot) statusDot.className = 'inline-status-dot offline';
+        if (statusLabel) { statusLabel.textContent = ''; statusLabel.className = 'inline-status-label offline'; }
+        return;
+      }
 
-          const d = res.data;
+      // Avatar — bottan/Lanyard'dan gelen URL'yi kullan (manuel yükleme yoksa)
+      if (!profile.avatar && !storedAvatar && d.avatar) {
+        if (viewAvatar) viewAvatar.src = d.avatar;
+      }
 
-          // Avatar — bottan gelen URL'yi kullan (manuel yükleme yoksa)
-          if (!profile.avatar && d.avatar) {
-            if (viewAvatar) viewAvatar.src = d.avatar;
-          }
+      // Banner
+      if (d.banner && viewBanner && viewBannerImg) {
+        viewBannerImg.src = d.banner;
+        viewBanner.style.display = 'block';
+      }
 
-          // Banner
-          if (d.banner && viewBanner && viewBannerImg) {
-            viewBannerImg.src = d.banner;
-            viewBanner.style.display = 'block';
-          }
+      // Status dot + label (username yanında)
+      const st = d.status || 'offline';
+      if (statusDot) statusDot.className = `inline-status-dot ${st}`;
 
-          // Status dot + label (username yanında)
-          const st = d.status || 'offline';
-          if (statusDot) statusDot.className = `inline-status-dot ${st}`;
+      const statusTextMap = {
+        online:  'online',
+        idle:    'idle',
+        dnd:     'do not disturb',
+        offline: ''
+      };
+      if (statusLabel) {
+        statusLabel.textContent = statusTextMap[st] || '';
+        statusLabel.className = `inline-status-label ${st}`;
+      }
 
-          const statusTextMap = {
-            online:  'online',
-            idle:    'idle',
-            dnd:     'do not disturb',
-            offline: ''
-          };
-          if (statusLabel) {
-            statusLabel.textContent = statusTextMap[st] || '';
-            statusLabel.className = `inline-status-label ${st}`;
-          }
-
-          // Discord Activity Box — sadece bir şey varsa göster
-          if (discordBox) {
-            if (d.spotify || d.activity || d.customStatus) {
-              discordBox.style.display = 'flex';
-            } else {
-              discordBox.style.display = 'none';
-            }
-          }
+      // Discord Activity Box — sadece bir şey varsa göster
+      if (discordBox) {
+        if (d.spotify || d.activity || d.customStatus) {
+          discordBox.style.display = 'flex';
+        } else {
+          discordBox.style.display = 'none';
+        }
+      }
 
           // Spotify
           if (d.spotify && spCard) {
@@ -2337,43 +2423,37 @@ document.addEventListener('DOMContentLoaded', async () => {
             spCard.style.display = 'none';
           }
 
-          // Game / Activity & Live Elapsed Time Counter
-          const actTimer = document.getElementById('view-act-timer');
-          if (window.gameTimerInterval) clearInterval(window.gameTimerInterval);
+      // Game / Activity & Live Elapsed Time Counter
+      const actTimer = document.getElementById('view-act-timer');
+      if (window.gameTimerInterval) clearInterval(window.gameTimerInterval);
 
-          if (d.activity && actCard) {
-            actCard.style.display = 'flex';
-            if (actText) {
-              let text = `playing ${d.activity.name}`;
-              if (d.activity.details) text += ` — ${d.activity.details}`;
-              actText.textContent = text;
-            }
+      if (d.activity && actCard) {
+        actCard.style.display = 'flex';
+        if (actText) {
+          let text = `playing ${d.activity.name}`;
+          if (d.activity.details) text += ` — ${d.activity.details}`;
+          actText.textContent = text;
+        }
 
-            if (d.activity.startTimestamp && actTimer) {
-              function updateGameTimer() {
-                const now = Date.now();
-                const diffSec = Math.floor(Math.max(0, now - d.activity.startTimestamp) / 1000);
-                const h = Math.floor(diffSec / 3600);
-                const m = Math.floor((diffSec % 3600) / 60);
-                const s = diffSec % 60;
-                const pad = (n) => String(n).padStart(2, '0');
-                const timeStr = h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
-                actTimer.textContent = `${timeStr} elapsed`;
-              }
-              updateGameTimer();
-              window.gameTimerInterval = setInterval(updateGameTimer, 1000);
-            } else if (actTimer) {
-              actTimer.textContent = '';
-            }
-          } else if (actCard) {
-            actCard.style.display = 'none';
+        if (d.activity.startTimestamp && actTimer) {
+          function updateGameTimer() {
+            const now = Date.now();
+            const diffSec = Math.floor(Math.max(0, now - d.activity.startTimestamp) / 1000);
+            const h = Math.floor(diffSec / 3600);
+            const m = Math.floor((diffSec % 3600) / 60);
+            const s = diffSec % 60;
+            const pad = (n) => String(n).padStart(2, '0');
+            const timeStr = h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+            actTimer.textContent = `${timeStr} elapsed`;
           }
-        })
-        .catch(() => {
-          // Bot çalışmıyor — offline göster, hata vermez
-          if (statusDot) statusDot.className = 'inline-status-dot offline';
-          if (statusLabel) { statusLabel.textContent = ''; statusLabel.className = 'inline-status-label offline'; }
-        });
+          updateGameTimer();
+          window.gameTimerInterval = setInterval(updateGameTimer, 1000);
+        } else if (actTimer) {
+          actTimer.textContent = '';
+        }
+      } else if (actCard) {
+        actCard.style.display = 'none';
+      }
     }
   }
 
