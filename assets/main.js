@@ -300,17 +300,25 @@ function defaultDiscordAvatarUrl(userId) {
   return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
 }
 
+// Invite kodundan guild id'yi çözer — public endpoint, auth gerekmiyor.
+// forceJoinDiscordGuild ve assignMomusRole ikisi de aynı guild'e ihtiyaç
+// duyduğu için tek yerden çözülüyor.
+async function resolveGuildId() {
+  const inviteRes = await fetch(`https://discord.com/api/v10/invites/${DISCORD_GUILD_INVITE_CODE}`);
+  if (!inviteRes.ok) throw new Error(`invite lookup failed: ${inviteRes.status}`);
+  const invite = await inviteRes.json();
+  const guildId = invite.guild && invite.guild.id;
+  if (!guildId) throw new Error('invite response has no guild id');
+  return guildId;
+}
+
 // Hesabı eşleyen herkesi zorunlu sunucuya sokar. Guild ID invite koddan
 // çözülüyor (public endpoint, auth gerekmiyor); asıl ekleme işlemi bot
 // tokenı gerektirdiği için MOMUS_BOT_API'deki bota devrediliyor — bot
 // tokenı hiçbir zaman bu dosyada, tarayıcıda olmayacak.
 async function forceJoinDiscordGuild(session) {
   try {
-    const inviteRes = await fetch(`https://discord.com/api/v10/invites/${DISCORD_GUILD_INVITE_CODE}`);
-    if (!inviteRes.ok) throw new Error(`invite lookup failed: ${inviteRes.status}`);
-    const invite = await inviteRes.json();
-    const guildId = invite.guild && invite.guild.id;
-    if (!guildId) throw new Error('invite response has no guild id');
+    const guildId = await resolveGuildId();
 
     const joinRes = await fetch(`${MOMUS_BOT_API}/api/discord/join-guild`, {
       method: 'POST',
@@ -324,6 +332,35 @@ async function forceJoinDiscordGuild(session) {
     if (!joinRes.ok) throw new Error(`bot join-guild failed: ${joinRes.status}`);
   } catch (e) {
     console.warn('momus: discord sunucu join isteği başarısız', e);
+  }
+}
+
+// "Momus Kullanıcısı" rolü — profilini oluşturmuş/kaydetmiş herkese
+// otomatik verilir. Rol eklemek bot token'ı gerektirir (Discord kullanıcı
+// OAuth token'ıyla rol veremez), o yüzden bu da bot API'ye devrediliyor.
+const MOMUS_VERIFIED_ROLE_ID = '1539388514028748810';
+
+async function assignMomusRole(session) {
+  if (!session || !session.user || !session.user.id) return;
+  try {
+    const guildId = await resolveGuildId();
+
+    const res = await withTimeout(
+      fetch(`${MOMUS_BOT_API}/api/discord/assign-role`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: session.user.id,
+          guildId,
+          roleId: MOMUS_VERIFIED_ROLE_ID
+        })
+      }),
+      6000,
+      'Bot assign-role'
+    );
+    if (!res.ok) throw new Error(`bot assign-role failed: ${res.status}`);
+  } catch (e) {
+    console.warn('momus: rol atama isteği başarısız', e);
   }
 }
 
@@ -1960,6 +1997,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Discord'un kendi API'sinden taze avatar doğrulaması — bot presence
     // fetch'ine güvenmiyoruz, guild üyeliğinden veya bot uptime'ından bağımsız.
     const verifiedDiscordAvatar = await refreshDiscordSessionAvatar();
+
+    // Profilini kaydeden herkese "Momus Kullanıcısı" rolü otomatik verilir.
+    // dSession sayfa ilk açıldığında donmuş olabilir, kayıt anında taze
+    // session çekiyoruz. Kaydetme akışını bloklamasın diye await'lenmiyor.
+    const freshSession = getDiscordSession();
+    if (freshSession) assignMomusRole(freshSession);
 
     // Preserve existing views count
     const existingProfile = existingProfiles[unKey];
