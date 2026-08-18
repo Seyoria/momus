@@ -1559,7 +1559,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const RESERVED_USERNAMES = new Set([
     'admin', 'administrator', 'momus', 'moderator', 'mod', 'staff', 'support',
     'help', 'api', 'builder', 'home', 'login', 'logout', 'auth', 'discord',
-    'settings', 'dashboard', 'root', 'system', 'null', 'undefined', 'seyoria',
+    'settings', 'dashboard', 'root', 'system', 'null', 'undefined',
     'about', 'terms', 'privacy', 'contact', 'official', 'security', 'billing'
   ]);
   const USERNAME_REGEX = /^[a-z0-9_.]{3,20}$/;
@@ -1603,10 +1603,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Save heavy media to IndexedDB (supports 1GB+ large MP4/MP3 files without quota errors)
-    if (bgVideoDataUrl) saveMediaItem(`video_${unKey}`, bgVideoDataUrl);
-    if (bgMusicDataUrl) saveMediaItem(`music_${unKey}`, bgMusicDataUrl);
-    if (avatarDataUrl)  saveMediaItem(`avatar_${unKey}`, avatarDataUrl);
-    if (cursorDataUrl)  saveMediaItem(`cursor_${unKey}`, cursorDataUrl);
+    if (bgVideoDataUrl) await saveMediaItem(`video_${unKey}`, bgVideoDataUrl);
+    if (bgMusicDataUrl) await saveMediaItem(`music_${unKey}`, bgMusicDataUrl);
+    if (avatarDataUrl)  await saveMediaItem(`avatar_${unKey}`, avatarDataUrl);
+    if (cursorDataUrl)  await saveMediaItem(`cursor_${unKey}`, cursorDataUrl);
 
     // Preserve existing views count
     const existingProfile = existingProfiles[unKey];
@@ -1622,7 +1622,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       blur: bBlur ? parseInt(bBlur.value) : 0,
       badges: [...selectedBadges],
       customBadges: [...customBadges],
-      effect: (document.getElementById('b-effect-select') ? document.getElementById('b-effect-select').value : selectedEffect) || 'none',
+      effect: selectedEffect || 'none',
       toggleAudio: bToggleAudio ? bToggleAudio.checked : true,
       toggleDiscordAvatar: bToggleDiscordAvatar ? bToggleDiscordAvatar.checked : false,
       toggleAnimatedTitle: bToggleAnimatedTitle ? bToggleAnimatedTitle.checked : false,
@@ -1650,19 +1650,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
-  // ── HORIZONTAL SCROLLABLE EFFECT CARDS LISTENER ──
+  // ── EFFECT SELECTION STATE ──
   let selectedEffect = 'none';
-  const effectsScroll = document.getElementById('b-effects-scroll');
-  if (effectsScroll) {
-    effectsScroll.addEventListener('click', (e) => {
-      const card = e.target.closest('.effect-card');
-      if (card) {
-        effectsScroll.querySelectorAll('.effect-card').forEach(c => c.classList.remove('active'));
-        card.classList.add('active');
-        selectedEffect = card.getAttribute('data-effect') || 'none';
-      }
-    });
-  }
 
   // ── CANVAS BACKGROUND EFFECT ENGINES ──
   let particleAnimId = null;
