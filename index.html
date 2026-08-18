@@ -143,6 +143,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             Sayfam
           </a>
+          <button type="button" id="dash-qr-btn" class="dash-btn-outline" style="cursor:pointer; width:100%; border:1px solid rgba(168,85,247,0.25);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            QR Kodu
+          </button>
           <a href="#home" class="dash-btn-outline">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
             Ana Sayfa
@@ -359,6 +363,34 @@
             </div>
           </div>
 
+          <h2 class="dash-title" style="margin-top:32px;">Sayfa Giriş Sesi (Click-to-Enter Sound)</h2>
+          <div class="dash-section-card">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <div class="dash-custom-dropdown" id="b-sound-dropdown" style="flex:1; max-width:320px;">
+                <div class="dash-dropdown-trigger" id="b-sound-trigger">
+                  <div class="dash-dropdown-trigger-content">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" width="18" height="18"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                    <span id="b-sound-selected-label">Yok</span>
+                  </div>
+                  <svg class="dash-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="dash-dropdown-menu" id="b-sound-menu">
+                  <div class="dash-dropdown-item active" data-value="none"><span>Yok</span></div>
+                  <div class="dash-dropdown-item" data-value="cyber-bass"><span>Cyberpunk Bass</span></div>
+                  <div class="dash-dropdown-item" data-value="glass-ping"><span>Glass Ping</span></div>
+                  <div class="dash-dropdown-item" data-value="laser-zap"><span>Neon Laser</span></div>
+                  <div class="dash-dropdown-item" data-value="retro-8bit"><span>Retro 8-bit Stinger</span></div>
+                  <div class="dash-dropdown-item" data-value="camera-snap"><span>Kamera Sesi</span></div>
+                  <div class="dash-dropdown-item" data-value="ambient-whoosh"><span>Derin Whoosh</span></div>
+                </div>
+              </div>
+              <button type="button" id="b-sound-preview-btn" class="dash-btn-outline" style="padding:11px 18px; cursor:pointer;">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Dinle
+              </button>
+            </div>
+          </div>
+
           <h2 class="dash-title" style="margin-top:32px;">Diğer Özelleştirmeler</h2>
           <div class="dash-section-card">
             <div class="dash-toggle-grid">
@@ -408,6 +440,13 @@
                 <span>Canlı Ses Dalgaları</span>
                 <label class="toggle-switch">
                   <input type="checkbox" id="b-toggle-audio-spectrum" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dash-toggle-item">
+                <span>İmleç Parçacık İzi (Trail)</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-cursor-trail" checked>
                   <span class="toggle-slider"></span>
                 </label>
               </div>
@@ -601,6 +640,40 @@
       <div class="link-modal-footer" style="justify-content:space-between; gap:12px;">
         <button id="b-confirm-delete-btn" class="dash-btn-danger" style="padding:10px 20px; font-weight:700;">Evet, Hesabımı Sil</button>
         <button id="b-cancel-delete-btn" class="dash-btn-outline" style="padding:10px 20px;">Vazgeç</button>
+      </div>
+    </div>
+  </div>
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- QR CODE MODAL POPUP                                         -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="dash-qr-modal" class="link-modal-overlay" style="display:none;">
+    <div class="link-modal" style="max-width:380px; text-align:center;">
+      <div class="link-modal-header" style="border:none; padding-bottom:0;">
+        <div class="link-modal-title-row">
+          <span class="link-modal-platform-icon" style="color:#a855f7; background:rgba(168,85,247,0.12);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </span>
+          <h3 style="color:#fff;">Profil QR Kodu</h3>
+        </div>
+        <button id="dash-qr-modal-close" class="link-modal-close">&times;</button>
+      </div>
+      <div class="link-modal-body" style="display:flex; flex-direction:column; align-items:center; padding:10px 20px 20px;">
+        <p style="font-size:0.8rem; color:rgba(255,255,255,0.4); margin-bottom:16px;">Telefonunla okut veya profilini paylaş.</p>
+        <div class="qr-preview-card" id="qr-preview-card" style="background:#0e0e12; border:1px solid rgba(168,85,247,0.25); border-radius:16px; padding:20px; box-shadow:0 0 30px rgba(168,85,247,0.15); display:flex; flex-direction:column; align-items:center;">
+          <canvas id="qr-canvas" width="200" height="200" style="border-radius:10px; background:#fff; padding:8px;"></canvas>
+          <span id="qr-username-label" style="font-family:var(--font-display); font-size:1rem; font-weight:700; color:#fff; margin-top:12px;">@kullanıcı</span>
+          <span style="font-family:var(--font-mono); font-size:0.65rem; color:#a855f7; letter-spacing:0.05em;">MOMUS BIO</span>
+        </div>
+      </div>
+      <div class="link-modal-footer" style="justify-content:center; gap:10px;">
+        <button type="button" id="qr-download-btn" class="dash-btn-primary" style="padding:10px 18px; font-size:0.8rem; display:inline-flex; align-items:center; gap:6px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PNG İndir
+        </button>
+        <button type="button" id="qr-copy-btn" class="dash-btn-outline" style="padding:10px 18px; font-size:0.8rem; display:inline-flex; align-items:center; gap:6px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Linki Kopyala
+        </button>
       </div>
     </div>
   </div>
