@@ -1,6 +1,6 @@
 // ------------------------
 // ── GLOBAL CONFIG ──
-const MOMUS_BOT_API = 'http://localhost:3001';
+const MOMUS_BOT_API = 'https://momus-bot.onrender.com';
 
 // ── SUPABASE (ORTAK VERİTABANI — profiller artık tarayıcıda değil,
 // herkesin görebildiği tek bir yerde saklanıyor) ──
