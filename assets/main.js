@@ -58,6 +58,7 @@ function getIDB() {
     };
     req.onsuccess = (e) => resolve(e.target.result);
     req.onerror = () => resolve(null);
+    req.onblocked = () => resolve(null); // başka sekme DB'yi tutuyorsa sonsuza kadar bekleme
   });
 }
 
@@ -114,6 +115,16 @@ function getProfiles() {
   return profilesCache;
 }
 
+// Supabase client çağrıları için sert timeout — cold start veya kopuk
+// bağlantıda fetch tarayıcıda süresiz asılı kalabiliyor, bu onu keser.
+function withTimeout(promise, ms, label) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} zaman aşımı (${ms}ms)`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 async function saveProfileData(profile) {
   const key = profile.username.toLowerCase();
 
@@ -128,21 +139,27 @@ async function saveProfileData(profile) {
     localStorage.setItem('momus_profiles_backup', JSON.stringify(profilesCache));
   } catch(e){}
 
-  // 2. Direct Supabase Table Upsert (no edge function needed)
+  // 2. Direct Supabase Table Upsert (no edge function needed), 8s hard timeout
   try {
-    const { error } = await supabaseClient
-      .from('profiles')
-      .upsert({
-        username: key,
-        discord_id: discordId,
-        data: dbProfile
-      }, { onConflict: 'username' });
+    const { error } = await withTimeout(
+      supabaseClient
+        .from('profiles')
+        .upsert({
+          username: key,
+          discord_id: discordId,
+          data: dbProfile
+        }, { onConflict: 'username' }),
+      8000,
+      'Supabase upsert'
+    );
 
     if (error) {
       console.warn('Supabase upsert warning:', error);
+      showToast('Kaydedildi (yerel), sunucu senkronu başarısız oldu.', 'error');
     }
   } catch (e) {
     console.error('momus: Supabase save error:', e);
+    showToast('Sunucuya bağlanılamadı, değişiklikler yerelde saklandı.', 'error');
   }
   return true;
 }
@@ -1190,13 +1207,23 @@ document.addEventListener('DOMContentLoaded', async () => {
           showToast('Lütfen önce Hesap sekmesinden kullanıcı adı girin.', 'error');
           return;
         }
+        const originalLabel = btn.textContent;
+        btn.disabled = true;
         btn.textContent = 'Kaydediliyor...';
-        const success = await saveCurrentBuilder();
-        if (success) {
-          btn.textContent = 'Kaydedildi!';
-          setTimeout(() => { btn.textContent = 'Kaydet'; }, 1500);
-        } else {
-          btn.textContent = 'Kaydet';
+        try {
+          const success = await saveCurrentBuilder();
+          if (success) {
+            btn.textContent = 'Kaydedildi!';
+            setTimeout(() => { btn.textContent = originalLabel; }, 1500);
+          } else {
+            btn.textContent = originalLabel;
+          }
+        } catch (err) {
+          console.error('momus: kaydetme hatası:', err);
+          showToast('Kaydetme sırasında beklenmeyen bir hata oluştu.', 'error');
+          btn.textContent = originalLabel;
+        } finally {
+          btn.disabled = false;
         }
       });
     }
@@ -1209,7 +1236,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     autoSaveTimer = setTimeout(async () => {
       const un = bUsername ? bUsername.value.trim() : '';
       if (!un) return;
-      await saveCurrentBuilder();
+      try {
+        await saveCurrentBuilder();
+      } catch (err) {
+        console.warn('momus: otomatik kaydetme hatası:', err);
+      }
     }, 600);
   }
 
@@ -1923,8 +1954,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       hasCustomAvatar: !!avatarDataUrl,
       hasBgVideo: !!bgVideoDataUrl,
       hasBgMusic: !!bgMusicDataUrl,
-      avatar: avatarDataUrl || (session && session.user && session.user.avatar) || fetchedDiscordAvatar || (existingProfile && existingProfile.avatar) || '',
-      discordAvatar: fetchedDiscordAvatar || (session && session.user && session.user.avatar) || (existingProfile && existingProfile.discordAvatar) || '',
+      avatar: avatarDataUrl || (dSession && dSession.user && dSession.user.avatar) || fetchedDiscordAvatar || (existingProfile && existingProfile.avatar) || '',
+      discordAvatar: fetchedDiscordAvatar || (dSession && dSession.user && dSession.user.avatar) || (existingProfile && existingProfile.discordAvatar) || '',
       discordBanner: fetchedDiscordBanner || (existingProfile && existingProfile.discordBanner) || '',
       bgVideo: bgVideoDataUrl || '',
       music: bgMusicDataUrl || '',
