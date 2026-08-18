@@ -364,62 +364,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // ── NEON SPARKLE CURSOR TRAIL ENGINE ──
-  let cursorTrailActive = true;
-  const trailParticles = [];
-  const trailCanvas = document.createElement('canvas');
-  trailCanvas.id = 'cursor-trail-canvas';
-  trailCanvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:9998;';
-  document.body.appendChild(trailCanvas);
-  const trailCtx = trailCanvas.getContext('2d');
-
-  function resizeTrailCanvas() {
-    trailCanvas.width = window.innerWidth;
-    trailCanvas.height = window.innerHeight;
-  }
-  window.addEventListener('resize', resizeTrailCanvas);
-  resizeTrailCanvas();
-
-  document.addEventListener('mousemove', (e) => {
-    if (!cursorTrailActive) return;
-    const userColor = getComputedStyle(document.documentElement).getPropertyValue('--user-color').trim() || '#a855f7';
-    for (let i = 0; i < 2; i++) {
-      trailParticles.push({
-        x: e.clientX + (Math.random() - 0.5) * 6,
-        y: e.clientY + (Math.random() - 0.5) * 6,
-        size: Math.random() * 2.5 + 1.2,
-        alpha: 1,
-        color: userColor,
-        vx: (Math.random() - 0.5) * 1.2,
-        vy: (Math.random() - 0.5) * 1.2 + 0.2
-      });
-    }
-  });
-
-  (function renderCursorTrail() {
-    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-    for (let i = trailParticles.length - 1; i >= 0; i--) {
-      const p = trailParticles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.alpha -= 0.04;
-      if (p.alpha <= 0) {
-        trailParticles.splice(i, 1);
-        continue;
-      }
-      trailCtx.save();
-      trailCtx.globalAlpha = p.alpha;
-      trailCtx.fillStyle = p.color;
-      trailCtx.shadowColor = p.color;
-      trailCtx.shadowBlur = 6;
-      trailCtx.beginPath();
-      trailCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      trailCtx.fill();
-      trailCtx.restore();
-    }
-    requestAnimationFrame(renderCursorTrail);
-  })();
-
   // ── BUILDER DOM ELEMENTS (Declared first to avoid TDZ errors) ──
   const bBackBtn = document.getElementById('builder-back-btn');
   const bGoProfBtn = document.getElementById('builder-go-profile-btn');
@@ -1455,43 +1399,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Sync Sound Dropdown initial UI
-    const soundDropdown = document.getElementById('b-sound-dropdown');
-    const soundLabel = document.getElementById('b-sound-selected-label');
-    if (soundDropdown) {
-      const soundItems = soundDropdown.querySelectorAll('.dash-dropdown-item');
-      const savedSound = myAcc ? (myAcc.enterSound || 'none') : 'none';
-      selectedEnterSound = savedSound;
-      soundItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('data-value') === savedSound) {
-          item.classList.add('active');
-          if (soundLabel) soundLabel.textContent = item.textContent.trim();
-        }
-      });
-    }
-
-    // Sound preview button
-    const soundPreviewBtn = document.getElementById('b-sound-preview-btn');
-    if (soundPreviewBtn && !soundPreviewBtn.dataset.bound) {
-      soundPreviewBtn.dataset.bound = '1';
-      soundPreviewBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        playEnterSound(selectedEnterSound);
-      });
-    }
-
-    // Cursor trail toggle restore
-    const bToggleCursorTrail = document.getElementById('b-toggle-cursor-trail');
-    if (bToggleCursorTrail) {
-      if (myAcc) {
-        bToggleCursorTrail.checked = myAcc.toggleCursorTrail !== false;
-      } else {
-        bToggleCursorTrail.checked = true;
-      }
-    }
-
     // Sync badge buttons UI & render custom badges list
     document.querySelectorAll('.badge-toggle-btn').forEach(btn => {
       const badge = btn.getAttribute('data-badge');
@@ -2010,8 +1917,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       toggleBadgesDisplay: bToggleBadgesDisplay ? bToggleBadgesDisplay.checked : true,
       toggleSocialGlow: bToggleSocialGlow ? bToggleSocialGlow.checked : true,
       toggleAudioSpectrum: document.getElementById('b-toggle-audio-spectrum') ? document.getElementById('b-toggle-audio-spectrum').checked : true,
-      toggleCursorTrail: document.getElementById('b-toggle-cursor-trail') ? document.getElementById('b-toggle-cursor-trail').checked : true,
-      enterSound: selectedEnterSound || 'none',
       bio: (bBio && bBio.value.trim()) || 'currently doing nothing',
       discordId: discordIdVal,
       customAvatarUrl: '',
@@ -2435,8 +2340,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const handleClick = () => {
         clickOverlay.classList.add('fade-out');
-        // Play click-to-enter sound
-        if (profile.enterSound && profile.enterSound !== 'none') playEnterSound(profile.enterSound);
         // Start video after user interaction
         if (bgVidEl && bgVidEl.src) bgVidEl.play().catch(() => {});
         
@@ -2471,9 +2374,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       pCard.style.backdropFilter = `blur(${profile.blur || 0}px)`;
       pCard.style.webkitBackdropFilter = `blur(${profile.blur || 0}px)`;
     }
-
-    // ── CURSOR TRAIL FROM PROFILE SETTING ──
-    cursorTrailActive = profile.toggleCursorTrail !== false;
 
     // Render Preset & Custom Badges
     const viewBadges = document.getElementById('view-badges');
@@ -2681,8 +2581,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      // Avatar — bottan/Lanyard'dan gelen URL'yi kullan (manuel yükleme yoksa)
-      if (!profile.avatar && !storedAvatar && d.avatar) {
+      // Avatar — Eğer kullanıcının özel yüklediği avatar yoksa, Discord avatarını daima göster
+      if (!storedAvatar && (!profile.avatar || profile.avatar.includes('dicebear') || profile.avatar.includes('discordapp')) && d.avatar) {
         if (viewAvatar) viewAvatar.src = d.avatar;
       }
 
