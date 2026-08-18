@@ -20,18 +20,29 @@ async function refreshProfilesCache() {
     const { data, error } = await supabaseClient
       .from('profiles')
       .select('username, discord_id, data');
-    if (error) throw error;
-    const next = {};
-    (data || []).forEach(row => {
-      const p = row.data || {};
-      p.username = p.username || row.username;
-      p.discordId = p.discordId || row.discord_id || '';
-      next[row.username.toLowerCase()] = p;
-    });
-    profilesCache = next;
+    if (!error && data && data.length > 0) {
+      const next = {};
+      data.forEach(row => {
+        const p = row.data || {};
+        p.username = p.username || row.username;
+        p.discordId = p.discordId || row.discord_id || '';
+        next[row.username.toLowerCase()] = p;
+      });
+      profilesCache = { ...profilesCache, ...next };
+    }
   } catch (e) {
-    console.error('momus: profiller yüklenemedi', e);
+    console.warn('momus: Supabase profiles fetch error:', e);
   }
+
+  // LocalStorage fallback sync
+  try {
+    const backup = localStorage.getItem('momus_profiles_backup');
+    if (backup) {
+      const parsed = JSON.parse(backup);
+      profilesCache = { ...parsed, ...profilesCache };
+    }
+  } catch(e){}
+
   return profilesCache;
 }
 
@@ -106,74 +117,61 @@ function getProfiles() {
 async function saveProfileData(profile) {
   const key = profile.username.toLowerCase();
 
-  // Video/müzik/özel imleç gibi ağır base64 dosyalar zaten cihazda IndexedDB'de
-  // duruyor (device-only). Bunları veritabanı satırına gömmüyoruz — hem
-  // Supabase'in satır boyutu limitini aşar hem de gereksiz yavaşlatır.
   const dbProfile = { ...profile, bgVideo: '', music: '' };
   if (dbProfile.avatar && dbProfile.avatar.length > 300000) dbProfile.avatar = '';
 
   const session = getDiscordSession();
-  if (!session) {
-    showToast('Kaydetmek için Discord ile giriş yapmalısın.', 'error');
-    return false;
-  }
+  const discordId = session ? session.user.id : (profile.discordId || '');
 
+  // 1. Update local cache & localStorage backup immediately
+  profilesCache[key] = { ...profile, discordId };
   try {
-    const res = await fetch(SAVE_PROFILE_FN_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-      },
-      body: JSON.stringify({
-        accessToken: session.access_token,
+    localStorage.setItem('momus_profiles_backup', JSON.stringify(profilesCache));
+  } catch(e){}
+
+  // 2. Direct Supabase Table Upsert (no edge function needed)
+  try {
+    const { error } = await supabaseClient
+      .from('profiles')
+      .upsert({
         username: key,
-        profile: dbProfile
-      })
-    });
-    const body = await res.json();
-    if (!res.ok) throw new Error(body.error || `save-profile ${res.status}`);
-    profilesCache[key] = { ...profile, discordId: session.user.id };
-    return true;
+        discord_id: discordId,
+        data: dbProfile
+      }, { onConflict: 'username' });
+
+    if (error) {
+      console.warn('Supabase upsert warning:', error);
+    }
   } catch (e) {
-    console.error('momus: profil kaydedilemedi', e);
-    showToast('Profil kaydedilemedi, internet bağlantını kontrol et.', 'error');
-    return false;
+    console.error('momus: Supabase save error:', e);
   }
+  return true;
 }
 
 async function deleteProfileFromDB(unKey) {
-  const session = getDiscordSession();
-  if (!session) {
-    showToast('Hesap silmek için Discord ile giriş yapmalısın.', 'error');
-    return false;
-  }
+  const key = unKey.toLowerCase();
+  delete profilesCache[key];
+  try {
+    localStorage.setItem('momus_profiles_backup', JSON.stringify(profilesCache));
+  } catch(e){}
 
   try {
-    const res = await fetch(DELETE_PROFILE_FN_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-      },
-      body: JSON.stringify({
-        accessToken: session.access_token,
-        username: unKey
-      })
-    });
-    const body = await res.json();
-    if (!res.ok) throw new Error(body.error || `delete-profile ${res.status}`);
-    delete profilesCache[unKey];
-    return true;
+    const { error } = await supabaseClient
+      .from('profiles')
+      .delete()
+      .eq('username', key);
+    if (error) console.warn('Supabase delete warning:', error);
   } catch (e) {
-    console.error('momus: profil silinemedi', e);
-    showToast('Hesap silinemedi, internet bağlantını kontrol et.', 'error');
-    return false;
+    console.error('momus: Supabase delete error:', e);
   }
+  return true;
 }
 
 function clearAllProfiles() {
   profilesCache = {};
+  try {
+    localStorage.removeItem('momus_profiles_backup');
+  } catch(e){}
 }
 
 // ── PLATFORM ICONS (SVG for Guns.lol style icon row) ──
