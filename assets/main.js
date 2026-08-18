@@ -667,7 +667,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       card.href = `#${p.username}`;
 
       const storedAvatar = await getMediaItem(`avatar_${k.toLowerCase()}`);
-      let av = storedAvatar || p.avatar || p.discordAvatar || p.customAvatarUrl;
+      let av = storedAvatar;
+      if (!av && p.avatar && !p.avatar.includes('dicebear')) {
+        av = p.avatar;
+      }
+      if (!av && p.discordAvatar) {
+        av = p.discordAvatar;
+      }
+      if (!av && p.customAvatarUrl) {
+        av = p.customAvatarUrl;
+      }
       if (!av && p.discordId) {
         av = defaultDiscordAvatarUrl(p.discordId);
       }
@@ -2259,9 +2268,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Retrieve Custom Avatar from IndexedDB if stored, or profile
     const storedAvatar = await getMediaItem(`avatar_${unKey}`);
-    let displayAvatar = storedAvatar || profile.avatar || profile.customAvatarUrl;
-    if (profile.toggleDiscordAvatar && profile.discordAvatar) {
+    let displayAvatar = storedAvatar;
+    if (!displayAvatar && profile.avatar && !profile.avatar.includes('dicebear')) {
+      displayAvatar = profile.avatar;
+    }
+    if (!displayAvatar && profile.discordAvatar) {
       displayAvatar = profile.discordAvatar;
+    }
+    if (!displayAvatar && profile.customAvatarUrl) {
+      displayAvatar = profile.customAvatarUrl;
+    }
+    if (!displayAvatar && profile.discordId) {
+      displayAvatar = defaultDiscordAvatarUrl(profile.discordId);
     }
     if (!displayAvatar) {
       displayAvatar = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${profile.username}&backgroundColor=111111`;
