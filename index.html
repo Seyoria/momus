@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=17"/>
+  <link rel="stylesheet" href="assets/main.css?v=18"/>
 
   <!-- Supabase (profil verisinin herkese ortak gösterildiği veritabanı) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -301,43 +301,6 @@
                 </div>
                 <div class="dash-slider-labels"><span>0px</span><span>20px</span><span>50px</span><span>80px</span></div>
               </div>
-            </div>
-          </div>
-
-          <h2 class="dash-title" style="margin-top:32px;">Rozetler (Badges)</h2>
-          <div class="dash-section-card">
-            <p class="dash-muted">Hazır rozetlerden seç veya kendine özel rozetini tasarla.</p>
-            <div class="dash-badge-row">
-              <button type="button" class="badge-toggle-btn og" data-badge="og" id="b-badge-og">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                OG
-              </button>
-              <button type="button" class="badge-toggle-btn verified" data-badge="verified" id="b-badge-verified">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                VERIFIED
-              </button>
-              <button type="button" class="badge-toggle-btn premium" data-badge="premium" id="b-badge-premium">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><polygon points="12 2 2 9 12 22 22 9 12 2"/></svg>
-                PREMIUM
-              </button>
-              <button type="button" class="badge-toggle-btn dev" data-badge="dev" id="b-badge-dev">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                DEV
-              </button>
-            </div>
-
-            <!-- Özel Rozet Oluşturucu -->
-            <div class="dash-custom-badge-form" style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06);">
-              <h4 style="font-size:0.85rem; color:var(--white); margin-bottom:12px;">Özel Rozet Oluştur</h4>
-              <div class="dash-custom-badge-inputs" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <input type="text" id="b-custom-badge-text" class="dash-stat-value-input" style="width:160px;" placeholder="Rozet Adı (örn: VIP)"/>
-                <div class="dash-color-picker">
-                  <input type="color" id="b-custom-badge-color" value="#a855f7"/>
-                  <input type="text" id="b-custom-badge-color-hex" class="dash-color-hex" value="#a855f7" placeholder="#a855f7"/>
-                </div>
-                <button type="button" id="b-add-custom-badge-btn" class="dash-btn-outline" style="padding:10px 16px;">+ Rozet Ekle</button>
-              </div>
-              <div id="b-custom-badges-list" class="p-badges-row" style="margin-top:14px;"></div>
             </div>
           </div>
 
@@ -669,14 +632,50 @@
           </div>
         </div>
 
-        <!-- Search Bar -->
-        <div class="admin-search-wrap">
-          <input type="text" id="admin-search-input" class="admin-search-box" placeholder="Kullanıcı adı veya Discord ID ile ara..."/>
+        <!-- Admin Navigation Tabs -->
+        <div class="admin-tab-nav">
+          <button type="button" class="admin-tab-btn active" data-tab="users">Kullanıcı & Rozet Yönetimi</button>
+          <button type="button" class="admin-tab-btn" data-tab="changelog">Changelog Duyurusu Gönder</button>
         </div>
 
-        <!-- Profiles Management Table / Grid -->
-        <div class="admin-users-list" id="admin-users-list">
-          <!-- JS fills dynamically -->
+        <!-- TAB 1: Kullanıcılar ve Rozet Yönetimi -->
+        <div class="admin-tab-content active" id="admin-tab-users">
+          <!-- Search Bar -->
+          <div class="admin-search-wrap">
+            <input type="text" id="admin-search-input" class="admin-search-box" placeholder="Kullanıcı adı veya Discord ID ile ara..."/>
+          </div>
+
+          <!-- Profiles Management Table / Grid -->
+          <div class="admin-users-list" id="admin-users-list">
+            <!-- JS fills dynamically -->
+          </div>
+        </div>
+
+        <!-- TAB 2: Changelog Gönderici Paneli -->
+        <div class="admin-tab-content" id="admin-tab-changelog" style="display:none;">
+          <div class="admin-section-card">
+            <h3 class="admin-card-heading">Discord Changelog Kanalına Güncelleme Gönder</h3>
+            <p class="admin-card-desc">Buraya yazdığınız güncelleme notları anında Discord sunucusundaki <code>#changelog</code> kanalına şık bir embed kartı olarak yayınlanır.</p>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Yeni Özellikler (Her satıra bir özellik)</label>
+              <textarea id="admin-cl-features" class="admin-textarea" placeholder="[Özellik Adı]: Yeni sistem eklendi.&#10;[Görünüm]: Yeni temalar aktif edildi."></textarea>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Düzeltmeler ve Optimizasyonlar (Her satıra bir düzeltme)</label>
+              <textarea id="admin-cl-fixes" class="admin-textarea" placeholder="[Hata Düzeltmesi]: Giriş sorunu giderildi.&#10;[Performans]: Sayfa hızları artırıldı."></textarea>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Geliştirici Notu</label>
+              <input type="text" id="admin-cl-note" class="admin-input" placeholder="Momus'u tercih ettiğiniz için teşekkürler!"/>
+            </div>
+
+            <div class="admin-form-actions">
+              <button type="button" id="admin-send-changelog-btn" class="dash-btn-primary">Duyuruyu Gönder</button>
+            </div>
+          </div>
         </div>
       </main>
     </div>
@@ -751,6 +750,6 @@
     </div>
   </div>
 
-  <script src="assets/main.js?v=17"></script>
+  <script src="assets/main.js?v=18"></script>
 </body>
 </html>
