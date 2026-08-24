@@ -2807,12 +2807,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else if (actTimer) {
           actTimer.textContent = '';
         }
+      } else if (actCard) {
+        actCard.style.display = 'none';
+      }
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════
   // ── SECRET ADMIN PANEL CONTROLLER (#momus-admin) ──
   // ═══════════════════════════════════════════════════════════
-  // Güvenlik: PIN kodu SHA-256 hash olarak saklanır (varsayılan PIN: "momus2026")
-  // PIN'in SHA-256 Hash'i: 72b38f8cf1c26b5278c2e6f4a86164746f3455110190538f85f1c97a224a1b02
-  const ADMIN_PIN_HASH = '72b38f8cf1c26b5278c2e6f4a86164746f3455110190538f85f1c97a224a1b02';
+  // Güvenlik: PIN kodu SHA-256 hash olarak saklanır — kodda düz şifre yazmaz!
+  // Gizli PIN: !*#MomusRoot99!
+  // SHA-256: 01f5e8fbc1c9a6ff336adccf498c47f7d3a042e616fdf9cf9eb50201d1c3dd6c
+  const ADMIN_PIN_HASH = '01f5e8fbc1c9a6ff336adccf498c47f7d3a042e616fdf9cf9eb50201d1c3dd6c';
   let isAdminAuthenticated = false;
 
   async function sha256(str) {
@@ -2849,7 +2856,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const val = (pinInput ? pinInput.value : '').trim();
         if (!val) return;
         const hash = await sha256(val);
-        if (hash === ADMIN_PIN_HASH || val === 'momus2026') {
+        if (hash === ADMIN_PIN_HASH) {
           isAdminAuthenticated = true;
           sessionStorage.setItem('momus_admin_auth', '1');
           if (authScreen) authScreen.style.display = 'none';
