@@ -13,13 +13,13 @@
 **momus**, kişisel bağlantılarınızı, sosyal medya hesaplarınızı ve Discord canlı durumunuzu (aktivite, Spotify, oyunlar) Guns.lol estetiğinde fütüristik tek bir sayfada toplayan yeni nesil bio platformudur.
 
 ##  Öne Çıkan Özellikler
-* ** Canlı Discord Entegrasyonu:** Bot üzerinden gerçek zamanlı Spotify, oynanan oyunlar, banner ve çevrimiçi durumu desteği.
-* ** Gelişmiş Özelleştirme Paneli (Dashboard):** Arka plan (GIF, MP4, Görsel), müzik, profil opaklığı, bulanıklığı ve özel renk seçiciler.
-* ** Canlı Efekt Motoru:** Kar taneleri, yağmur, matrix, siber ağ, yıldızlar, neon dalgaları ve ateş böcekleri gibi parçacık efektleri.
-* ** Canlı Ses Dalgaları (Audio Spectrum):** Profil müziğinizle ritmik olarak senkronize olan görselleştirici.
-* ** Rozet Sistemi:** OG, Verified, Premium, Dev rozetleri ve kendi özel rozetinizi tasarlama imkanı.
-* ** QR Kod Üretici:** Profilinizi anında mobil cihazlarla paylaşabileceğiniz şık QR kod oluşturucu.
-* ** Supabase Bulut Altyapısı:** Tüm profiller bulutta anlık olarak senkronize edilir.
+* **Canlı Discord Entegrasyonu:** Bot üzerinden gerçek zamanlı Spotify, oynanan oyunlar, banner ve çevrimiçi durumu desteği.
+* **Gelişmiş Özelleştirme Paneli (Dashboard):** Arka plan (GIF, MP4, Görsel), müzik, profil opaklığı, bulanıklığı ve özel renk seçiciler.
+* **Canlı Efekt Motoru:** Kar taneleri, yağmur, matrix, siber ağ, yıldızlar, neon dalgaları ve ateş böcekleri gibi parçacık efektleri.
+* **Canlı Ses Dalgaları (Audio Spectrum):** Profil müziğinizle ritmik olarak senkronize olan görselleştirici.
+* **Rozet Sistemi:** OG, Verified, Premium, Dev rozetleri ve kendi özel rozetinizi tasarlama imkanı.
+* **QR Kod Üretici:** Profilinizi anında mobil cihazlarla paylaşabileceğiniz şık QR kod oluşturucu.
+*  **Supabase Bulut Altyapısı:** Tüm profiller bulutta anlık olarak senkronize edilir.
 
 ##  Kullanılan Teknolojiler
 * **Frontend:** Vanilla HTML5, CSS3 (Modern Glassmorphism & Custom Properties), JavaScript (ES6+ SPA)
