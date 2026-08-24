@@ -2877,6 +2877,67 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
+    // Admin Tab Geçişleri (Kullanıcı Yönetimi vs Changelog Gönderici)
+    const tabBtns = document.querySelectorAll('.admin-tab-btn');
+    tabBtns.forEach(btn => {
+      if (!btn.dataset.bound) {
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', () => {
+          tabBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const tab = btn.dataset.tab;
+          document.querySelectorAll('.admin-tab-content').forEach(c => c.style.display = 'none');
+          const activeContent = document.getElementById(`admin-tab-${tab}`);
+          if (activeContent) activeContent.style.display = 'block';
+        });
+      }
+    });
+
+    // Changelog Gönder Butonu Dinleyicisi
+    const sendClBtn = document.getElementById('admin-send-changelog-btn');
+    if (sendClBtn && !sendClBtn.dataset.bound) {
+      sendClBtn.dataset.bound = '1';
+      sendClBtn.addEventListener('click', async () => {
+        const features = document.getElementById('admin-cl-features')?.value || '';
+        const fixes = document.getElementById('admin-cl-fixes')?.value || '';
+        const note = document.getElementById('admin-cl-note')?.value || '';
+
+        if (!features && !fixes && !note) {
+          showToast('Lütfen en az bir alan doldurun.', 'error');
+          return;
+        }
+
+        sendClBtn.disabled = true;
+        sendClBtn.textContent = 'Gönderiliyor...';
+
+        try {
+          const res = await fetch(`${MOMUS_BOT_API}/api/discord/send-changelog`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              newFeatures: features,
+              fixes: fixes,
+              devNote: note
+            })
+          });
+
+          if (res.ok) {
+            showToast('Changelog duyurusu Discord kanalına başarıyla gönderildi!', 'success');
+            if (document.getElementById('admin-cl-features')) document.getElementById('admin-cl-features').value = '';
+            if (document.getElementById('admin-cl-fixes')) document.getElementById('admin-cl-fixes').value = '';
+            if (document.getElementById('admin-cl-note')) document.getElementById('admin-cl-note').value = '';
+          } else {
+            showToast('Changelog gönderilirken hata oluştu.', 'error');
+          }
+        } catch(e) {
+          showToast('Bot API ile bağlantı kurulamadı.', 'error');
+        } finally {
+          sendClBtn.disabled = false;
+          sendClBtn.textContent = 'Duyuruyu Gönder';
+        }
+      });
+    }
+
     if (logoutBtn && !logoutBtn.dataset.bound) {
       logoutBtn.dataset.bound = '1';
       logoutBtn.addEventListener('click', () => {
@@ -2892,7 +2953,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         refreshBtn.textContent = 'Yenileniyor...';
         await refreshProfilesCache();
         renderAdminProfiles();
-        refreshBtn.textContent = '🔄 Yenile';
+        refreshBtn.textContent = 'Yenile';
         showToast('Profiller yenilendi.', 'success');
       });
     }
@@ -2961,7 +3022,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="admin-user-info">
             <div class="admin-user-name-row">
               <a href="#${k}" target="_blank" class="admin-user-username">${p.username}</a>
-              <span class="admin-user-views">👁️ ${p.views || 0}</span>
+              <span class="admin-user-views">${p.views || 0} görüntülenme</span>
             </div>
             <div class="admin-user-discord">
               Discord ID: <code>${p.discordId || 'Giriş yapılmamış'}</code>
@@ -2971,13 +3032,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
 
         <div class="admin-user-actions-col">
-          <div class="admin-badges-label">Rozet Yönetimi (Admin Yetkisi):</div>
+          <div class="admin-badges-label">Rozet Yönetimi:</div>
           <div class="admin-badge-row">
             ${badgeButtonsHtml}
           </div>
           <div class="admin-card-bottom-actions">
-            <a href="#${k}" target="_blank" class="dash-btn-outline" style="padding:6px 12px; font-size:0.75rem;">🔗 Profili Aç</a>
-            <button type="button" class="admin-del-user-btn" data-user="${k}">🗑️ Profili Sil</button>
+            <a href="#${k}" target="_blank" class="dash-btn-outline" style="padding:6px 12px; font-size:0.75rem;">Profili Aç</a>
+            <button type="button" class="admin-del-user-btn" data-user="${k}">Profili Sil</button>
           </div>
         </div>
       `;
