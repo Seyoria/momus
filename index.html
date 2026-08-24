@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=14"/>
+  <link rel="stylesheet" href="assets/main.css?v=15"/>
 
   <!-- Supabase (profil verisinin herkese ortak gösterildiği veritabanı) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -623,6 +623,67 @@
 
 
   <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- 4. SECRET ADMIN PANEL VIEW (#momus-admin)                   -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div id="view-admin" class="app-view hidden">
+    <!-- Admin PIN Auth Screen -->
+    <div id="admin-auth-screen" class="admin-auth-wrap">
+      <div class="admin-auth-card">
+        <div class="admin-shield-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" width="36" height="36"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h2 class="admin-auth-title">Momus Yönetici Girişi</h2>
+        <p class="admin-auth-sub">Devam etmek için yönetici PIN kodunu girin.</p>
+        <div class="admin-pin-wrap">
+          <input type="password" id="admin-pin-input" class="admin-pin-field" maxlength="30" placeholder="••••••••" autocomplete="off"/>
+          <button id="admin-login-btn" class="dash-btn-primary">Giriş Yap</button>
+        </div>
+        <a href="#home" class="admin-back-link">← Ana Sayfaya Dön</a>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard Main Content -->
+    <div id="admin-main-screen" class="admin-main-wrap" style="display:none;">
+      <header class="admin-header">
+        <div class="admin-brand">
+          <span class="dash-logo">✦</span>
+          <span class="admin-title-text">momus <strong>Yönetici Paneli</strong></span>
+        </div>
+        <div class="admin-actions">
+          <button id="admin-refresh-btn" class="dash-btn-outline">🔄 Yenile</button>
+          <a href="#home" class="dash-btn-outline">Ana Sayfa</a>
+          <button id="admin-logout-btn" class="dash-btn-outline" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">Çıkış Yap</button>
+        </div>
+      </header>
+
+      <main class="admin-container">
+        <!-- Admin Stats Top Bar -->
+        <div class="admin-stats-bar">
+          <div class="admin-stat-box">
+            <span class="admin-stat-num" id="admin-total-users">0</span>
+            <span class="admin-stat-name">Kayıtlı Profil</span>
+          </div>
+          <div class="admin-stat-box">
+            <span class="admin-stat-num" id="admin-total-views">0</span>
+            <span class="admin-stat-name">Toplam Görüntülenme</span>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="admin-search-wrap">
+          <input type="text" id="admin-search-input" class="admin-search-box" placeholder="Kullanıcı adı veya Discord ID ile ara..."/>
+        </div>
+
+        <!-- Profiles Management Table / Grid -->
+        <div class="admin-users-list" id="admin-users-list">
+          <!-- JS fills dynamically -->
+        </div>
+      </main>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
   <!-- DELETE ACCOUNT MODAL POPUP                                 -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div id="dash-delete-modal" class="link-modal-overlay" style="display:none;">
@@ -690,7 +751,6 @@
     </div>
   </div>
 
-  <script src="assets/main.js?v=14"></script>
+  <script src="assets/main.js?v=15"></script>
 </body>
 </html>
-
