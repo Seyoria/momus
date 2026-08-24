@@ -3073,6 +3073,374 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
+    // ── GÜNCEL KONTROLLER & VERİTABANI YÖNETİMİ ──
+    const reservedList = getReservedUsernames();
+    const bannedList = getBannedUsers();
+
+    // 1. Kilitli İsimler Sekmesi Dinleyicileri
+    const reserveInput = document.getElementById('admin-reserve-input');
+    const addReserveBtn = document.getElementById('admin-add-reserve-btn');
+    if (addReserveBtn && !addReserveBtn.dataset.bound) {
+      addReserveBtn.dataset.bound = '1';
+      addReserveBtn.addEventListener('click', async () => {
+        const val = (reserveInput ? reserveInput.value : '').trim().toLowerCase();
+        if (!val) return;
+        let list = getReservedUsernames();
+        if (!list.includes(val)) {
+          list.push(val);
+          localStorage.setItem('momus_reserved_names', JSON.stringify(list));
+          showToast(`"${val}" kullanıcı adı kilitlendi.`, 'success');
+          if (reserveInput) reserveInput.value = '';
+          renderReservedTags();
+        }
+      });
+    }
+
+    // 2. Yasaklılar Sekmesi Dinleyicileri
+    const banInput = document.getElementById('admin-ban-input');
+    const addBanBtn = document.getElementById('admin-add-ban-btn');
+    if (addBanBtn && !addBanBtn.dataset.bound) {
+      addBanBtn.dataset.bound = '1';
+      addBanBtn.addEventListener('click', async () => {
+        const val = (banInput ? banInput.value : '').trim().toLowerCase();
+        if (!val) return;
+        let list = getBannedUsers();
+        if (!list.includes(val)) {
+          list.push(val);
+          localStorage.setItem('momus_banned_users', JSON.stringify(list));
+          showToast(`"${val}" yasaklandı.`, 'error');
+          if (banInput) banInput.value = '';
+          renderBannedTags();
+        }
+      });
+    }
+
+    // 3. Canlı Global Site Duyurusu Dinleyicileri
+    const annToggle = document.getElementById('admin-ann-toggle');
+    const annText = document.getElementById('admin-ann-text');
+    const annUntil = document.getElementById('admin-ann-until');
+    const saveAnnBtn = document.getElementById('admin-save-ann-btn');
+
+    // Mevcut duyuru verisini doldur
+    const curAnn = getGlobalAnnouncement();
+    if (annToggle) annToggle.checked = !!curAnn.active;
+    if (annText) annText.value = curAnn.text || '';
+    if (annUntil && curAnn.until) annUntil.value = curAnn.until;
+
+    if (saveAnnBtn && !saveAnnBtn.dataset.bound) {
+      saveAnnBtn.dataset.bound = '1';
+      saveAnnBtn.addEventListener('click', () => {
+        const annData = {
+          active: annToggle ? annToggle.checked : false,
+          text: annText ? annText.value.trim() : '',
+          until: annUntil ? annUntil.value : ''
+        };
+        localStorage.setItem('momus_global_announcement', JSON.stringify(annData));
+        showToast('Site duyurusu güncellendi!', 'success');
+        applyGlobalAnnouncement();
+      });
+    }
+
+    renderReservedTags();
+    renderBannedTags();
+    renderAdminAnalytics();
+  }
+
+  function getReservedUsernames() {
+    try {
+      const saved = localStorage.getItem('momus_reserved_names');
+      return saved ? JSON.parse(saved) : ['admin', 'staff', 'owner', 'mod', 'root', 'momus', 'system'];
+    } catch(e) {
+      return ['admin', 'staff', 'owner', 'mod', 'root', 'momus', 'system'];
+    }
+  }
+
+  function getBannedUsers() {
+    try {
+      const saved = localStorage.getItem('momus_banned_users');
+      return saved ? JSON.parse(saved) : [];
+    } catch(e) {
+      return [];
+    }
+  }
+
+  function getGlobalAnnouncement() {
+    try {
+      const saved = localStorage.getItem('momus_global_announcement');
+      return saved ? JSON.parse(saved) : { active: false, text: '', until: '' };
+    } catch(e) {
+      return { active: false, text: '', until: '' };
+    }
+  }
+
+  function renderReservedTags() {
+    const listEl = document.getElementById('admin-reserved-tags-list');
+    if (!listEl) return;
+    const items = getReservedUsernames();
+    listEl.innerHTML = '';
+    items.forEach(name => {
+      const tag = document.createElement('span');
+      tag.className = 'admin-tag-item';
+      tag.innerHTML = `<span>${name}</span><button type="button" class="admin-tag-del" data-name="${name}">&times;</button>`;
+      listEl.appendChild(tag);
+    });
+
+    listEl.querySelectorAll('.admin-tag-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.dataset.name;
+        let items = getReservedUsernames().filter(x => x !== name);
+        localStorage.setItem('momus_reserved_names', JSON.stringify(items));
+        renderReservedTags();
+        showToast(`"${name}" kilidi kaldırıldı.`, 'info');
+      });
+    });
+  }
+
+  function renderBannedTags() {
+    const listEl = document.getElementById('admin-banned-tags-list');
+    if (!listEl) return;
+    const items = getBannedUsers();
+    listEl.innerHTML = '';
+    items.forEach(name => {
+      const tag = document.createElement('span');
+      tag.className = 'admin-tag-item banned';
+      tag.innerHTML = `<span>${name}</span><button type="button" class="admin-tag-del" data-name="${name}">&times;</button>`;
+      listEl.appendChild(tag);
+    });
+
+    listEl.querySelectorAll('.admin-tag-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.dataset.name;
+        let items = getBannedUsers().filter(x => x !== name);
+        localStorage.setItem('momus_banned_users', JSON.stringify(items));
+        renderBannedTags();
+        showToast(`"${name}" yasağı kaldırıldı.`, 'info');
+      });
+    });
+  }
+
+  function renderAdminAnalytics() {
+    const profiles = getProfiles();
+    const keys = Object.keys(profiles);
+
+    let spotlightCount = 0;
+    let badgeCount = 0;
+
+    const sortedByViews = [...keys].map(k => profiles[k]).sort((a, b) => (b.views || 0) - (a.views || 0));
+
+    keys.forEach(k => {
+      const p = profiles[k];
+      if (p.isSpotlight) spotlightCount++;
+      if (p.badges && p.badges.length) badgeCount += p.badges.length;
+      if (p.customBadges && p.customBadges.length) badgeCount += p.customBadges.length;
+    });
+
+    const spotEl = document.getElementById('admin-stat-spotlight-count');
+    const badgeEl = document.getElementById('admin-stat-active-badges');
+    const topList = document.getElementById('admin-top-profiles-list');
+
+    if (spotEl) spotEl.textContent = spotlightCount;
+    if (badgeEl) badgeEl.textContent = badgeCount;
+
+    if (topList) {
+      topList.innerHTML = '';
+      sortedByViews.slice(0, 5).forEach((p, idx) => {
+        const row = document.createElement('div');
+        row.className = 'admin-top-row';
+        row.innerHTML = `
+          <div class="admin-top-rank">#${idx + 1}</div>
+          <div class="admin-top-user"><strong>${p.username}</strong> <span>(${p.views || 0} görüntülenme)</span></div>
+          <a href="#${p.username}" target="_blank" class="dash-btn-outline" style="padding:4px 10px; font-size:0.75rem;">Profili Gör</a>
+        `;
+        topList.appendChild(row);
+      });
+    }
+  }
+
+  function renderAdminProfiles(filter = '') {
+    const list = document.getElementById('admin-users-list');
+    const totalUsersEl = document.getElementById('admin-total-users');
+    const totalViewsEl = document.getElementById('admin-total-views');
+    if (!list) return;
+
+    const profiles = getProfiles();
+    const keys = Object.keys(profiles);
+
+    let totalViews = 0;
+    keys.forEach(k => { totalViews += (profiles[k].views || 0); });
+
+    if (totalUsersEl) totalUsersEl.textContent = keys.length;
+    if (totalViewsEl) totalViewsEl.textContent = totalViews.toLocaleString('tr-TR');
+
+    let filteredKeys = keys;
+    if (filter) {
+      filteredKeys = keys.filter(k => {
+        const p = profiles[k];
+        return k.includes(filter) || (p.discordId && p.discordId.includes(filter)) || (p.bio && p.bio.toLowerCase().includes(filter));
+      });
+    }
+
+    if (filteredKeys.length === 0) {
+      list.innerHTML = `<div class="admin-empty">Eşleşen profil bulunamadı.</div>`;
+      return;
+    }
+
+    list.innerHTML = '';
+    const availableBadges = ['og', 'verified', 'premium', 'dev'];
+
+    filteredKeys.forEach(k => {
+      const p = profiles[k];
+      const card = document.createElement('div');
+      card.className = `admin-user-card ${p.isSpotlight ? 'spotlight-active' : ''}`;
+
+      const badges = p.badges || [];
+      const customBadges = p.customBadges || [];
+
+      let badgeButtonsHtml = '';
+      availableBadges.forEach(b => {
+        const isActive = badges.includes(b);
+        badgeButtonsHtml += `
+          <button type="button" class="admin-badge-btn ${b} ${isActive ? 'active' : ''}" data-user="${k}" data-badge="${b}">
+            ${b.toUpperCase()} ${isActive ? '✓' : '+'}
+          </button>
+        `;
+      });
+
+      let customBadgesHtml = '';
+      customBadges.forEach((cb, cIdx) => {
+        customBadgesHtml += `
+          <span class="p-badge custom-badge" style="color:${cb.color}; border-color:${cb.color}; background:${cb.color}22;">
+            ${cb.text.toUpperCase()} <button type="button" class="admin-del-custom-badge" data-user="${k}" data-idx="${cIdx}">&times;</button>
+          </span>
+        `;
+      });
+
+      card.innerHTML = `
+        <div class="admin-user-left">
+          <div class="admin-user-avatar-wrap">
+            <img class="admin-user-avatar" src="${p.avatar || 'https://api.dicebear.com/9.x/pixel-art/svg?seed=' + k}" alt="${k}"/>
+          </div>
+          <div class="admin-user-info">
+            <div class="admin-user-name-row">
+              <a href="#${k}" target="_blank" class="admin-user-username">${p.username}</a>
+              ${p.isSpotlight ? '<span class="admin-spotlight-badge">⭐ Öne Çıkan</span>' : ''}
+              <span class="admin-user-views">${p.views || 0} görüntülenme</span>
+            </div>
+            <div class="admin-user-discord">
+              Discord ID: <code>${p.discordId || 'Giriş yapılmamış'}</code>
+            </div>
+            <div class="admin-user-bio">${p.bio || 'currently doing nothing'}</div>
+          </div>
+        </div>
+
+        <div class="admin-user-actions-col">
+          <div class="admin-badges-label">Hazır Rozetler:</div>
+          <div class="admin-badge-row">
+            ${badgeButtonsHtml}
+          </div>
+
+          <div class="admin-custom-badge-action-row" style="margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            ${customBadgesHtml}
+            <button type="button" class="admin-add-custom-badge-btn" data-user="${k}">+ Özel Rozet Ver</button>
+          </div>
+
+          <div class="admin-card-bottom-actions">
+            <button type="button" class="admin-spotlight-btn ${p.isSpotlight ? 'active' : ''}" data-user="${k}">
+              ${p.isSpotlight ? '★ Öne Çıkarıldı' : '☆ Öne Çıkar'}
+            </button>
+            <a href="#${k}" target="_blank" class="dash-btn-outline" style="padding:6px 12px; font-size:0.75rem;">Profili Aç</a>
+            <button type="button" class="admin-del-user-btn" data-user="${k}">Profili Sil</button>
+          </div>
+        </div>
+      `;
+
+      list.appendChild(card);
+    });
+
+    // Rozet Ekleme / Kaldırma Tıklama Dinleyicileri
+    list.querySelectorAll('.admin-badge-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const targetUser = btn.dataset.user;
+        const targetBadge = btn.dataset.badge;
+        const targetProf = profiles[targetUser];
+        if (!targetProf) return;
+
+        if (!targetProf.badges) targetProf.badges = [];
+        const idx = targetProf.badges.indexOf(targetBadge);
+
+        if (idx >= 0) {
+          targetProf.badges.splice(idx, 1);
+          btn.classList.remove('active');
+          btn.textContent = `${targetBadge.toUpperCase()} +`;
+          showToast(`@${targetProf.username} üzerinden [${targetBadge.toUpperCase()}] rozeti kaldırıldı.`, 'info');
+        } else {
+          targetProf.badges.push(targetBadge);
+          btn.classList.add('active');
+          btn.textContent = `${targetBadge.toUpperCase()} ✓`;
+          showToast(`@${targetProf.username} kullanıcısına [${targetBadge.toUpperCase()}] rozeti verildi!`, 'success');
+        }
+
+        await saveProfileData(targetProf);
+        renderAdminAnalytics();
+      });
+    });
+
+    // Özel Rozet Tanımlama (Prompt ile Hızlı Özel Rozet)
+    list.querySelectorAll('.admin-add-custom-badge-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const targetUser = btn.dataset.user;
+        const targetProf = profiles[targetUser];
+        if (!targetProf) return;
+
+        const badgeText = prompt(`@${targetProf.username} için Özel Rozet Adı (örn: VIP, FOUNDER, PARTNER):`);
+        if (!badgeText || !badgeText.trim()) return;
+
+        const badgeColor = prompt(`Rozet Rengi Hex Kodu (örn: #ff007f, #00e5ff, #ffd700):`, '#a855f7') || '#a855f7';
+
+        if (!targetProf.customBadges) targetProf.customBadges = [];
+        targetProf.customBadges.push({
+          text: badgeText.trim(),
+          color: badgeColor.trim()
+        });
+
+        await saveProfileData(targetProf);
+        showToast(`@${targetProf.username} için [${badgeText.toUpperCase()}] özel rozeti oluşturuldu!`, 'success');
+        renderAdminProfiles(filter);
+        renderAdminAnalytics();
+      });
+    });
+
+    // Özel Rozeti Silme
+    list.querySelectorAll('.admin-del-custom-badge').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const targetUser = btn.dataset.user;
+        const targetIdx = parseInt(btn.dataset.idx, 10);
+        const targetProf = profiles[targetUser];
+        if (!targetProf || !targetProf.customBadges) return;
+
+        targetProf.customBadges.splice(targetIdx, 1);
+        await saveProfileData(targetProf);
+        showToast('Özel rozet silindi.', 'info');
+        renderAdminProfiles(filter);
+        renderAdminAnalytics();
+      });
+    });
+
+    // Öne Çıkar (Spotlight) Butonu Dinleyicisi
+    list.querySelectorAll('.admin-spotlight-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const targetUser = btn.dataset.user;
+        const targetProf = profiles[targetUser];
+        if (!targetProf) return;
+
+        targetProf.isSpotlight = !targetProf.isSpotlight;
+        await saveProfileData(targetProf);
+        showToast(`@${targetProf.username} ${targetProf.isSpotlight ? 'öne çıkarıldı!' : 'öne çıkarmadan kaldırıldı.'}`, 'success');
+        renderAdminProfiles(filter);
+        renderAdminAnalytics();
+      });
+    });
+
     // Profil Silme Dinleyicisi
     list.querySelectorAll('.admin-del-user-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -3081,9 +3449,63 @@ document.addEventListener('DOMContentLoaded', async () => {
           await deleteProfileFromDB(targetUser);
           showToast(`@${targetUser} profili silindi.`, 'success');
           renderAdminProfiles(filter);
+          renderAdminAnalytics();
         }
       });
     });
+  }
+
+  // ── GLOBAL ANNOUNCEMENT ENGINE (HER SAYFADA DUYURU VE GERİ SAYIM GÖSTERİR) ──
+  let annTimerInterval = null;
+  function applyGlobalAnnouncement() {
+    const banner = document.getElementById('global-announcement-banner');
+    const textEl = document.getElementById('announcement-text');
+    const timerEl = document.getElementById('announcement-timer');
+    const closeBtn = document.getElementById('announcement-close-btn');
+    if (!banner || !textEl) return;
+
+    if (annTimerInterval) clearInterval(annTimerInterval);
+
+    const ann = getGlobalAnnouncement();
+    if (!ann || !ann.active || !ann.text) {
+      banner.style.display = 'none';
+      return;
+    }
+
+    textEl.textContent = ann.text;
+    banner.style.display = 'flex';
+
+    if (ann.until) {
+      const targetTime = new Date(ann.until).getTime();
+      function updateTimer() {
+        const now = Date.now();
+        const diff = targetTime - now;
+        if (diff <= 0) {
+          if (timerEl) timerEl.style.display = 'none';
+          clearInterval(annTimerInterval);
+          return;
+        }
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+        const pad = (n) => String(n).padStart(2, '0');
+        if (timerEl) {
+          timerEl.textContent = `(Bitiş: ${pad(h)}:${pad(m)}:${pad(s)})`;
+          timerEl.style.display = 'inline-block';
+        }
+      }
+      updateTimer();
+      annTimerInterval = setInterval(updateTimer, 1000);
+    } else if (timerEl) {
+      timerEl.style.display = 'none';
+    }
+
+    if (closeBtn && !closeBtn.dataset.bound) {
+      closeBtn.dataset.bound = '1';
+      closeBtn.addEventListener('click', () => {
+        banner.style.display = 'none';
+      });
+    }
   }
 
   // ── INITIALIZE ROUTER AT END OF DOMContentLoaded ──
@@ -3092,10 +3514,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // böylece başka birinin oluşturduğu profil de görünür oluyor.
   async function routeWithFreshData() {
     await refreshProfilesCache();
+    applyGlobalAnnouncement();
     route();
   }
   window.addEventListener('hashchange', routeWithFreshData);
   await handleDiscordAuthCallback();
   await refreshProfilesCache();
+  applyGlobalAnnouncement();
   route();
 });
+
