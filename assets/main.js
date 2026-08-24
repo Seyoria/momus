@@ -591,11 +591,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       phase += 0.18;
 
       for (let i = 0; i < numBars; i++) {
-        let height = 3;
+        let height = (i % 2 === 0 ? 5 : 8);
         if (isPlaying) {
           const sinVal = Math.sin(phase + i * 0.95) * Math.cos(phase * 0.6 + i * 0.5);
-          const rawH = Math.abs(sinVal) * (canvas.height - 4) + (i % 2 === 0 ? 3 : 5);
-          height = Math.max(3, Math.min(canvas.height, Math.floor(rawH)));
+          const rawH = Math.abs(sinVal) * (canvas.height - 4) + (i % 2 === 0 ? 5 : 8);
+          height = Math.max(4, Math.min(canvas.height, Math.floor(rawH)));
         }
 
         const x = i * (barWidth + gap) + 4;
@@ -1630,67 +1630,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ── UNIFIED DISCORD PRESENCE ENGINE (Lanyard Global + Local Bot fallback) ──
-  const lanyardUnmonitoredUsers = new Set();
+  // ── UNIFIED DISCORD PRESENCE ENGINE (Doğrudan Kendi Botumuzdan / Sunucumuzdan) ──
   async function getUnifiedDiscordPresence(id) {
     if (!id) return null;
 
-    // 1. Try Lanyard API (Globally works on GitHub Pages without localhost)
-    if (!lanyardUnmonitoredUsers.has(id)) {
-      try {
-        const res = await fetch(`https://api.lanyard.rest/v1/users/${id}`);
-        if (res.status === 404) {
-          lanyardUnmonitoredUsers.add(id);
-        } else if (res.ok) {
-          const json = await res.json();
-          if (json.success && json.data) {
-          const ld = json.data;
-          const u = ld.discord_user;
-          const avatarUrl = u.avatar
-            ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${u.avatar.startsWith('a_') ? 'gif' : 'png'}?size=256`
-            : null;
-          const bannerUrl = u.banner
-            ? `https://cdn.discordapp.com/banners/${u.id}/${u.banner}.${u.banner.startsWith('a_') ? 'gif' : 'png'}?size=600`
-            : null;
-
-          let activity = null;
-          let customStatus = null;
-          (ld.activities || []).forEach(act => {
-            if (act.type === 4) {
-              customStatus = act.state || null;
-            } else if (act.type === 0 || act.type === 1 || act.type === 2) {
-              activity = {
-                name: act.name,
-                details: act.details || act.state || null,
-                startTimestamp: act.timestamps ? act.timestamps.start : null
-              };
-            }
-          });
-
-          let spotify = null;
-          if (ld.listening_to_spotify && ld.spotify) {
-            spotify = {
-              song: ld.spotify.song,
-              artist: ld.spotify.artist,
-              albumArt: ld.spotify.album_art_url
-            };
-          }
-
-          return {
-            username: u.username,
-            avatar: avatarUrl,
-            banner: bannerUrl,
-            status: ld.discord_status || 'offline',
-            customStatus,
-            activity,
-            spotify
-          };
-        }
-      }
-    } catch(e){}
-  }
-
-    // 2. Fallback to Local Bot API
+    // 1. Doğrudan kendi momus-bot API'mizden çek (Lanyard'a ihtiyaç yok, 404 hatası vermez)
     try {
       const res = await fetch(`${MOMUS_BOT_API}/presence/${id}`);
       if (res.ok) {
