@@ -3375,3 +3375,196 @@ a, button, input, textarea, select, label { cursor: none; }
 .admin-form-actions {
   margin-top: 10px;
 }
+
+/* Global Announcement Banner */
+.global-announcement-banner {
+  background: linear-gradient(90deg, #7e22ce 0%, #a855f7 50%, #6b21a8 100%);
+  color: #fff;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.35);
+  animation: dash-fade-in 0.3s ease;
+}
+.announcement-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+.announcement-badge {
+  background: #fff;
+  color: #7e22ce;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 99px;
+  letter-spacing: 0.05em;
+}
+.announcement-text {
+  font-weight: 500;
+}
+.announcement-timer {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.announcement-close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.3rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+  line-height: 1;
+  padding: 0 4px;
+}
+.announcement-close:hover {
+  opacity: 1;
+}
+
+/* Spotlight & Tags in Admin */
+.admin-user-card.spotlight-active {
+  border-color: rgba(255, 215, 0, 0.4);
+  background: rgba(255, 215, 0, 0.03);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+}
+.admin-spotlight-badge {
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid #ffd700;
+  color: #ffd700;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+.admin-spotlight-btn {
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  color: #ffd700;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.admin-spotlight-btn:hover {
+  background: rgba(255, 215, 0, 0.2);
+}
+.admin-spotlight-btn.active {
+  background: #ffd700;
+  color: #000;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+.admin-add-custom-badge-btn {
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px dashed rgba(168, 85, 247, 0.4);
+  color: #a855f7;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.admin-add-custom-badge-btn:hover {
+  background: rgba(168, 85, 247, 0.2);
+  color: #fff;
+}
+.admin-del-custom-badge {
+  background: none;
+  border: none;
+  color: currentColor;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 4px;
+  opacity: 0.6;
+}
+.admin-del-custom-badge:hover {
+  opacity: 1;
+}
+
+/* Tags List (Reserved & Banned) */
+.admin-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-tag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #fff;
+}
+.admin-tag-item.banned {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+}
+.admin-tag-del {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.admin-tag-del:hover {
+  opacity: 1;
+}
+
+/* Analytics Top List */
+.admin-top-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.admin-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 12px 18px;
+}
+.admin-top-rank {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #a855f7;
+  width: 30px;
+}
+.admin-top-user {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #fff;
+}
+.admin-top-user span {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-left: 6px;
+}
