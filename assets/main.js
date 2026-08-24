@@ -842,9 +842,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         renderDiscordGate(false);
         const username = hash.replace('#', '').toLowerCase();
+        
+        // Ban kontrolü
+        const bannedList = getBannedUsers();
+        if (bannedList.includes(username)) {
+          showToast(`"${username}" hesabı kurallara uymadığı için askıya alınmıştır!`, 'error');
+          window.location.hash = '#home';
+          return;
+        }
+
         const profiles = getProfiles();
         const profile = profiles[username];
         if (profile) {
+          if (profile.discordId && bannedList.includes(profile.discordId)) {
+            showToast(`"${username}" hesabı kurallara uymadığı için askıya alınmıştır!`, 'error');
+            window.location.hash = '#home';
+            return;
+          }
+
           // Profil sayfasına girildiğinde global fare efektini (nokta/halka) kapat ve normal imlece izin ver
           if (dot) dot.style.display = 'none';
           if (ring) ring.style.display = 'none';
@@ -1994,19 +2009,47 @@ document.addEventListener('DOMContentLoaded', async () => {
       return false;
     }
 
-    // ── UNIQUE ACCOUNT CHECK (Only 1 account per Username & Discord ID) ──
+    const dSession = getDiscordSession();
+    if (!dSession) {
+      showToast('Profil kaydetmek için Discord ile giriş yapmalısınız!', 'error');
+      return false;
+    }
+
+    const currentDiscordId = dSession.user.id;
+
+    // ── BAN CHECK ──
+    const bannedUsers = getBannedUsers();
+    if (bannedUsers.includes(unKey) || bannedUsers.includes(currentDiscordId)) {
+      showToast('Hesabınız yasaklandığı için işlem yapamazsınız!', 'error');
+      return false;
+    }
+
+    // ── RESERVED NAME CHECK ──
+    const reservedNames = getReservedUsernames();
+    if (reservedNames.includes(unKey)) {
+      showToast(`"${un}" kullanıcı adı ayrılmış/kilitlenmiştir, başka bir ad seçin!`, 'error');
+      return false;
+    }
+
+    // ── UNIQUE ACCOUNT & OWNERSHIP CHECK ──
     const existingProfiles = getProfiles();
-    for (const key in existingProfiles) {
-      const p = existingProfiles[key];
-      // Check username collision with another profile
-      if (key !== unKey && p.username && p.username.toLowerCase() === unKey) {
-        showToast(`"${un}" kullanıcı adı başka bir hesap tarafından kullanılıyor!`, 'error');
+    
+    // 1. Check if the target profile already exists and belongs to someone else
+    if (existingProfiles[unKey]) {
+      const existingOwnerDiscordId = existingProfiles[unKey].discordId;
+      if (existingOwnerDiscordId && existingOwnerDiscordId !== currentDiscordId) {
+        showToast(`Bu profil başka bir kullanıcıya ait! Başkasının profilini düzenleyemezsiniz.`, 'error');
         return false;
       }
-      // Check Discord ID collision with another profile
-      if (discordIdVal && key !== unKey && p.discordId && p.discordId === discordIdVal) {
-        showToast(`Discord User ID "${discordIdVal}" zaten "${p.username}" hesabına tanımlı!`, 'error');
-        return false;
+    }
+
+    // 2. Check if the logged in Discord user already has a DIFFERENT profile username
+    for (const key in existingProfiles) {
+      const p = existingProfiles[key];
+      if (p.discordId && p.discordId === currentDiscordId && key !== unKey) {
+        // User is renaming their profile or creating a 2nd account
+        // Delete old profile key from database so they only have 1 profile
+        await deleteProfileFromDB(key);
       }
     }
 
@@ -2964,114 +3007,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderAdminProfiles(searchInput.value.trim().toLowerCase());
       });
     }
-  }
-
-  function renderAdminProfiles(filter = '') {
-    const list = document.getElementById('admin-users-list');
-    const totalUsersEl = document.getElementById('admin-total-users');
-    const totalViewsEl = document.getElementById('admin-total-views');
-    if (!list) return;
-
-    const profiles = getProfiles();
-    const keys = Object.keys(profiles);
-
-    let totalViews = 0;
-    keys.forEach(k => { totalViews += (profiles[k].views || 0); });
-
-    if (totalUsersEl) totalUsersEl.textContent = keys.length;
-    if (totalViewsEl) totalViewsEl.textContent = totalViews.toLocaleString('tr-TR');
-
-    let filteredKeys = keys;
-    if (filter) {
-      filteredKeys = keys.filter(k => {
-        const p = profiles[k];
-        return k.includes(filter) || (p.discordId && p.discordId.includes(filter)) || (p.bio && p.bio.toLowerCase().includes(filter));
-      });
-    }
-
-    if (filteredKeys.length === 0) {
-      list.innerHTML = `<div class="admin-empty">Eşleşen profil bulunamadı.</div>`;
-      return;
-    }
-
-    list.innerHTML = '';
-    const availableBadges = ['og', 'verified', 'premium', 'dev'];
-
-    filteredKeys.forEach(k => {
-      const p = profiles[k];
-      const card = document.createElement('div');
-      card.className = 'admin-user-card';
-
-      const badges = p.badges || [];
-
-      let badgeButtonsHtml = '';
-      availableBadges.forEach(b => {
-        const isActive = badges.includes(b);
-        badgeButtonsHtml += `
-          <button type="button" class="admin-badge-btn ${b} ${isActive ? 'active' : ''}" data-user="${k}" data-badge="${b}">
-            ${b.toUpperCase()} ${isActive ? '✓' : '+'}
-          </button>
-        `;
-      });
-
-      card.innerHTML = `
-        <div class="admin-user-left">
-          <div class="admin-user-avatar-wrap">
-            <img class="admin-user-avatar" src="${p.avatar || 'https://api.dicebear.com/9.x/pixel-art/svg?seed=' + k}" alt="${k}"/>
-          </div>
-          <div class="admin-user-info">
-            <div class="admin-user-name-row">
-              <a href="#${k}" target="_blank" class="admin-user-username">${p.username}</a>
-              <span class="admin-user-views">${p.views || 0} görüntülenme</span>
-            </div>
-            <div class="admin-user-discord">
-              Discord ID: <code>${p.discordId || 'Giriş yapılmamış'}</code>
-            </div>
-            <div class="admin-user-bio">${p.bio || 'currently doing nothing'}</div>
-          </div>
-        </div>
-
-        <div class="admin-user-actions-col">
-          <div class="admin-badges-label">Rozet Yönetimi:</div>
-          <div class="admin-badge-row">
-            ${badgeButtonsHtml}
-          </div>
-          <div class="admin-card-bottom-actions">
-            <a href="#${k}" target="_blank" class="dash-btn-outline" style="padding:6px 12px; font-size:0.75rem;">Profili Aç</a>
-            <button type="button" class="admin-del-user-btn" data-user="${k}">Profili Sil</button>
-          </div>
-        </div>
-      `;
-
-      list.appendChild(card);
-    });
-
-    // Rozet Ekleme / Kaldırma Tıklama Dinleyicileri
-    list.querySelectorAll('.admin-badge-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const targetUser = btn.dataset.user;
-        const targetBadge = btn.dataset.badge;
-        const targetProf = profiles[targetUser];
-        if (!targetProf) return;
-
-        if (!targetProf.badges) targetProf.badges = [];
-        const idx = targetProf.badges.indexOf(targetBadge);
-
-        if (idx >= 0) {
-          targetProf.badges.splice(idx, 1);
-          btn.classList.remove('active');
-          btn.textContent = `${targetBadge.toUpperCase()} +`;
-          showToast(`@${targetProf.username} üzerinden [${targetBadge.toUpperCase()}] rozeti kaldırıldı.`, 'info');
-        } else {
-          targetProf.badges.push(targetBadge);
-          btn.classList.add('active');
-          btn.textContent = `${targetBadge.toUpperCase()} ✓`;
-          showToast(`@${targetProf.username} kullanıcısına [${targetBadge.toUpperCase()}] rozeti verildi!`, 'success');
-        }
-
-        await saveProfileData(targetProf);
-      });
-    });
 
     // ── GÜNCEL KONTROLLER & VERİTABANI YÖNETİMİ ──
     const reservedList = getReservedUsernames();
@@ -3523,4 +3458,3 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyGlobalAnnouncement();
   route();
 });
-
