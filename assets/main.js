@@ -2644,7 +2644,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       audioEl.play().catch(() => {});
     } else if (audioEl) {
       audioEl.pause();
-      stopAudioVisualizer();
     }
 
     if (slider && audioEl) {
