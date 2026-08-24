@@ -1799,6 +1799,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     bBgVideoFile.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
+        if (file.size > 20 * 1024 * 1024) {
+          showToast('⚠️ Arka plan dosyası en fazla 20MB olabilir!', 'error');
+          bBgVideoFile.value = '';
+          return;
+        }
         bBgVideoFileName.textContent = file.name;
         if (bBgVideoDeleteBtn) bBgVideoDeleteBtn.style.display = 'inline-flex';
         const reader = new FileReader();
@@ -1826,6 +1831,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     bBgMusicFile.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
+        if (file.size > 20 * 1024 * 1024) {
+          showToast('⚠️ Ses dosyası en fazla 20MB olabilir!', 'error');
+          bBgMusicFile.value = '';
+          return;
+        }
         bBgMusicFileName.textContent = file.name;
         if (bBgMusicDeleteBtn) bBgMusicDeleteBtn.style.display = 'inline-flex';
         const reader = new FileReader();
@@ -2457,10 +2467,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function renderProfilePage(profile) {
     const unKey = profile.username.toLowerCase();
     document.documentElement.style.setProperty('--user-color', profile.color || '#ffffff');
-    document.title = `${profile.username} | momus`;
+    // ── TEKİL İZLENME SAYACI (Her kullanıcı / sekme için sadece 1 kere artar) ──
+    const viewedKey = `momus_viewed_${unKey}`;
+    const alreadyViewedInSession = sessionStorage.getItem(viewedKey);
+    const isOwner = isProfileOwner(unKey);
 
-    // ── PROFILE VIEW COUNTER (sahibi hariç, sadece ziyaretçiler için artar) ──
-    if (!isProfileOwner(unKey)) {
+    if (!isOwner && !alreadyViewedInSession) {
+      sessionStorage.setItem(viewedKey, '1');
       profile.views = (profile.views || 0) + 1;
       await saveProfileData(profile);
     }
@@ -2649,8 +2662,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         bgImg.style.display = 'block';
         if (bgVid) { bgVid.style.display = 'none'; bgVid.removeAttribute('src'); }
       } else if (bgVid) {
-        bgVid.src = rawBgSource;
+        if (bgVid.src !== rawBgSource) {
+          bgVid.src = rawBgSource;
+          bgVid.load();
+        }
         bgVid.style.display = 'block';
+        bgVid.play().catch(() => {});
         if (bgImg) bgImg.style.display = 'none';
       }
     } else {
