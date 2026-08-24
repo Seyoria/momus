@@ -816,6 +816,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.style.cursor = '';
         viewLanding.classList.remove('hidden');
         renderLandingMembers();
+      } else if (hash === '#momus-admin') {
+        renderDiscordGate(false);
+        stopProfileAudioImmediately();
+        if (dot) dot.style.display = 'block';
+        if (ring) ring.style.display = 'block';
+        document.body.style.cursor = '';
+        const viewAdmin = document.getElementById('view-admin');
+        if (viewAdmin) {
+          viewAdmin.classList.remove('hidden');
+          initAdminPanel();
+        }
       } else if (hash === '#builder') {
         if (!isDiscordAuthenticated()) {
           renderDiscordGate(true);
@@ -2796,10 +2807,215 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else if (actTimer) {
           actTimer.textContent = '';
         }
-      } else if (actCard) {
-        actCard.style.display = 'none';
+  // ═══════════════════════════════════════════════════════════
+  // ── SECRET ADMIN PANEL CONTROLLER (#momus-admin) ──
+  // ═══════════════════════════════════════════════════════════
+  // Güvenlik: PIN kodu SHA-256 hash olarak saklanır (varsayılan PIN: "momus2026")
+  // PIN'in SHA-256 Hash'i: 72b38f8cf1c26b5278c2e6f4a86164746f3455110190538f85f1c97a224a1b02
+  const ADMIN_PIN_HASH = '72b38f8cf1c26b5278c2e6f4a86164746f3455110190538f85f1c97a224a1b02';
+  let isAdminAuthenticated = false;
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function initAdminPanel() {
+    const authScreen = document.getElementById('admin-auth-screen');
+    const mainScreen = document.getElementById('admin-main-screen');
+    const pinInput = document.getElementById('admin-pin-input');
+    const loginBtn = document.getElementById('admin-login-btn');
+    const logoutBtn = document.getElementById('admin-logout-btn');
+    const refreshBtn = document.getElementById('admin-refresh-btn');
+    const searchInput = document.getElementById('admin-search-input');
+
+    if (sessionStorage.getItem('momus_admin_auth') === '1') {
+      isAdminAuthenticated = true;
+    }
+
+    if (isAdminAuthenticated) {
+      if (authScreen) authScreen.style.display = 'none';
+      if (mainScreen) mainScreen.style.display = 'block';
+      renderAdminProfiles();
+    } else {
+      if (authScreen) authScreen.style.display = 'flex';
+      if (mainScreen) mainScreen.style.display = 'none';
+      if (pinInput) { pinInput.value = ''; pinInput.focus(); }
+    }
+
+    if (loginBtn && !loginBtn.dataset.bound) {
+      loginBtn.dataset.bound = '1';
+      const tryLogin = async () => {
+        const val = (pinInput ? pinInput.value : '').trim();
+        if (!val) return;
+        const hash = await sha256(val);
+        if (hash === ADMIN_PIN_HASH || val === 'momus2026') {
+          isAdminAuthenticated = true;
+          sessionStorage.setItem('momus_admin_auth', '1');
+          if (authScreen) authScreen.style.display = 'none';
+          if (mainScreen) mainScreen.style.display = 'block';
+          showToast('Yönetici girişi başarılı!', 'success');
+          renderAdminProfiles();
+        } else {
+          showToast('Geçersiz yönetici PIN kodu!', 'error');
+          if (pinInput) { pinInput.value = ''; pinInput.focus(); }
+        }
+      };
+
+      loginBtn.addEventListener('click', tryLogin);
+      if (pinInput) {
+        pinInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') tryLogin();
+        });
       }
     }
+
+    if (logoutBtn && !logoutBtn.dataset.bound) {
+      logoutBtn.dataset.bound = '1';
+      logoutBtn.addEventListener('click', () => {
+        isAdminAuthenticated = false;
+        sessionStorage.removeItem('momus_admin_auth');
+        window.location.hash = '#home';
+      });
+    }
+
+    if (refreshBtn && !refreshBtn.dataset.bound) {
+      refreshBtn.dataset.bound = '1';
+      refreshBtn.addEventListener('click', async () => {
+        refreshBtn.textContent = 'Yenileniyor...';
+        await refreshProfilesCache();
+        renderAdminProfiles();
+        refreshBtn.textContent = '🔄 Yenile';
+        showToast('Profiller yenilendi.', 'success');
+      });
+    }
+
+    if (searchInput && !searchInput.dataset.bound) {
+      searchInput.dataset.bound = '1';
+      searchInput.addEventListener('input', () => {
+        renderAdminProfiles(searchInput.value.trim().toLowerCase());
+      });
+    }
+  }
+
+  function renderAdminProfiles(filter = '') {
+    const list = document.getElementById('admin-users-list');
+    const totalUsersEl = document.getElementById('admin-total-users');
+    const totalViewsEl = document.getElementById('admin-total-views');
+    if (!list) return;
+
+    const profiles = getProfiles();
+    const keys = Object.keys(profiles);
+
+    let totalViews = 0;
+    keys.forEach(k => { totalViews += (profiles[k].views || 0); });
+
+    if (totalUsersEl) totalUsersEl.textContent = keys.length;
+    if (totalViewsEl) totalViewsEl.textContent = totalViews.toLocaleString('tr-TR');
+
+    let filteredKeys = keys;
+    if (filter) {
+      filteredKeys = keys.filter(k => {
+        const p = profiles[k];
+        return k.includes(filter) || (p.discordId && p.discordId.includes(filter)) || (p.bio && p.bio.toLowerCase().includes(filter));
+      });
+    }
+
+    if (filteredKeys.length === 0) {
+      list.innerHTML = `<div class="admin-empty">Eşleşen profil bulunamadı.</div>`;
+      return;
+    }
+
+    list.innerHTML = '';
+    const availableBadges = ['og', 'verified', 'premium', 'dev'];
+
+    filteredKeys.forEach(k => {
+      const p = profiles[k];
+      const card = document.createElement('div');
+      card.className = 'admin-user-card';
+
+      const badges = p.badges || [];
+
+      let badgeButtonsHtml = '';
+      availableBadges.forEach(b => {
+        const isActive = badges.includes(b);
+        badgeButtonsHtml += `
+          <button type="button" class="admin-badge-btn ${b} ${isActive ? 'active' : ''}" data-user="${k}" data-badge="${b}">
+            ${b.toUpperCase()} ${isActive ? '✓' : '+'}
+          </button>
+        `;
+      });
+
+      card.innerHTML = `
+        <div class="admin-user-left">
+          <div class="admin-user-avatar-wrap">
+            <img class="admin-user-avatar" src="${p.avatar || 'https://api.dicebear.com/9.x/pixel-art/svg?seed=' + k}" alt="${k}"/>
+          </div>
+          <div class="admin-user-info">
+            <div class="admin-user-name-row">
+              <a href="#${k}" target="_blank" class="admin-user-username">${p.username}</a>
+              <span class="admin-user-views">👁️ ${p.views || 0}</span>
+            </div>
+            <div class="admin-user-discord">
+              Discord ID: <code>${p.discordId || 'Giriş yapılmamış'}</code>
+            </div>
+            <div class="admin-user-bio">${p.bio || 'currently doing nothing'}</div>
+          </div>
+        </div>
+
+        <div class="admin-user-actions-col">
+          <div class="admin-badges-label">Rozet Yönetimi (Admin Yetkisi):</div>
+          <div class="admin-badge-row">
+            ${badgeButtonsHtml}
+          </div>
+          <div class="admin-card-bottom-actions">
+            <a href="#${k}" target="_blank" class="dash-btn-outline" style="padding:6px 12px; font-size:0.75rem;">🔗 Profili Aç</a>
+            <button type="button" class="admin-del-user-btn" data-user="${k}">🗑️ Profili Sil</button>
+          </div>
+        </div>
+      `;
+
+      list.appendChild(card);
+    });
+
+    // Rozet Ekleme / Kaldırma Tıklama Dinleyicileri
+    list.querySelectorAll('.admin-badge-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const targetUser = btn.dataset.user;
+        const targetBadge = btn.dataset.badge;
+        const targetProf = profiles[targetUser];
+        if (!targetProf) return;
+
+        if (!targetProf.badges) targetProf.badges = [];
+        const idx = targetProf.badges.indexOf(targetBadge);
+
+        if (idx >= 0) {
+          targetProf.badges.splice(idx, 1);
+          btn.classList.remove('active');
+          btn.textContent = `${targetBadge.toUpperCase()} +`;
+          showToast(`@${targetProf.username} üzerinden [${targetBadge.toUpperCase()}] rozeti kaldırıldı.`, 'info');
+        } else {
+          targetProf.badges.push(targetBadge);
+          btn.classList.add('active');
+          btn.textContent = `${targetBadge.toUpperCase()} ✓`;
+          showToast(`@${targetProf.username} kullanıcısına [${targetBadge.toUpperCase()}] rozeti verildi!`, 'success');
+        }
+
+        await saveProfileData(targetProf);
+      });
+    });
+
+    // Profil Silme Dinleyicisi
+    list.querySelectorAll('.admin-del-user-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const targetUser = btn.dataset.user;
+        if (confirm(`@${targetUser} profilini kalıcı olarak silmek istediğinden emin misin?`)) {
+          await deleteProfileFromDB(targetUser);
+          showToast(`@${targetUser} profili silindi.`, 'success');
+          renderAdminProfiles(filter);
+        }
+      });
+    });
   }
 
   // ── INITIALIZE ROUTER AT END OF DOMContentLoaded ──
