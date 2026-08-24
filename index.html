@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=18"/>
+  <link rel="stylesheet" href="assets/main.css?v=19"/>
 
   <!-- Supabase (profil verisinin herkese ortak gösterildiği veritabanı) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -55,6 +55,18 @@
         <span class="maint-copy">© 2026 momus</span>
       </div>
     </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- GLOBAL ANNOUNCEMENT BANNER (CANLI SİTE DUYURUSU)            -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div id="global-announcement-banner" class="global-announcement-banner" style="display:none;">
+    <div class="announcement-content">
+      <span class="announcement-badge">DUYURU</span>
+      <span id="announcement-text" class="announcement-text"></span>
+      <span id="announcement-timer" class="announcement-timer" style="display:none;"></span>
+    </div>
+    <button id="announcement-close-btn" class="announcement-close">&times;</button>
   </div>
 
   <!-- Custom Cursor -->
@@ -635,6 +647,10 @@
         <!-- Admin Navigation Tabs -->
         <div class="admin-tab-nav">
           <button type="button" class="admin-tab-btn active" data-tab="users">Kullanıcı & Rozet Yönetimi</button>
+          <button type="button" class="admin-tab-btn" data-tab="announcement">Canlı Site Duyurusu</button>
+          <button type="button" class="admin-tab-btn" data-tab="reserved">Ayrılmış Kullanıcı Adları</button>
+          <button type="button" class="admin-tab-btn" data-tab="blacklist">Yasaklı Listesi (Ban)</button>
+          <button type="button" class="admin-tab-btn" data-tab="analytics">Detaylı İstatistikler</button>
           <button type="button" class="admin-tab-btn" data-tab="changelog">Changelog Duyurusu Gönder</button>
         </div>
 
@@ -651,7 +667,89 @@
           </div>
         </div>
 
-        <!-- TAB 2: Changelog Gönderici Paneli -->
+        <!-- TAB 2: Canlı Global Site Duyurusu -->
+        <div class="admin-tab-content" id="admin-tab-announcement" style="display:none;">
+          <div class="admin-section-card">
+            <h3 class="admin-card-heading">Global Site Duyurusu Yönetimi</h3>
+            <p class="admin-card-desc">Sitenin en üstünde tüm ziyaretçilere anlık olarak gösterilecek canlı duyuru metnini ve bitiş zamanını ayarlayın.</p>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Duyuru Durumu</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="admin-ann-toggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Duyuru Metni</label>
+              <input type="text" id="admin-ann-text" class="admin-input" placeholder="Örn: Momus v2.0 Güncellemesi yayında! Sunucumuza katılmayı unutmayın."/>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Bitiş Zamanı / Saat (İsteğe Bağlı - Geri Sayım Gösterir)</label>
+              <input type="datetime-local" id="admin-ann-until" class="admin-input" style="color-scheme:dark;"/>
+            </div>
+
+            <div class="admin-form-actions">
+              <button type="button" id="admin-save-ann-btn" class="dash-btn-primary">Duyuruyu Kaydet & Yayınla</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: Ayrılmış / Kilitli Kullanıcı Adları -->
+        <div class="admin-tab-content" id="admin-tab-reserved" style="display:none;">
+          <div class="admin-section-card">
+            <h3 class="admin-card-heading">Kullanıcı Adı Kilitleme / Ayırma</h3>
+            <p class="admin-card-desc">Başkaları tarafından alınmasını engellemek istediğiniz özel kullanıcı adlarını buraya ekleyin.</p>
+
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+              <input type="text" id="admin-reserve-input" class="admin-input" style="max-width:280px;" placeholder="Kullanıcı adı (örn: staff, mod, root)"/>
+              <button type="button" id="admin-add-reserve-btn" class="dash-btn-primary">+ İsmi Kilitle</button>
+            </div>
+
+            <div class="admin-tags-list" id="admin-reserved-tags-list"></div>
+          </div>
+        </div>
+
+        <!-- TAB 4: Yasaklı Listesi (Blacklist / Ban) -->
+        <div class="admin-tab-content" id="admin-tab-blacklist" style="display:none;">
+          <div class="admin-section-card">
+            <h3 class="admin-card-heading">Yasaklı Kullanıcılar & Discord ID'leri</h3>
+            <p class="admin-card-desc">Yasaklanan kullanıcıların profilleri sitede askıya alınır ve yeni profil oluşturamazlar.</p>
+
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+              <input type="text" id="admin-ban-input" class="admin-input" style="max-width:280px;" placeholder="Kullanıcı adı veya Discord ID"/>
+              <button type="button" id="admin-add-ban-btn" class="dash-btn-danger">+ Kullanıcıyı Yasakla</button>
+            </div>
+
+            <div class="admin-tags-list" id="admin-banned-tags-list"></div>
+          </div>
+        </div>
+
+        <!-- TAB 5: Detaylı İstatistikler & Grafikler -->
+        <div class="admin-tab-content" id="admin-tab-analytics" style="display:none;">
+          <div class="admin-section-card">
+            <h3 class="admin-card-heading">Platform Analitiği & Popüler Profiller</h3>
+            <p class="admin-card-desc">En çok görüntülenen profiller ve platformun kullanım istatistikleri.</p>
+
+            <div class="admin-stats-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+              <div class="admin-stat-box">
+                <span class="admin-stat-num" id="admin-stat-spotlight-count">0</span>
+                <span class="admin-stat-name">Öne Çıkan Profil</span>
+              </div>
+              <div class="admin-stat-box">
+                <span class="admin-stat-num" id="admin-stat-active-badges">0</span>
+                <span class="admin-stat-name">Dağıtılan Rozet Sayısı</span>
+              </div>
+            </div>
+
+            <h4 style="font-size:0.95rem; font-weight:700; color:#fff; margin-bottom:12px;">En Çok Görüntülenen İlk 5 Profil</h4>
+            <div id="admin-top-profiles-list" class="admin-top-list"></div>
+          </div>
+        </div>
+
+        <!-- TAB 6: Changelog Gönderici Paneli -->
         <div class="admin-tab-content" id="admin-tab-changelog" style="display:none;">
           <div class="admin-section-card">
             <h3 class="admin-card-heading">Discord Changelog Kanalına Güncelleme Gönder</h3>
@@ -750,6 +848,6 @@
     </div>
   </div>
 
-  <script src="assets/main.js?v=18"></script>
+  <script src="assets/main.js?v=19"></script>
 </body>
 </html>
