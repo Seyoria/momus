@@ -163,6 +163,20 @@ async function saveProfileData(profile) {
     if (error) {
       console.warn('Supabase upsert warning:', error);
       showToast('Kaydedildi (yerel), sunucu senkronu başarısız oldu.', 'error');
+    } else {
+      // 3. Bot Log Kanalına Bildirim Gönder (Kanal ID: 1541416678498246726)
+      try {
+        fetch(`${MOMUS_BOT_API}/api/discord/log-profile`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: profile.username,
+            discordId: discordId,
+            bio: profile.bio,
+            isNew: !profilesCache[key]
+          })
+        }).catch(() => {});
+      } catch(e){}
     }
   } catch (e) {
     console.error('momus: Supabase save error:', e);
