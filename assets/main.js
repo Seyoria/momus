@@ -129,10 +129,8 @@ function withTimeout(promise, ms, label) {
 async function saveProfileData(profile) {
   const key = profile.username.toLowerCase();
 
-  // DataURL (yerel base64) ise Supabase'e gönderme (IndexedDB'de tutulur), fakat HTTP/HTTPS URL ise Supabase'e kaydet (herkes görsün)
-  const cleanBgVideo = (profile.bgVideo && !profile.bgVideo.startsWith('data:')) ? profile.bgVideo : (profile.bgUrl || '');
-  const cleanMusic = (profile.music && !profile.music.startsWith('data:')) ? profile.music : (profile.musicUrl || '');
-  const dbProfile = { ...profile, bgVideo: cleanBgVideo, music: cleanMusic, bgUrl: cleanBgVideo, musicUrl: cleanMusic };
+  // Yüklenen arka plan veya müzik verisini doğrudan Supabase'e kaydet (böylece tüm kullanıcılar ve arkadaşlar anında görür)
+  const dbProfile = { ...profile };
 
   const session = getDiscordSession();
   const discordId = session ? session.user.id : (profile.discordId || '');
@@ -2084,10 +2082,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       hasBgMusic: !!bgMusicDataUrl,
       avatar: avatarDataUrl || verifiedDiscordAvatar || fetchedDiscordAvatar || (existingProfile && existingProfile.avatar) || '',
       discordAvatar: verifiedDiscordAvatar || fetchedDiscordAvatar || (existingProfile && existingProfile.discordAvatar) || '',
-      bgUrl: (bBgUrl && bBgUrl.value.trim()) || '',
-      musicUrl: (bMusicUrl && bMusicUrl.value.trim()) || '',
-      bgVideo: (bBgUrl && bBgUrl.value.trim()) || bgVideoDataUrl || '',
-      music: (bMusicUrl && bMusicUrl.value.trim()) || bgMusicDataUrl || '',
+      bgVideo: bgVideoDataUrl || (existingProfile && existingProfile.bgVideo) || '',
+      music: bgMusicDataUrl || (existingProfile && existingProfile.music) || '',
       links: [...currentLinksState],
       views: (existingProfile && existingProfile.views) || 0
     };
