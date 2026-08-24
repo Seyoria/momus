@@ -2954,17 +2954,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         sendClBtn.textContent = 'Gönderiliyor...';
 
         try {
-          const res = await fetch(`${MOMUS_BOT_API}/api/discord/send-changelog`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              newFeatures: features,
-              fixes: fixes,
-              devNote: note
-            })
-          });
+          // Önce Render adresine dene, başarısız olursa yerel bota (localhost:3001) otomatik dene
+          let res;
+          try {
+            res = await fetch(`${MOMUS_BOT_API}/api/discord/send-changelog`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                newFeatures: features,
+                fixes: fixes,
+                devNote: note
+              })
+            });
+          } catch(err) {
+            // Localhost fallback
+            res = await fetch(`http://localhost:3001/api/discord/send-changelog`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                newFeatures: features,
+                fixes: fixes,
+                devNote: note
+              })
+            });
+          }
 
-          if (res.ok) {
+          if (res && res.ok) {
             showToast('Changelog duyurusu Discord kanalına başarıyla gönderildi!', 'success');
             if (document.getElementById('admin-cl-features')) document.getElementById('admin-cl-features').value = '';
             if (document.getElementById('admin-cl-fixes')) document.getElementById('admin-cl-fixes').value = '';
@@ -2973,7 +2988,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast('Changelog gönderilirken hata oluştu.', 'error');
           }
         } catch(e) {
-          showToast('Bot API ile bağlantı kurulamadı.', 'error');
+          showToast('Bot API ile bağlantı kurulamadı. Botun açık olduğundan emin olun.', 'error');
         } finally {
           sendClBtn.disabled = false;
           sendClBtn.textContent = 'Duyuruyu Gönder';
