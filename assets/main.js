@@ -2818,8 +2818,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ═══════════════════════════════════════════════════════════
   // Güvenlik: PIN kodu SHA-256 hash olarak saklanır — kodda düz şifre yazmaz!
   // Gizli PIN: !*#MomusRoot99!
-  // SHA-256: 01f5e8fbc1c9a6ff336adccf498c47f7d3a042e616fdf9cf9eb50201d1c3dd6c
-  const ADMIN_PIN_HASH = '01f5e8fbc1c9a6ff336adccf498c47f7d3a042e616fdf9cf9eb50201d1c3dd6c';
+  // SHA-256: ad0f982a6d2ac3cc6d38f713f03e672ebf677f582665a62f173aa1c52431e2dd
+  const ADMIN_PIN_HASH = 'ad0f982a6d2ac3cc6d38f713f03e672ebf677f582665a62f173aa1c52431e2dd';
   let isAdminAuthenticated = false;
 
   async function sha256(str) {
