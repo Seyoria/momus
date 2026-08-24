@@ -2914,3 +2914,371 @@ a, button, input, textarea, select, label { cursor: none; }
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.4);
 }
+
+/* ═══════════════════════════════════════════
+   SECRET ADMIN PANEL (#momus-admin) STYLES
+   ═══════════════════════════════════════════ */
+.admin-auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(168, 85, 247, 0.12) 0%, #0a0a0e 70%);
+  padding: 20px;
+}
+.admin-auth-card {
+  background: rgba(18, 18, 24, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.15);
+  animation: dash-fade-in 0.3s ease;
+}
+.admin-shield-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: rgba(168, 85, 247, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+}
+.admin-auth-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.admin-auth-sub {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 24px;
+}
+.admin-pin-wrap {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.admin-pin-field {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: #fff;
+  text-align: center;
+  letter-spacing: 0.2em;
+  transition: all 0.2s ease;
+}
+.admin-pin-field:focus {
+  border-color: #a855f7;
+  outline: none;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+}
+.admin-back-link {
+  font-family: var(--font);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.admin-back-link:hover {
+  color: #fff;
+}
+
+/* Admin Dashboard Main */
+.admin-main-wrap {
+  min-height: 100vh;
+  background: #09090c;
+  color: #fff;
+  padding-bottom: 60px;
+}
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  background: rgba(14, 14, 18, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(16px);
+}
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.admin-title-text {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+.admin-title-text strong {
+  color: #a855f7;
+  font-weight: 700;
+}
+.admin-actions {
+  display: flex;
+  gap: 10px;
+}
+.admin-container {
+  max-width: 1100px;
+  margin: 32px auto 0;
+  padding: 0 24px;
+}
+
+/* Admin Stats Bar */
+.admin-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.admin-stat-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.admin-stat-num {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+}
+.admin-stat-name {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Admin Search Box */
+.admin-search-wrap {
+  margin-bottom: 24px;
+}
+.admin-search-box {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+.admin-search-box:focus {
+  border-color: #a855f7;
+  outline: none;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+}
+
+/* Admin Profiles List */
+.admin-users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.admin-user-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  padding: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  transition: border-color 0.2s;
+}
+.admin-user-card:hover {
+  border-color: rgba(168, 85, 247, 0.3);
+  background: rgba(255, 255, 255, 0.04);
+}
+.admin-user-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+.admin-user-avatar-wrap {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #111;
+  flex-shrink: 0;
+}
+.admin-user-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.admin-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.admin-user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-user-username {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+}
+.admin-user-username:hover {
+  color: #a855f7;
+  text-decoration: underline;
+}
+.admin-user-views {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: 99px;
+  color: rgba(255, 255, 255, 0.7);
+}
+.admin-user-discord {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+.admin-user-discord code {
+  font-family: var(--font-mono);
+  color: #a855f7;
+}
+.admin-user-bio {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 380px;
+}
+
+/* Badge Management in Admin Card */
+.admin-user-actions-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.admin-badges-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+.admin-badge-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.admin-badge-btn {
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.2s ease;
+}
+.admin-badge-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+.admin-badge-btn.og.active {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: #ffd700;
+  color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+}
+.admin-badge-btn.verified.active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+  color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+}
+.admin-badge-btn.premium.active {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: #a855f7;
+  color: #a855f7;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+}
+.admin-badge-btn.dev.active {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: #22c55e;
+  color: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+}
+.admin-card-bottom-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.admin-del-user-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  color: #ef4444;
+  padding: 6px 12px;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.admin-del-user-btn:hover {
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+.admin-empty {
+  text-align: center;
+  padding: 40px;
+  color: rgba(255, 255, 255, 0.3);
+  font-family: var(--font);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .admin-user-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .admin-user-actions-col {
+    align-items: flex-start;
+    width: 100%;
+  }
+  .admin-header {
+    padding: 16px 20px;
+  }
+}
