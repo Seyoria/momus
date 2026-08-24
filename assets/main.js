@@ -1,5 +1,6 @@
 // ------------------------
 // ── GLOBAL CONFIG ──
+const MAINTENANCE_MODE = false; // Bakım modunu açmak için true, kapatmak için false yapın
 const MOMUS_BOT_API = 'https://momus-bot.onrender.com';
 
 // ── SUPABASE (ORTAK VERİTABANI — profiller artık tarayıcıda değil,
@@ -128,7 +129,10 @@ function withTimeout(promise, ms, label) {
 async function saveProfileData(profile) {
   const key = profile.username.toLowerCase();
 
-  const dbProfile = { ...profile, bgVideo: '', music: '' };
+  // DataURL (yerel base64) ise Supabase'e gönderme (IndexedDB'de tutulur), fakat HTTP/HTTPS URL ise Supabase'e kaydet (herkes görsün)
+  const cleanBgVideo = (profile.bgVideo && !profile.bgVideo.startsWith('data:')) ? profile.bgVideo : (profile.bgUrl || '');
+  const cleanMusic = (profile.music && !profile.music.startsWith('data:')) ? profile.music : (profile.musicUrl || '');
+  const dbProfile = { ...profile, bgVideo: cleanBgVideo, music: cleanMusic, bgUrl: cleanBgVideo, musicUrl: cleanMusic };
 
   const session = getDiscordSession();
   const discordId = session ? session.user.id : (profile.discordId || '');
@@ -498,6 +502,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const bCursorFile = document.getElementById('b-cursor-file');
   const bCursorFileName = document.getElementById('b-cursor-file-name');
   const bCursorDeleteBtn = document.getElementById('b-cursor-delete-btn');
+  const bBgUrl = document.getElementById('b-bg-url');
+  const bMusicUrl = document.getElementById('b-music-url');
 
   const bLinkLabel = document.getElementById('b-link-label');
   const bLinkUrl = document.getElementById('b-link-url');
@@ -748,10 +754,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (lanyardInterval) clearInterval(lanyardInterval);
     updateNavButton();
 
+    // ── BAKIM MODU KONTROLÜ ──
+    const maintOverlay = document.getElementById('maintenance-overlay');
+    if (maintOverlay) {
+      if (MAINTENANCE_MODE) {
+        maintOverlay.style.display = 'flex';
+        const dot = document.getElementById('c-dot');
+        const ring = document.getElementById('c-ring');
+        if (dot) dot.style.display = 'none';
+        if (ring) ring.style.display = 'none';
+        document.body.style.cursor = 'default';
+        return;
+      } else {
+        maintOverlay.style.display = 'none';
+      }
+    }
+
     const hash = window.location.hash || '#home';
     const viewLanding = document.getElementById('view-landing');
     const viewBuilder = document.getElementById('view-builder');
     const viewProfile = document.getElementById('view-profile');
+
+    const dot = document.getElementById('c-dot');
+    const ring = document.getElementById('c-ring');
 
     if (!viewLanding || !viewBuilder || !viewProfile) return;
 
@@ -769,6 +794,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (hash === '#home' || hash === '') {
         renderDiscordGate(false);
         stopProfileAudioImmediately();
+        if (dot) dot.style.display = 'block';
+        if (ring) ring.style.display = 'block';
+        document.body.style.cursor = '';
         viewLanding.classList.remove('hidden');
         renderLandingMembers();
       } else if (hash === '#builder') {
@@ -778,6 +806,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         renderDiscordGate(false);
         fadeOutProfileAudio();
+        if (dot) dot.style.display = 'block';
+        if (ring) ring.style.display = 'block';
+        document.body.style.cursor = '';
         viewBuilder.classList.remove('hidden');
         initBuilder();
       } else {
@@ -786,6 +817,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const profiles = getProfiles();
         const profile = profiles[username];
         if (profile) {
+          // Profil sayfasına girildiğinde global fare efektini (nokta/halka) kapat ve normal imlece izin ver
+          if (dot) dot.style.display = 'none';
+          if (ring) ring.style.display = 'none';
+          document.body.style.cursor = 'default';
+
           viewProfile.classList.remove('hidden');
           renderProfilePage(profile);
         } else {
@@ -1448,6 +1484,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (bToggleSocialGlow) bToggleSocialGlow.checked = myAcc.toggleSocialGlow !== false;
       const bToggleAudioSpectrum = document.getElementById('b-toggle-audio-spectrum');
       if (bToggleAudioSpectrum) bToggleAudioSpectrum.checked = myAcc.toggleAudioSpectrum !== false;
+      if (bBgUrl) bBgUrl.value = (myAcc.bgVideo && !myAcc.bgVideo.startsWith('data:')) ? myAcc.bgVideo : (myAcc.bgUrl || '');
+      if (bMusicUrl) bMusicUrl.value = (myAcc.music && !myAcc.music.startsWith('data:')) ? myAcc.music : (myAcc.musicUrl || '');
 
       selectedEffect = myAcc.effect || 'none';
       selectedBadges = myAcc.badges ? [...myAcc.badges] : [];
@@ -1468,6 +1506,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (bIconColor) bIconColor.value = '#ffffff';
       if (bIconColorHex) bIconColorHex.value = '#ffffff';
       if (bLocation) bLocation.value = '';
+      if (bBgUrl) bBgUrl.value = '';
+      if (bMusicUrl) bMusicUrl.value = '';
       if (bOpacity) { bOpacity.value = 80; const valEl = document.getElementById('b-opacity-val'); if (valEl) valEl.textContent = '80%'; }
       if (bBlur) { bBlur.value = 0; const valEl = document.getElementById('b-blur-val'); if (valEl) valEl.textContent = '0px'; }
       if (bToggleAudio) bToggleAudio.checked = true;
@@ -2034,9 +2074,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       hasBgMusic: !!bgMusicDataUrl,
       avatar: avatarDataUrl || verifiedDiscordAvatar || fetchedDiscordAvatar || (existingProfile && existingProfile.avatar) || '',
       discordAvatar: verifiedDiscordAvatar || fetchedDiscordAvatar || (existingProfile && existingProfile.discordAvatar) || '',
-      discordBanner: fetchedDiscordBanner || (existingProfile && existingProfile.discordBanner) || '',
-      bgVideo: bgVideoDataUrl || '',
-      music: bgMusicDataUrl || '',
+      bgUrl: (bBgUrl && bBgUrl.value.trim()) || '',
+      musicUrl: (bMusicUrl && bMusicUrl.value.trim()) || '',
+      bgVideo: (bBgUrl && bBgUrl.value.trim()) || bgVideoDataUrl || '',
+      music: (bMusicUrl && bMusicUrl.value.trim()) || bgMusicDataUrl || '',
       links: [...currentLinksState],
       views: (existingProfile && existingProfile.views) || 0
     };
@@ -2594,25 +2635,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       viewBanner.style.display = 'none';
     }
 
-    // Media — Load large MP4 Video from IndexedDB or profile data
+    // Media — Load Background Video or Image from IndexedDB or profile data / URL
     const bgVid = document.getElementById('p-bg-video');
     const bgImg = document.getElementById('p-bg-img');
 
     const storedVideo = await getMediaItem(`video_${unKey}`);
-    const videoSource = storedVideo || profile.bgVideo;
+    const rawBgSource = storedVideo || profile.bgUrl || profile.bgVideo || '';
 
-    if (videoSource && bgVid) {
-      bgVid.style.display = 'block';
-      bgVid.src = videoSource;
-      if (bgImg) bgImg.style.display = 'none';
+    if (rawBgSource) {
+      const isImg = rawBgSource.startsWith('data:image') || /\.(gif|png|jpg|jpeg|webp|bmp|svg)($|\?)/i.test(rawBgSource);
+      if (isImg && bgImg) {
+        bgImg.src = rawBgSource;
+        bgImg.style.display = 'block';
+        if (bgVid) { bgVid.style.display = 'none'; bgVid.removeAttribute('src'); }
+      } else if (bgVid) {
+        bgVid.src = rawBgSource;
+        bgVid.style.display = 'block';
+        if (bgImg) bgImg.style.display = 'none';
+      }
     } else {
-      if (bgVid) bgVid.style.display = 'none';
+      if (bgVid) { bgVid.style.display = 'none'; bgVid.removeAttribute('src'); }
       if (bgImg) bgImg.style.display = 'none';
     }
 
-    // Audio — Load MP3 Music from IndexedDB or profile data
+    // Audio — Load MP3 Music from IndexedDB or profile data / URL
     const storedMusic = await getMediaItem(`music_${unKey}`);
-    const musicSource = storedMusic || profile.music;
+    const musicSource = storedMusic || profile.musicUrl || profile.music || '';
     // audioEl is already declared at the top of renderProfilePage
     const slider  = document.getElementById('p-volume-slider');
     const muteBtn = document.getElementById('p-mute-btn');
