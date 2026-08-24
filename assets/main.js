@@ -129,8 +129,13 @@ function withTimeout(promise, ms, label) {
 async function saveProfileData(profile) {
   const key = profile.username.toLowerCase();
 
-  // Yüklenen arka plan veya müzik verisini doğrudan Supabase'e kaydet (böylece tüm kullanıcılar ve arkadaşlar anında görür)
-  const dbProfile = { ...profile };
+  // base64 DataURL verileri (dosya yükleyiciden gelen dev blob'lar) Supabase JSON sütununa sığmaz
+  // ve zaman aşımı hatasına neden olur. Bu yüzden sadece http/https URL'leri Supabase'e yazıyoruz.
+  // Dosya yükleyiciden gelen büyük veriler IndexedDB'de tutulur (saveMediaItem).
+  const safeBgVideo = (profile.bgVideo && !profile.bgVideo.startsWith('data:')) ? profile.bgVideo : '';
+  const safeMusic  = (profile.music   && !profile.music.startsWith('data:'))   ? profile.music   : '';
+  const safeAvatar = (profile.avatar  && !profile.avatar.startsWith('data:'))  ? profile.avatar  : '';
+  const dbProfile = { ...profile, bgVideo: safeBgVideo, music: safeMusic, avatar: safeAvatar };
 
   const session = getDiscordSession();
   const discordId = session ? session.user.id : (profile.discordId || '');
