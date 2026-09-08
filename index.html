@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=22"/>
+  <link rel="stylesheet" href="assets/main.css?v=23"/>
 
   <!-- Supabase (profil verisinin herkese ortak gösterildiği veritabanı) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -300,15 +300,21 @@
                 <input type="text" id="b-location" class="dash-stat-value-input" placeholder="Konumun (örn: İstanbul, TR)"/>
               </div>
               <div class="dash-slider-group" style="padding:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
-                <label>Profil Opaklığı</label>
-                <div class="dash-slider-row">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <label>Profil Opaklığı</label>
+                  <span id="b-opacity-val" style="font-family:var(--font-mono); font-size:0.75rem; color:#a855f7; font-weight:700;">80%</span>
+                </div>
+                <div class="dash-slider-row" style="margin-top:6px;">
                   <input type="range" id="b-opacity" min="20" max="100" value="80"/>
                 </div>
-                <div class="dash-slider-labels"><span>20%</span><span>50%</span><span>80%</span></div>
+                <div class="dash-slider-labels"><span>20%</span><span>50%</span><span>80%</span><span>100%</span></div>
               </div>
               <div class="dash-slider-group" style="padding:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
-                <label>Profil Bulanıklığı</label>
-                <div class="dash-slider-row">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <label>Profil Bulanıklığı</label>
+                  <span id="b-blur-val" style="font-family:var(--font-mono); font-size:0.75rem; color:#a855f7; font-weight:700;">0px</span>
+                </div>
+                <div class="dash-slider-row" style="margin-top:6px;">
                   <input type="range" id="b-blur" min="0" max="80" value="0"/>
                 </div>
                 <div class="dash-slider-labels"><span>0px</span><span>20px</span><span>50px</span><span>80px</span></div>
@@ -646,12 +652,16 @@
 
         <!-- Admin Navigation Tabs -->
         <div class="admin-tab-nav">
-          <button type="button" class="admin-tab-btn active" data-tab="users">Kullanıcı & Rozet Yönetimi</button>
-          <button type="button" class="admin-tab-btn" data-tab="announcement">Canlı Site Duyurusu</button>
-          <button type="button" class="admin-tab-btn" data-tab="reserved">Ayrılmış Kullanıcı Adları</button>
-          <button type="button" class="admin-tab-btn" data-tab="blacklist">Yasaklı Listesi (Ban)</button>
-          <button type="button" class="admin-tab-btn" data-tab="analytics">Detaylı İstatistikler</button>
-          <button type="button" class="admin-tab-btn" data-tab="changelog">Changelog Duyurusu Gönder</button>
+          <button type="button" class="admin-tab-btn active" data-tab="users">Kullanıcı & Rozet</button>
+          <button type="button" class="admin-tab-btn" data-tab="announcement">Canlı Duyuru</button>
+          <button type="button" class="admin-tab-btn" data-tab="reserved">Kilitli İsimler</button>
+          <button type="button" class="admin-tab-btn" data-tab="blacklist">Yasaklılar (Ban)</button>
+          <button type="button" class="admin-tab-btn" data-tab="badge-gallery">Rozet Galerisi</button>
+          <button type="button" class="admin-tab-btn" data-tab="border-glow">Çerçeve Efektleri</button>
+          <button type="button" class="admin-tab-btn" data-tab="dm-sender">Discord DM</button>
+          <button type="button" class="admin-tab-btn" data-tab="invite-codes">Davet Kodları</button>
+          <button type="button" class="admin-tab-btn" data-tab="analytics">İstatistikler</button>
+          <button type="button" class="admin-tab-btn" data-tab="changelog">Changelog</button>
         </div>
 
         <!-- TAB 1: Kullanıcılar ve Rozet Yönetimi -->
@@ -712,18 +722,139 @@
           </div>
         </div>
 
-        <!-- TAB 4: Yasaklı Listesi (Blacklist / Ban) -->
+        <!-- TAB 4: Yasaklı Listesi (Blacklist / IP & Cihaz Ban) -->
         <div class="admin-tab-content" id="admin-tab-blacklist" style="display:none;">
           <div class="admin-section-card">
-            <h3 class="admin-card-heading">Yasaklı Kullanıcılar & Discord ID'leri</h3>
-            <p class="admin-card-desc">Yasaklanan kullanıcıların profilleri sitede askıya alınır ve yeni profil oluşturamazlar.</p>
+            <h3 class="admin-card-heading">Yasaklı Kullanıcılar, Cihazlar & IP/Fingerprint</h3>
+            <p class="admin-card-desc">Yasaklanan kullanıcıların profilleri sitede askıya alınır, yeni profil oluşturamaz ve siteye erişemezler.</p>
 
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
-              <input type="text" id="admin-ban-input" class="admin-input" style="max-width:280px;" placeholder="Kullanıcı adı veya Discord ID"/>
-              <button type="button" id="admin-add-ban-btn" class="dash-btn-danger">+ Kullanıcıyı Yasakla</button>
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+              <input type="text" id="admin-ban-input" class="admin-input" style="max-width:320px;" placeholder="Kullanıcı adı, Discord ID veya IP/Cihaz ID"/>
+              <button type="button" id="admin-add-ban-btn" class="dash-btn-danger">+ Kullanıcıyı/Cihazı Yasakla</button>
             </div>
 
             <div class="admin-tags-list" id="admin-banned-tags-list"></div>
+          </div>
+        </div>
+
+        <!-- TAB: Rozet İkon Galerisi & Süreli Rozet Verme -->
+        <div class="admin-tab-content" id="admin-tab-badge-gallery" style="display:none;">
+          <div class="admin-section-card">
+            <h3 class="admin-card-heading">Özel Rozet Tanımla & Süreli Rozet Dağıt</h3>
+            <p class="admin-card-desc">20+ hazır SVG ikon veya özel metin kullanarak kullanıcılara süreli / kalıcı rozetler tanımlayın.</p>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; margin-bottom:20px;">
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Hedef Kullanıcı Adı</label>
+                <input type="text" id="admin-badge-target-user" class="admin-input" placeholder="örn: seyoria"/>
+              </div>
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Rozet Metni / Adı</label>
+                <input type="text" id="admin-badge-name-input" class="admin-input" placeholder="örn: VIP, KRAL, ELMAS"/>
+              </div>
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Rozet Rengi</label>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                  <input type="color" id="admin-badge-color-picker" value="#a855f7" style="width:36px; height:36px; border:none; border-radius:50%; background:none; cursor:pointer;"/>
+                  <input type="text" id="admin-badge-color-hex" class="admin-input" value="#a855f7" style="max-width:110px;"/>
+                </div>
+              </div>
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Rozet Süresi</label>
+                <select id="admin-badge-duration" class="admin-input" style="background:#16161a; color:#fff; cursor:pointer;">
+                  <option value="permanent">Kalıcı (Süresiz)</option>
+                  <option value="3days">3 Günlük</option>
+                  <option value="7days">7 Günlük (1 Hafta)</option>
+                  <option value="30days">30 Günlük (1 Ay)</option>
+                </select>
+              </div>
+            </div>
+
+            <label class="admin-form-label" style="margin-bottom:10px; display:block;">Hazır İkon Galerisi (Tıkla ve Seç):</label>
+            <div id="admin-badge-icon-grid" class="admin-icon-gallery-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(52px, 1fr)); gap:10px; margin-bottom:24px;">
+              <!-- JS dynamically renders 20+ preset icons -->
+            </div>
+
+            <button type="button" id="admin-assign-gallery-badge-btn" class="dash-btn-primary">Kullanıcıya Rozeti Ata</button>
+          </div>
+        </div>
+
+        <!-- TAB: Özel Arka Plan Çerçevesi (Border Glow) -->
+        <div class="admin-tab-content" id="admin-tab-border-glow" style="display:none;">
+          <div class="admin-section-card">
+            <h3 class="admin-card-heading">Özel Profil Çerçeve Efektleri (Border Glow)</h3>
+            <p class="admin-card-desc">Seçtiğiniz kullanıcının profil kartına dış çerçeve parlama (Neon, Altın, Ateş, Gökkuşağı) efekti uygulayın.</p>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; margin-bottom:20px;">
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Hedef Kullanıcı Adı</label>
+                <input type="text" id="admin-glow-target-user" class="admin-input" placeholder="örn: seyoria"/>
+              </div>
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Çerçeve Efekti Seçin</label>
+                <select id="admin-glow-effect-select" class="admin-input" style="background:#16161a; color:#fff; cursor:pointer;">
+                  <option value="none">Efekt Yok (Varsayılan)</option>
+                  <option value="glow-purple">Neon Mor Parlama</option>
+                  <option value="glow-gold">Lüks Altın Parlama</option>
+                  <option value="glow-fire">Alev / Ateş Parıltısı</option>
+                  <option value="glow-cyan">Cyberpunk Cyan</option>
+                  <option value="glow-rainbow">RGB Canlı Gökkuşağı</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="button" id="admin-save-glow-btn" class="dash-btn-primary">Çerçeve Efektini Kaydet</button>
+          </div>
+        </div>
+
+        <!-- TAB: Discord DM Bildirimi -->
+        <div class="admin-tab-content" id="admin-tab-dm-sender" style="display:none;">
+          <div class="admin-section-card">
+            <h3 class="admin-card-heading">Kullanıcıya Özel Discord DM Bildirimi</h3>
+            <p class="admin-card-desc">Momus Botu aracılığıyla doğrudan kullanıcının Discord DM'sine şık bir bildirim mesajı iletin.</p>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Hedef Kullanıcı (Kullanıcı Adı veya Discord ID)</label>
+              <input type="text" id="admin-dm-target" class="admin-input" placeholder="örn: seyoria veya 1534645478514233524"/>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Bildirim Başlığı</label>
+              <input type="text" id="admin-dm-title" class="admin-input" placeholder="Örn: Tebrikler! Profiliniz Öne Çıkarıldı ⭐"/>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Mesaj İçeriği</label>
+              <textarea id="admin-dm-message" class="admin-textarea" placeholder="Mesajınızı buraya yazın..."></textarea>
+            </div>
+
+            <div class="admin-form-actions">
+              <button type="button" id="admin-send-dm-btn" class="dash-btn-primary">Discord DM Gönder</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Özel Davet Kodu / Gizli Kayıt Sistemi -->
+        <div class="admin-tab-content" id="admin-tab-invite-codes" style="display:none;">
+          <div class="admin-section-card">
+            <h3 class="admin-card-heading">Özel Davet Kodu & Kapalı Kayıt Sistemi</h3>
+            <p class="admin-card-desc">Yeni kayıtlar için davet kodunu zorunlu kılabilir ve tek kullanımlık VIP kodlar üretebilirsiniz.</p>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Davet Kodu Zorunluluğu</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="admin-invite-required-toggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+              <input type="text" id="admin-new-invite-code" class="admin-input" style="max-width:280px;" placeholder="Özel Kod (örn: MOMUS-VIP)"/>
+              <button type="button" id="admin-generate-invite-btn" class="dash-btn-primary">+ Davet Kodu Üret</button>
+            </div>
+
+            <h4 style="font-size:0.9rem; color:#fff; margin-bottom:12px;">Aktif Davet Kodları</h4>
+            <div class="admin-tags-list" id="admin-invite-codes-list"></div>
           </div>
         </div>
 
@@ -848,6 +979,26 @@
     </div>
   </div>
 
-  <script src="assets/main.js?v=22"></script>
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- VIRUSTOTAL SAFE LINK SCANNER MODAL                          -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="virus-scan-modal" class="link-modal-overlay" style="display:none; z-index:99999;">
+    <div class="link-modal" style="max-width:440px; text-align:center;">
+      <div style="font-size:2.5rem; color:#22c55e; margin-bottom:10px;">🛡️</div>
+      <h3 style="font-family:var(--font-display); color:#fff; font-size:1.15rem; margin-bottom:6px;">Momus Güvenlik Taraması</h3>
+      <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-bottom:16px;">
+        Ziyaret etmek istediğiniz harici bağlantı güvenlik kontrolünden geçiriliyor:
+      </p>
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px; font-family:var(--font-mono); font-size:0.75rem; color:#a855f7; word-break:break-all; margin-bottom:16px;" id="virus-scan-target-url">https://...</div>
+      
+      <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+        <a id="virus-scan-vt-btn" target="_blank" class="dash-btn-outline" style="padding:10px 16px; font-size:0.8rem; color:#3b82f6; border-color:#3b82f6;">🔍 VirusTotal Raporu</a>
+        <a id="virus-scan-proceed-btn" target="_blank" class="dash-btn-primary" style="padding:10px 18px; font-size:0.8rem;">Devam Et (Siteyi Aç)</a>
+        <button type="button" id="virus-scan-cancel-btn" class="dash-btn-outline" style="padding:10px 14px; font-size:0.8rem;">Vazgeç</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/main.js?v=23"></script>
 </body>
 </html>
