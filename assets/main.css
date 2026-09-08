@@ -3568,3 +3568,83 @@ a, button, input, textarea, select, label { cursor: none; }
   color: rgba(255, 255, 255, 0.4);
   margin-left: 6px;
 }
+
+/* ═══════════════════════════════════════════
+   ADMIN NEW FEATURES: BORDER GLOW & BADGE GALLERY
+   ═══════════════════════════════════════════ */
+
+/* Profile Border Glow Effects */
+.glow-purple {
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.45), inset 0 0 15px rgba(168, 85, 247, 0.2) !important;
+  border-color: rgba(168, 85, 247, 0.6) !important;
+}
+
+.glow-gold {
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.2) !important;
+  border-color: rgba(255, 215, 0, 0.7) !important;
+}
+
+.glow-fire {
+  box-shadow: 0 0 45px rgba(239, 68, 68, 0.45), 0 0 20px rgba(249, 115, 22, 0.3) !important;
+  border-color: rgba(249, 115, 22, 0.7) !important;
+  animation: fire-pulse 2.5s infinite alternate ease-in-out;
+}
+@keyframes fire-pulse {
+  0% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.35); }
+  100% { box-shadow: 0 0 50px rgba(249, 115, 22, 0.65), 0 0 25px rgba(239, 68, 68, 0.5); }
+}
+
+.glow-cyan {
+  box-shadow: 0 0 35px rgba(6, 182, 212, 0.45), inset 0 0 15px rgba(6, 182, 212, 0.2) !important;
+  border-color: rgba(6, 182, 212, 0.6) !important;
+}
+
+.glow-rainbow {
+  border-color: transparent !important;
+  position: relative;
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.35) !important;
+  animation: rainbow-border 4s linear infinite;
+}
+@keyframes rainbow-border {
+  0%   { box-shadow: 0 0 35px rgba(239, 68, 68, 0.5), inset 0 0 10px rgba(239, 68, 68, 0.2); }
+  25%  { box-shadow: 0 0 35px rgba(234, 179, 8, 0.5), inset 0 0 10px rgba(234, 179, 8, 0.2); }
+  50%  { box-shadow: 0 0 35px rgba(34, 197, 94, 0.5), inset 0 0 10px rgba(34, 197, 94, 0.2); }
+  75%  { box-shadow: 0 0 35px rgba(6, 182, 212, 0.5), inset 0 0 10px rgba(6, 182, 212, 0.2); }
+  100% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.5), inset 0 0 10px rgba(168, 85, 247, 0.2); }
+}
+
+/* Badge Icon Gallery Grid */
+.admin-icon-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 10px;
+}
+.admin-gallery-icon-item {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.7);
+}
+.admin-gallery-icon-item:hover {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #fff;
+  transform: scale(1.08);
+}
+.admin-gallery-icon-item.active {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: #a855f7;
+  color: #a855f7;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);
+}
+.admin-gallery-icon-item svg {
+  width: 24px;
+  height: 24px;
+}
