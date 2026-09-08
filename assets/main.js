@@ -90,6 +90,38 @@ async function getMediaItem(key) {
   }
 }
 
+// ── SUPABASE STORAGE UPLOAD (Medya dosyalarını buluta yükle — herkes görebilsin) ──
+// Bucket: momus-media (public), Supabase Dashboard'dan oluşturulmalı
+async function uploadMediaToStorage(file, mediaKey) {
+  try {
+    // Dosya adı: username_mediatype_timestamp.ext (çakışma önleme)
+    const ext = file.name.split('.').pop() || 'bin';
+    const filePath = `${mediaKey}_${Date.now()}.${ext}`;
+
+    const { data, error } = await supabaseClient.storage
+      .from('momus-media')
+      .upload(filePath, file, {
+        cacheControl: '31536000',
+        upsert: true
+      });
+
+    if (error) {
+      console.warn('Supabase Storage upload hatası:', error.message);
+      return null;
+    }
+
+    // Public URL al
+    const { data: urlData } = supabaseClient.storage
+      .from('momus-media')
+      .getPublicUrl(data.path);
+
+    return urlData?.publicUrl || null;
+  } catch (e) {
+    console.warn('Storage upload exception:', e);
+    return null;
+  }
+}
+
 // Guns.lol Custom Toast Notification Function (No native browser alerts, emoji-free)
 function showToast(message, type = 'success') {
   const container = document.getElementById('toast-container');
@@ -1752,11 +1784,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // FILE UPLOAD & DELETE HANDLERS
   let cursorDataUrl = '';
+  let avatarFileObj = null;
+  let bgVideoFileObj = null;
+  let bgMusicFileObj = null;
+  let cursorFileObj = null;
 
   if (bAvatarFile) {
     bAvatarFile.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
+        avatarFileObj = file;
         bAvatarFileName.textContent = file.name;
         if (bAvatarDeleteBtn) bAvatarDeleteBtn.style.display = 'inline-flex';
         const reader = new FileReader();
@@ -1772,11 +1809,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     bAvatarDeleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       avatarDataUrl = '';
+      avatarFileObj = null;
       if (bAvatarFile) bAvatarFile.value = '';
       if (bAvatarFileName) bAvatarFileName.textContent = 'PNG, JPG, GIF';
       bAvatarDeleteBtn.style.display = 'none';
       const myAcc = getMyAccount();
-      if (myAcc && myAcc.username) saveMediaItem(`avatar_${myAcc.username.toLowerCase()}`, null);
+      if (myAcc && myAcc.username) {
+        saveMediaItem(`avatar_${myAcc.username.toLowerCase()}`, null);
+        myAcc.avatar = '';
+        myAcc.customAvatarUrl = '';
+      }
       updateLivePreview();
       showToast('Profil avatarı silindi.', 'success');
     });
@@ -1791,6 +1833,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           bBgVideoFile.value = '';
           return;
         }
+        bgVideoFileObj = file;
         bBgVideoFileName.textContent = file.name;
         if (bBgVideoDeleteBtn) bBgVideoDeleteBtn.style.display = 'inline-flex';
         const reader = new FileReader();
@@ -1805,11 +1848,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     bBgVideoDeleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       bgVideoDataUrl = '';
+      bgVideoFileObj = null;
       if (bBgVideoFile) bBgVideoFile.value = '';
       if (bBgVideoFileName) bBgVideoFileName.textContent = 'Dosya yüklemek için tıkla';
       bBgVideoDeleteBtn.style.display = 'none';
       const myAcc = getMyAccount();
-      if (myAcc && myAcc.username) saveMediaItem(`video_${myAcc.username.toLowerCase()}`, null);
+      if (myAcc && myAcc.username) {
+        saveMediaItem(`video_${myAcc.username.toLowerCase()}`, null);
+        myAcc.bgVideo = '';
+        myAcc.bgUrl = '';
+      }
       showToast('Arka plan medyası silindi.', 'success');
     });
   }
@@ -1823,6 +1871,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           bBgMusicFile.value = '';
           return;
         }
+        bgMusicFileObj = file;
         bBgMusicFileName.textContent = file.name;
         if (bBgMusicDeleteBtn) bBgMusicDeleteBtn.style.display = 'inline-flex';
         const reader = new FileReader();
@@ -1837,11 +1886,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     bBgMusicDeleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       bgMusicDataUrl = '';
+      bgMusicFileObj = null;
       if (bBgMusicFile) bBgMusicFile.value = '';
       if (bBgMusicFileName) bBgMusicFileName.textContent = 'Ses dosyası yükle';
       bBgMusicDeleteBtn.style.display = 'none';
       const myAcc = getMyAccount();
-      if (myAcc && myAcc.username) saveMediaItem(`music_${myAcc.username.toLowerCase()}`, null);
+      if (myAcc && myAcc.username) {
+        saveMediaItem(`music_${myAcc.username.toLowerCase()}`, null);
+        myAcc.music = '';
+        myAcc.musicUrl = '';
+      }
       showToast('Ses dosyası silindi.', 'success');
     });
   }
@@ -1850,6 +1904,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     bCursorFile.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
+        cursorFileObj = file;
         if (bCursorFileName) bCursorFileName.textContent = file.name;
         if (bCursorDeleteBtn) bCursorDeleteBtn.style.display = 'inline-flex';
         const reader = new FileReader();
@@ -1864,6 +1919,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     bCursorDeleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       cursorDataUrl = '';
+      cursorFileObj = null;
       if (bCursorFile) bCursorFile.value = '';
       if (bCursorFileName) bCursorFileName.textContent = 'GIF veya PNG yükle';
       bCursorDeleteBtn.style.display = 'none';
@@ -2053,7 +2109,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Save heavy media to IndexedDB (supports 1GB+ large MP4/MP3 files without quota errors)
+    // 1. Upload media files to Supabase Storage if user selected new files (Buluta yükleme)
+    let uploadedBgVideoUrl = '';
+    let uploadedBgMusicUrl = '';
+    let uploadedAvatarUrl = '';
+
+    if (bgVideoFileObj) {
+      showToast('Arka plan medyası buluta yükleniyor...', 'info');
+      const cloudUrl = await uploadMediaToStorage(bgVideoFileObj, `video_${unKey}`);
+      if (cloudUrl) uploadedBgVideoUrl = cloudUrl;
+    }
+
+    if (bgMusicFileObj) {
+      showToast('Ses dosyası buluta yükleniyor...', 'info');
+      const cloudUrl = await uploadMediaToStorage(bgMusicFileObj, `music_${unKey}`);
+      if (cloudUrl) uploadedBgMusicUrl = cloudUrl;
+    }
+
+    if (avatarFileObj) {
+      const cloudUrl = await uploadMediaToStorage(avatarFileObj, `avatar_${unKey}`);
+      if (cloudUrl) uploadedAvatarUrl = cloudUrl;
+    }
+
+    // 2. Save heavy media to IndexedDB (yerel hızlı önbellek)
     if (bgVideoDataUrl) await saveMediaItem(`video_${unKey}`, bgVideoDataUrl);
     if (bgMusicDataUrl) await saveMediaItem(`music_${unKey}`, bgMusicDataUrl);
     if (avatarDataUrl)  await saveMediaItem(`avatar_${unKey}`, avatarDataUrl);
@@ -2071,6 +2149,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Preserve existing views count
     const existingProfile = existingProfiles[unKey];
+
+    // Determine public cloud URLs (fallback to existing public URLs)
+    const finalBgVideo = uploadedBgVideoUrl || (existingProfile && existingProfile.bgVideo && !existingProfile.bgVideo.startsWith('data:') ? existingProfile.bgVideo : '') || '';
+    const finalMusic = uploadedBgMusicUrl || (existingProfile && existingProfile.music && !existingProfile.music.startsWith('data:') ? existingProfile.music : '') || '';
+    const finalAvatar = uploadedAvatarUrl || verifiedDiscordAvatar || fetchedDiscordAvatar || (existingProfile && existingProfile.avatar && !existingProfile.avatar.startsWith('data:') ? existingProfile.avatar : '') || '';
+
     // Save active selected effect
     const profile = {
       username: un,
@@ -2084,6 +2168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       badges: [...selectedBadges],
       customBadges: [...customBadges],
       effect: selectedEffect || 'none',
+      borderGlow: (existingProfile && existingProfile.borderGlow) || 'none',
       toggleAudio: bToggleAudio ? bToggleAudio.checked : true,
       toggleDiscordAvatar: bToggleDiscordAvatar ? bToggleDiscordAvatar.checked : false,
       toggleAnimatedTitle: bToggleAnimatedTitle ? bToggleAnimatedTitle.checked : false,
@@ -2093,14 +2178,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       toggleAudioSpectrum: document.getElementById('b-toggle-audio-spectrum') ? document.getElementById('b-toggle-audio-spectrum').checked : true,
       bio: (bBio && bBio.value.trim()) || 'currently doing nothing',
       discordId: discordIdVal,
-      customAvatarUrl: '',
-      hasCustomAvatar: !!avatarDataUrl,
-      hasBgVideo: !!bgVideoDataUrl,
-      hasBgMusic: !!bgMusicDataUrl,
-      avatar: avatarDataUrl || verifiedDiscordAvatar || fetchedDiscordAvatar || (existingProfile && existingProfile.avatar) || '',
+      customAvatarUrl: uploadedAvatarUrl || '',
+      hasCustomAvatar: !!(avatarDataUrl || uploadedAvatarUrl),
+      hasBgVideo: !!(bgVideoDataUrl || finalBgVideo),
+      hasBgMusic: !!(bgMusicDataUrl || finalMusic),
+      avatar: finalAvatar || avatarDataUrl || '',
       discordAvatar: verifiedDiscordAvatar || fetchedDiscordAvatar || (existingProfile && existingProfile.discordAvatar) || '',
-      bgVideo: bgVideoDataUrl || (existingProfile && existingProfile.bgVideo) || '',
-      music: bgMusicDataUrl || (existingProfile && existingProfile.music) || '',
+      bgVideo: finalBgVideo || bgVideoDataUrl || '',
+      bgUrl: finalBgVideo || '',
+      music: finalMusic || bgMusicDataUrl || '',
+      musicUrl: finalMusic || '',
       links: [...currentLinksState],
       views: (existingProfile && existingProfile.views) || 0
     };
@@ -2549,9 +2636,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       pCard.style.opacity = (profile.opacity !== undefined ? profile.opacity : 80) / 100;
       pCard.style.backdropFilter = `blur(${profile.blur || 0}px)`;
       pCard.style.webkitBackdropFilter = `blur(${profile.blur || 0}px)`;
+
+      // Apply Border Glow Effect (Admin Special)
+      ['glow-purple', 'glow-gold', 'glow-fire', 'glow-cyan', 'glow-rainbow'].forEach(c => pCard.classList.remove(c));
+      if (profile.borderGlow && profile.borderGlow !== 'none') {
+        pCard.classList.add(profile.borderGlow);
+      }
     }
 
-    // Render Preset & Custom Badges
+    // Render Preset & Custom Badges (with expiration time check)
     const viewBadges = document.getElementById('view-badges');
     if (viewBadges) {
       viewBadges.innerHTML = '';
@@ -2564,6 +2657,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
       }
       if (profile.customBadges && profile.customBadges.length > 0) {
+        const now = Date.now();
+        // Filter out expired temporary badges
+        profile.customBadges = profile.customBadges.filter(b => !b.expiresAt || b.expiresAt > now);
+
         profile.customBadges.forEach(b => {
           const badgeSpan = document.createElement('span');
           badgeSpan.className = 'p-badge custom-badge';
@@ -2571,7 +2668,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           badgeSpan.style.color = b.color;
           badgeSpan.style.background = b.color + '1f';
           badgeSpan.style.boxShadow = `0 0 10px ${b.color}44`;
-          badgeSpan.textContent = b.text.toUpperCase();
+          
+          if (b.icon) {
+            badgeSpan.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;">${b.icon} ${b.text.toUpperCase()}</span>`;
+          } else {
+            badgeSpan.textContent = b.text.toUpperCase();
+          }
           viewBadges.appendChild(badgeSpan);
         });
       }
@@ -2722,7 +2824,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       muteBtn.onclick = () => { audioEl.muted = !audioEl.muted; };
     }
 
-    // GUNS.LOL STYLE GLOWING ICON ROW RENDERING
+    // GUNS.LOL STYLE GLOWING ICON ROW RENDERING (WITH VIRUSTOTAL SAFE SCANNER)
     if (viewLinks) {
       viewLinks.innerHTML = '';
       if (profile.links && profile.links.length > 0) {
@@ -2730,10 +2832,41 @@ document.addEventListener('DOMContentLoaded', async () => {
           const a = document.createElement('a');
           a.className = 'p-icon-link';
           a.href = link.url || '#';
-          a.target = '_blank';
-          a.rel = 'noopener';
           a.title = link.label;
           a.innerHTML = getPlatformIconSVG(link.platform);
+
+          // Safe Link Scanner Interceptor
+          a.addEventListener('click', (e) => {
+            const targetUrl = link.url;
+            if (!targetUrl || targetUrl === '#' || targetUrl.startsWith('javascript:')) return;
+
+            e.preventDefault();
+            const vtModal = document.getElementById('virus-scan-modal');
+            const vtUrlEl = document.getElementById('virus-scan-target-url');
+            const vtBtn = document.getElementById('virus-scan-vt-btn');
+            const proceedBtn = document.getElementById('virus-scan-proceed-btn');
+            const cancelBtn = document.getElementById('virus-scan-cancel-btn');
+
+            if (vtModal && vtUrlEl) {
+              vtUrlEl.textContent = targetUrl;
+              if (proceedBtn) proceedBtn.href = targetUrl;
+              if (vtBtn) vtBtn.href = `https://www.virustotal.com/gui/search/${encodeURIComponent(targetUrl)}`;
+              vtModal.style.display = 'flex';
+
+              if (cancelBtn) {
+                cancelBtn.onclick = () => { vtModal.style.display = 'none'; };
+              }
+              if (proceedBtn) {
+                proceedBtn.onclick = () => { vtModal.style.display = 'none'; };
+              }
+              vtModal.onclick = (evt) => {
+                if (evt.target === vtModal) vtModal.style.display = 'none';
+              };
+            } else {
+              window.open(targetUrl, '_blank', 'noopener,noreferrer');
+            }
+          });
+
           viewLinks.appendChild(a);
         });
       }
@@ -3091,9 +3224,222 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
+    // 4. Rozet İkon Galerisi & Süreli Rozet Yönetimi
+    let selectedGalleryIcon = '👑';
+    const galleryIcons = [
+      '👑', '💎', '🔥', '⚡', '⭐', '🛡️', '⚔️', '🏆', 
+      '🚀', '💀', '🍀', '🌟', '🎯', '🪐', '🔮', '🎭', 
+      '🌹', '🐉', '✨', '⚡', '🌙', '👾', '🕹️', '🎪'
+    ];
+
+    const iconGridEl = document.getElementById('admin-badge-icon-grid');
+    if (iconGridEl) {
+      iconGridEl.innerHTML = '';
+      galleryIcons.forEach(icon => {
+        const div = document.createElement('div');
+        div.className = 'admin-gallery-icon-item';
+        div.textContent = icon;
+        div.style.fontSize = '1.3rem';
+        if (icon === selectedGalleryIcon) div.classList.add('active');
+        div.addEventListener('click', () => {
+          iconGridEl.querySelectorAll('.admin-gallery-icon-item').forEach(i => i.classList.remove('active'));
+          div.classList.add('active');
+          selectedGalleryIcon = icon;
+        });
+        iconGridEl.appendChild(div);
+      });
+    }
+
+    const badgeColorPicker = document.getElementById('admin-badge-color-picker');
+    const badgeColorHex = document.getElementById('admin-badge-color-hex');
+    if (badgeColorPicker && badgeColorHex) {
+      badgeColorPicker.addEventListener('input', () => { badgeColorHex.value = badgeColorPicker.value; });
+      badgeColorHex.addEventListener('input', () => { badgeColorPicker.value = badgeColorHex.value; });
+    }
+
+    const assignGalleryBadgeBtn = document.getElementById('admin-assign-gallery-badge-btn');
+    if (assignGalleryBadgeBtn && !assignGalleryBadgeBtn.dataset.bound) {
+      assignGalleryBadgeBtn.dataset.bound = '1';
+      assignGalleryBadgeBtn.addEventListener('click', async () => {
+        const targetUser = (document.getElementById('admin-badge-target-user')?.value || '').trim().toLowerCase();
+        const badgeName = (document.getElementById('admin-badge-name-input')?.value || '').trim();
+        const badgeColor = document.getElementById('admin-badge-color-hex')?.value || '#a855f7';
+        const duration = document.getElementById('admin-badge-duration')?.value || 'permanent';
+
+        if (!targetUser || !badgeName) {
+          showToast('Kullanıcı adı ve rozet adı zorunludur.', 'error');
+          return;
+        }
+
+        const profiles = getProfiles();
+        const p = profiles[targetUser];
+        if (!p) {
+          showToast(`"${targetUser}" adlı kullanıcı bulunamadı.`, 'error');
+          return;
+        }
+
+        if (!p.customBadges) p.customBadges = [];
+
+        let expiresAt = null;
+        if (duration === '3days') expiresAt = Date.now() + (3 * 24 * 60 * 60 * 1000);
+        else if (duration === '7days') expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000);
+        else if (duration === '30days') expiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000);
+
+        p.customBadges.push({
+          text: badgeName,
+          color: badgeColor,
+          icon: selectedGalleryIcon,
+          expiresAt: expiresAt
+        });
+
+        await saveProfileData(p);
+        showToast(`@${p.username} kullanıcısına [${badgeName}] rozeti başarıyla verildi!`, 'success');
+        renderAdminProfiles();
+        renderAdminAnalytics();
+      });
+    }
+
+    // 5. Çerçeve Efekti (Border Glow) Yönetimi
+    const saveGlowBtn = document.getElementById('admin-save-glow-btn');
+    if (saveGlowBtn && !saveGlowBtn.dataset.bound) {
+      saveGlowBtn.dataset.bound = '1';
+      saveGlowBtn.addEventListener('click', async () => {
+        const targetUser = (document.getElementById('admin-glow-target-user')?.value || '').trim().toLowerCase();
+        const effect = document.getElementById('admin-glow-effect-select')?.value || 'none';
+
+        if (!targetUser) {
+          showToast('Lütfen bir kullanıcı adı girin.', 'error');
+          return;
+        }
+
+        const profiles = getProfiles();
+        const p = profiles[targetUser];
+        if (!p) {
+          showToast(`"${targetUser}" adlı kullanıcı bulunamadı.`, 'error');
+          return;
+        }
+
+        p.borderGlow = effect;
+        await saveProfileData(p);
+        showToast(`@${p.username} için çerçeve efekti güncellendi: ${effect}`, 'success');
+      });
+    }
+
+    // 6. Discord DM Bildirimi Gönderici
+    const sendDmBtn = document.getElementById('admin-send-dm-btn');
+    if (sendDmBtn && !sendDmBtn.dataset.bound) {
+      sendDmBtn.dataset.bound = '1';
+      sendDmBtn.addEventListener('click', async () => {
+        const target = (document.getElementById('admin-dm-target')?.value || '').trim();
+        const title = (document.getElementById('admin-dm-title')?.value || '').trim();
+        const message = (document.getElementById('admin-dm-message')?.value || '').trim();
+
+        if (!target || !title || !message) {
+          showToast('Lütfen tüm DM alanlarını doldurun.', 'error');
+          return;
+        }
+
+        let discordId = target;
+        const profiles = getProfiles();
+        if (profiles[target.toLowerCase()] && profiles[target.toLowerCase()].discordId) {
+          discordId = profiles[target.toLowerCase()].discordId;
+        }
+
+        sendDmBtn.disabled = true;
+        sendDmBtn.textContent = 'Gönderiliyor...';
+
+        try {
+          const res = await fetch(`${MOMUS_BOT_API}/api/discord/send-dm`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: discordId, title, message })
+          }).catch(() => null);
+
+          if (res && res.ok) {
+            showToast('Discord DM bildirimi başarıyla iletildi!', 'success');
+            document.getElementById('admin-dm-title').value = '';
+            document.getElementById('admin-dm-message').value = '';
+          } else {
+            showToast('DM gönderilemedi. Kullanıcının DM kutusu kapalı olabilir veya bot sunucuda değil.', 'error');
+          }
+        } catch(e) {
+          showToast('Bot API bağlantı hatası.', 'error');
+        } finally {
+          sendDmBtn.disabled = false;
+          sendDmBtn.textContent = 'Discord DM Gönder';
+        }
+      });
+    }
+
+    // 7. Özel Davet Kodu / Gizli Kayıt Sistemi
+    const inviteToggle = document.getElementById('admin-invite-required-toggle');
+    const newInviteInput = document.getElementById('admin-new-invite-code');
+    const genInviteBtn = document.getElementById('admin-generate-invite-btn');
+
+    if (inviteToggle) {
+      inviteToggle.checked = localStorage.getItem('momus_invite_required') === '1';
+      inviteToggle.addEventListener('change', () => {
+        localStorage.setItem('momus_invite_required', inviteToggle.checked ? '1' : '0');
+        showToast(`Davet kodu zorunluluğu: ${inviteToggle.checked ? 'AÇIK' : 'KAPALI'}`, 'info');
+      });
+    }
+
+    if (genInviteBtn && !genInviteBtn.dataset.bound) {
+      genInviteBtn.dataset.bound = '1';
+      genInviteBtn.addEventListener('click', () => {
+        let code = (newInviteInput ? newInviteInput.value : '').trim().toUpperCase();
+        if (!code) {
+          code = 'MOMUS-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+        let list = getInviteCodes();
+        if (!list.includes(code)) {
+          list.push(code);
+          localStorage.setItem('momus_invite_codes', JSON.stringify(list));
+          showToast(`Davet kodu üretildi: ${code}`, 'success');
+          if (newInviteInput) newInviteInput.value = '';
+          renderInviteCodesTags();
+        }
+      });
+    }
+
     renderReservedTags();
     renderBannedTags();
+    renderInviteCodesTags();
     renderAdminAnalytics();
+  }
+
+  function getInviteCodes() {
+    try {
+      const saved = localStorage.getItem('momus_invite_codes');
+      return saved ? JSON.parse(saved) : ['MOMUS-VIP', 'EARLY-ACCESS'];
+    } catch(e) {
+      return ['MOMUS-VIP', 'EARLY-ACCESS'];
+    }
+  }
+
+  function renderInviteCodesTags() {
+    const listEl = document.getElementById('admin-invite-codes-list');
+    if (!listEl) return;
+    const items = getInviteCodes();
+    listEl.innerHTML = '';
+    items.forEach(code => {
+      const tag = document.createElement('span');
+      tag.className = 'admin-tag-item';
+      tag.style.borderColor = 'rgba(168,85,247,0.3)';
+      tag.style.color = '#a855f7';
+      tag.innerHTML = `<span>${code}</span><button type="button" class="admin-tag-del" data-code="${code}">&times;</button>`;
+      listEl.appendChild(tag);
+    });
+
+    listEl.querySelectorAll('.admin-tag-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const code = btn.dataset.code;
+        let items = getInviteCodes().filter(x => x !== code);
+        localStorage.setItem('momus_invite_codes', JSON.stringify(items));
+        renderInviteCodesTags();
+        showToast(`"${code}" davet kodu silindi.`, 'info');
+      });
+    });
   }
 
   function getReservedUsernames() {
