@@ -5,7 +5,7 @@
 
   <br/><br/>
 
-  <h1>✦ momus</h1>
+  <h1>momus</h1>
   <p><strong>Yeni Nesil, Fütüristik Bio-Link Platformu</strong></p>
   <p>
     <a href="https://seyoria.github.io/momus/">Canlı Site</a> •
