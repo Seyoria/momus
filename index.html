@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=23"/>
+  <link rel="stylesheet" href="assets/main.css?v=24"/>
 
   <!-- HTTPS Zorunluluğu (Enforce HTTPS) -->
   <script>
@@ -620,7 +620,7 @@
   <!-- ═══════════════════════════════════════════════════════════ -->
   <div id="view-404" class="app-view hidden">
     <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; position:relative; z-index:10;">
-      <div style="font-family:var(--font-display); font-size:clamp(4rem, 12vw, 8rem); font-weight:900; background:linear-gradient(135deg, #a855f7, #6366f1); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; margin-bottom:10px;">404</div>
+      <div style="font-family:var(--font-display); font-size:clamp(4rem, 12vw, 8rem); font-weight:900; background:linear-gradient(135deg, #a855f7, #6366f1); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; line-height:1; margin-bottom:10px;">404</div>
       <h2 style="font-family:var(--font-display); font-size:1.5rem; color:#fff; margin-bottom:10px;">Kullanıcı veya Sayfa Bulunamadı</h2>
       <p style="color:rgba(255,255,255,0.5); font-size:0.95rem; max-width:420px; margin-bottom:24px;">Aradığınız bio profili henüz oluşturulmamış, silinmiş veya bağlantı hatalı olabilir.</p>
       <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
@@ -666,15 +666,36 @@
       </header>
 
       <main class="admin-container">
-        <!-- Admin Stats Top Bar -->
-        <div class="admin-stats-bar">
-          <div class="admin-stat-box">
-            <span class="admin-stat-num" id="admin-total-users">0</span>
+        <!-- Admin Supercharged Stats Top Bar -->
+        <div class="admin-stats-bar" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:24px;">
+          <div class="admin-stat-box" style="background:linear-gradient(135deg, rgba(168,85,247,0.1), rgba(0,0,0,0.4)); border:1px solid rgba(168,85,247,0.3);">
+            <span class="admin-stat-num" id="admin-total-users" style="color:#a855f7;">0</span>
             <span class="admin-stat-name">Kayıtlı Profil</span>
           </div>
-          <div class="admin-stat-box">
-            <span class="admin-stat-num" id="admin-total-views">0</span>
+          <div class="admin-stat-box" style="background:linear-gradient(135deg, rgba(59,130,246,0.1), rgba(0,0,0,0.4)); border:1px solid rgba(59,130,246,0.3);">
+            <span class="admin-stat-num" id="admin-total-views" style="color:#3b82f6;">0</span>
             <span class="admin-stat-name">Toplam Görüntülenme</span>
+          </div>
+          <div class="admin-stat-box" style="background:linear-gradient(135deg, rgba(234,179,8,0.1), rgba(0,0,0,0.4)); border:1px solid rgba(234,179,8,0.3);">
+            <span class="admin-stat-num" id="admin-stat-spotlight-count" style="color:#eab308;">0</span>
+            <span class="admin-stat-name">Öne Çıkan Profil</span>
+          </div>
+          <div class="admin-stat-box" style="background:linear-gradient(135deg, rgba(34,197,94,0.1), rgba(0,0,0,0.4)); border:1px solid rgba(34,197,94,0.3);">
+            <span class="admin-stat-num" id="admin-stat-active-badges" style="color:#22c55e;">0</span>
+            <span class="admin-stat-name">Aktif Rozet</span>
+          </div>
+        </div>
+
+        <!-- Quick Actions Toolbar -->
+        <div class="admin-section-card" style="margin-bottom:20px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:rgba(18,18,24,0.7); border:1px solid rgba(255,255,255,0.08);">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.2rem;">⚡</span>
+            <span style="font-family:var(--font-display); font-size:0.9rem; font-weight:700; color:#fff;">Hızlı Sistem Eylemleri</span>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" id="admin-btn-export-backup" class="dash-btn-outline" style="padding:8px 14px; font-size:0.75rem; border-color:rgba(168,85,247,0.4); color:#a855f7;">💾 JSON Yedeği İndir</button>
+            <button type="button" id="admin-btn-clean-ghosts" class="dash-btn-outline" style="padding:8px 14px; font-size:0.75rem; border-color:rgba(234,179,8,0.4); color:#eab308;">🧹 Boş Hesapları Tara</button>
+            <button type="button" id="admin-btn-broadcast-alert" class="dash-btn-primary" style="padding:8px 14px; font-size:0.75rem;">📢 Acil Duyuru Fırlat</button>
           </div>
         </div>
 
@@ -688,6 +709,7 @@
           <button type="button" class="admin-tab-btn" data-tab="border-glow">Çerçeve Efektleri</button>
           <button type="button" class="admin-tab-btn" data-tab="dm-sender">Discord DM</button>
           <button type="button" class="admin-tab-btn" data-tab="invite-codes">Davet Kodları</button>
+          <button type="button" class="admin-tab-btn" data-tab="audit-logs">İşlem Günlüğü</button>
           <button type="button" class="admin-tab-btn" data-tab="analytics">İstatistikler</button>
           <button type="button" class="admin-tab-btn" data-tab="changelog">Changelog</button>
         </div>
@@ -886,6 +908,23 @@
           </div>
         </div>
 
+        <!-- TAB: Sistem İşlem & Güvenlik Günlüğü (Audit Logs) -->
+        <div class="admin-tab-content" id="admin-tab-audit-logs" style="display:none;">
+          <div class="admin-section-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <h3 class="admin-card-heading">Sistem İşlem & Güvenlik Günlüğü</h3>
+                <p class="admin-card-desc">Gerçekleştirilen tüm profil kayıtları, banlamalar, rozet atamaları ve admin işlemlerinin anlık akışı.</p>
+              </div>
+              <button type="button" id="admin-clear-audit-logs-btn" class="dash-btn-outline" style="padding:6px 12px; font-size:0.75rem; color:#ef4444; border-color:rgba(239,68,68,0.3);">Günlüğü Temizle</button>
+            </div>
+
+            <div id="admin-audit-logs-list" style="display:flex; flex-direction:column; gap:10px; max-height:450px; overflow-y:auto; padding-right:6px;">
+              <!-- JS fills dynamically -->
+            </div>
+          </div>
+        </div>
+
         <!-- TAB 5: Detaylı İstatistikler & Grafikler -->
         <div class="admin-tab-content" id="admin-tab-analytics" style="display:none;">
           <div class="admin-section-card">
@@ -1055,7 +1094,7 @@
   <div id="terms-modal" class="link-modal-overlay" style="display:none; z-index:99999;">
     <div class="link-modal" style="max-width:540px; max-height:80vh; display:flex; flex-direction:column;">
       <div class="link-modal-header" style="justify-content:space-between;">
-        <h3 style="color:#fff; font-size:1.1rem; display:flex; align-items:center; gap:8px;">Kullanım Koşulları</h3>
+        <h3 style="color:#fff; font-size:1.1rem; display:flex; align-items:center; gap:8px;">📜 Kullanım Koşulları</h3>
         <button id="terms-modal-close" class="link-modal-close">&times;</button>
       </div>
       <div class="link-modal-body" style="overflow-y:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); line-height:1.6; padding:16px 20px;">
