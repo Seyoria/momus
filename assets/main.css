@@ -1527,7 +1527,6 @@ a, button, input, textarea, select, label { cursor: none; }
 .dash-custom-dropdown {
   position: relative;
   width: 100%;
-  max-width: 380px;
 }
 .dash-dropdown-trigger {
   width: 100%;
@@ -3768,6 +3767,8 @@ a, button, input, textarea, select, label { cursor: none; }
   .cookie-banner-actions button {
     width: 100%;
   }
+}
+
 .name-effect-neon {
   color: #fff !important;
   text-shadow: 0 0 10px #a855f7, 0 0 20px #a855f7, 0 0 40px #a855f7, 0 0 80px #a855f7 !important;
