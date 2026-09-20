@@ -2494,7 +2494,7 @@ a, button, input, textarea, select, label { cursor: none; }
 
 
 /* ═══════════════════════════════════════════
-   DISCORD LOGIN GATE
+   DISCORD LOGIN GATE — FULL SCREEN
    ═══════════════════════════════════════════ */
 #discord-gate {
   position: fixed;
@@ -2503,102 +2503,204 @@ a, button, input, textarea, select, label { cursor: none; }
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 #discord-gate.hidden { display: none; }
+
 .dg-bg {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse at 30% 30%, rgba(168, 85, 247, 0.12) 0%, transparent 55%),
-    radial-gradient(ellipse at 70% 70%, rgba(88, 101, 242, 0.1) 0%, transparent 55%),
-    #060606;
+  background: #050505;
 }
-.dg-card {
+.dg-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.5;
+  animation: dgGlowPulse 6s ease-in-out infinite alternate;
+}
+.dg-glow-1 {
+  width: 600px; height: 600px;
+  top: -150px; left: -100px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.35), transparent 70%);
+}
+.dg-glow-2 {
+  width: 500px; height: 500px;
+  bottom: -100px; right: -80px;
+  background: radial-gradient(circle, rgba(88, 101, 242, 0.3), transparent 70%);
+  animation-delay: 3s;
+}
+@keyframes dgGlowPulse {
+  0% { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(1.15); opacity: 0.6; }
+}
+
+.dg-content {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 380px;
+  max-width: 440px;
   margin: 20px;
-  background: rgba(14, 14, 14, 0.85);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 22px;
-  padding: 40px 32px 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
 }
+
 .dg-logo {
-  width: 64px; height: 64px;
-  border-radius: 16px;
+  width: 120px;
+  height: 120px;
+  border-radius: 28px;
   object-fit: cover;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.35);
+  margin-bottom: 28px;
+  box-shadow:
+    0 0 40px rgba(168, 85, 247, 0.4),
+    0 0 80px rgba(168, 85, 247, 0.15),
+    0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(168, 85, 247, 0.25);
+  animation: dgLogoFloat 4s ease-in-out infinite;
 }
+@keyframes dgLogoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
 .dg-title {
   font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--white);
-  margin-bottom: 10px;
-  letter-spacing: -0.02em;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+  letter-spacing: -0.03em;
 }
 .dg-sub {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: rgba(255, 255, 255, 0.45);
-  line-height: 1.55;
-  margin-bottom: 26px;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  max-width: 320px;
 }
+
 .dg-login-btn {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   background: #5865F2;
   color: #fff;
   border: none;
-  border-radius: 12px;
-  padding: 14px 20px;
+  border-radius: 14px;
+  padding: 16px 24px;
   font-family: var(--font);
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(88, 101, 242, 0.35);
 }
 .dg-login-btn:hover {
   background: #4752c4;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(88, 101, 242, 0.5);
 }
+
+/* Divider */
+.dg-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin: 24px 0;
+}
+.dg-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.dg-divider-text {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(234, 179, 8, 0.7);
+  letter-spacing: 0.15em;
+}
+
+/* Warning Box */
+.dg-warning-box {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: rgba(234, 179, 8, 0.06);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  border-radius: 14px;
+  padding: 18px 20px;
+  text-align: left;
+  margin-bottom: 16px;
+}
+.dg-warning-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.dg-warning-icon svg {
+  stroke: rgba(234, 179, 8, 0.85);
+}
+.dg-warning-text strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: rgba(234, 179, 8, 0.95);
+  margin-bottom: 6px;
+}
+.dg-warning-text p {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Join Button */
+.dg-join-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #43b581, #3ba574);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 24px;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(67, 181, 129, 0.3);
+}
+.dg-join-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(67, 181, 129, 0.45);
+  filter: brightness(1.1);
+}
+
 .dg-back {
   display: block;
-  margin-top: 18px;
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.35);
+  margin-top: 24px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.3);
   transition: color 0.2s;
 }
 .dg-back:hover { color: rgba(255, 255, 255, 0.7); }
-.dg-warning {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: rgba(234, 179, 8, 0.08);
-  border: 1px solid rgba(234, 179, 8, 0.25);
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin-top: 16px;
-  font-size: 0.78rem;
-  color: rgba(234, 179, 8, 0.9);
-  line-height: 1.5;
-  text-align: left;
-}
-.dg-warning svg {
-  flex-shrink: 0;
-  margin-top: 2px;
-  stroke: rgba(234, 179, 8, 0.8);
+
+/* Mobile */
+@media (max-width: 480px) {
+  .dg-content { margin: 16px; }
+  .dg-logo { width: 90px; height: 90px; border-radius: 22px; }
+  .dg-title { font-size: 1.6rem; }
+  .dg-warning-box { padding: 14px 16px; }
 }
 
 /* Sidebar session badge */
