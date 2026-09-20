@@ -1,5 +1,4 @@
 // ------------------------
-// ── GLOBAL CONFIG ──
 const MAINTENANCE_MODE = false; // Bakım modunu açmak için true, kapatmak için false yapın
 const MOMUS_BOT_API = 'https://momus-bot.onrender.com';
 
@@ -47,7 +46,6 @@ async function refreshProfilesCache() {
   return profilesCache;
 }
 
-// ── INDEXEDDB MEDIA STORAGE (For large MP4 background videos & MP3 audio) ──
 function getIDB() {
   return new Promise((resolve) => {
     const req = indexedDB.open('momus_media_db', 1);
@@ -90,7 +88,6 @@ async function getMediaItem(key) {
   }
 }
 
-// ── SUPABASE STORAGE UPLOAD (Medya dosyalarını buluta yükle — herkes görebilsin) ──
 // Bucket: momus-media (public), Supabase Dashboard'dan oluşturulmalı
 async function uploadMediaToStorage(file, mediaKey) {
   try {
@@ -139,7 +136,6 @@ function showToast(message, type = 'success') {
   }, 3200);
 }
 
-// ── INITIAL PROFILES ──
 const INITIAL_PROFILES = {};
 
 function getProfiles() {
@@ -243,7 +239,6 @@ function clearAllProfiles() {
   } catch(e){}
 }
 
-// ── PLATFORM ICONS (SVG for Guns.lol style icon row) ──
 function getPlatformIconSVG(platform) {
   const icons = {
     kick: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16v18H4V3zm3 3v12h3v-3.5h2.5L15.5 18H19l-4-4.5L19 9h-3.5L13 12.5V6H7z"/></svg>`,
@@ -261,7 +256,6 @@ function getPlatformIconSVG(platform) {
   return icons[platform] || icons.custom;
 }
 
-// ── STATE VARIABLES ──
 let currentLinksState = [];
 let currentSelectedPlatform = "youtube";
 let avatarDataUrl = "";
@@ -272,7 +266,6 @@ let bgMusicDataUrl = "";
 let lanyardInterval = null;
 let discordDebounceTimer = null;
 
-// ── DISCORD OAUTH GATE (builder/dashboard Discord girişi olmadan açılmaz) ──
 // Discord Developer Portal > OAuth2 > Client ID buraya. Redirect URI'yi de
 // aynı portalda tam bu sayfanın adresine (query/hash olmadan) ekle.
 const DISCORD_CLIENT_ID = '1534645433031331870';
@@ -465,7 +458,6 @@ async function handleDiscordAuthCallback() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // ── CUSTOM CURSOR ──
   const dot = document.getElementById('c-dot');
   const ring = document.getElementById('c-ring');
   let rx = window.innerWidth / 2, ry = window.innerHeight / 2;
@@ -502,7 +494,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // ── BUILDER DOM ELEMENTS (Declared first to avoid TDZ errors) ──
   const bBackBtn = document.getElementById('builder-back-btn');
   const bGoProfBtn = document.getElementById('builder-go-profile-btn');
   const bSaveBtn = document.getElementById('b-save-btn');
@@ -611,7 +602,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ── CANLI SES DALGALARI (AUDIO SPECTRUM VISUALIZER ENGINE) ──
   let visualizerAnimId = null;
 
   function startAudioVisualizer(barColorHex) {
@@ -676,7 +666,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ── WEB AUDIO SYNTHESIZER FOR CLICK-TO-ENTER SOUNDS ──
   let audioCtx = null;
   function getAudioContext() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -754,7 +743,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch(e) { console.warn('Sound error:', e); }
   }
 
-  // ── AUDIO CONTROL ──
   function stopProfileAudioImmediately() {
     const audio = document.getElementById('p-bg-audio');
     if (audio) {
@@ -785,7 +773,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 100);
   }
 
-  // ── DISCORD GATE UI ──
   function renderDiscordGate(show) {
     const gate = document.getElementById('discord-gate');
     if (!gate) return;
@@ -797,13 +784,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     dgLoginBtn.addEventListener('click', () => startDiscordLogin('#builder'));
   }
 
-  // ── SPA ROUTER WITH ANIMATED TRANSITIONS ──
   let isFirstRoute = true;
   function route() {
     if (lanyardInterval) clearInterval(lanyardInterval);
     updateNavButton();
 
-    // ── BAKIM MODU KONTROLÜ ──
     const maintOverlay = document.getElementById('maintenance-overlay');
     if (maintOverlay) {
       if (MAINTENANCE_MODE) {
@@ -942,7 +927,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ── LANDING VIEW ──
   function renderLandingMembers() {
     const grid = document.getElementById('members-grid');
     const noMembers = document.getElementById('no-members');
@@ -1038,7 +1022,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ── DASHBOARD TAB SWITCHING ──
   function setupDashboardTabs() {
     const navItems = document.querySelectorAll('.dash-nav-item');
     navItems.forEach(item => {
@@ -1053,7 +1036,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ── DASHBOARD SOCIAL ICON GRID ──
   const socialPlatforms = [
     { id: 'youtube', color: '#ff0000', label: 'YouTube' },
     { id: 'discord', color: '#5865F2', label: 'Discord' },
@@ -1139,7 +1121,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ── QR CODE GENERATOR & MODAL ──
   const dashQrBtn = document.getElementById('dash-qr-btn');
   const dashQrModal = document.getElementById('dash-qr-modal');
   const dashQrModalClose = document.getElementById('dash-qr-modal-close');
@@ -1436,7 +1417,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // ── AUTO-SAVE ENGINE (Otomatik Kaydetme) ──
   let autoSaveTimer = null;
   function triggerAutoSave() {
     clearTimeout(autoSaveTimer);
@@ -1590,6 +1570,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (bBgUrl) bBgUrl.value = (myAcc.bgVideo && !myAcc.bgVideo.startsWith('data:')) ? myAcc.bgVideo : (myAcc.bgUrl || '');
       if (bMusicUrl) bMusicUrl.value = (myAcc.music && !myAcc.music.startsWith('data:')) ? myAcc.music : (myAcc.musicUrl || '');
 
+      const bNameEffect = document.getElementById('b-name-effect');
+      const bCardAnimation = document.getElementById('b-card-animation');
+      const bAvatarFrame = document.getElementById('b-avatar-frame');
+      const bMusicStartSec = document.getElementById('b-music-start-sec');
+      const bBrandingBadgeColor = document.getElementById('b-branding-badge-color');
+      const bToggleTypewriter = document.getElementById('b-toggle-typewriter');
+      const bToggleTransparentCard = document.getElementById('b-toggle-transparent-card');
+      const bToggleCustomFavicon = document.getElementById('b-toggle-custom-favicon');
+      const bToggleNsfwGate = document.getElementById('b-toggle-nsfw-gate');
+      const bToggleHideHistory = document.getElementById('b-toggle-hide-history');
+
+      if (bNameEffect) bNameEffect.value = myAcc.nameEffect || 'none';
+      if (bCardAnimation) bCardAnimation.value = myAcc.cardAnimation || 'none';
+      if (bAvatarFrame) bAvatarFrame.value = myAcc.avatarFrame || 'none';
+      if (bMusicStartSec) bMusicStartSec.value = myAcc.musicStartSec || '';
+      if (bBrandingBadgeColor) bBrandingBadgeColor.value = myAcc.brandingBadgeColor || 'purple';
+      if (bToggleTypewriter) bToggleTypewriter.checked = !!myAcc.toggleTypewriter;
+      if (bToggleTransparentCard) bToggleTransparentCard.checked = !!myAcc.toggleTransparentCard;
+      if (bToggleCustomFavicon) bToggleCustomFavicon.checked = myAcc.toggleCustomFavicon !== false;
+      if (bToggleNsfwGate) bToggleNsfwGate.checked = !!myAcc.toggleNsfwGate;
+      if (bToggleHideHistory) bToggleHideHistory.checked = !!myAcc.toggleHideHistory;
+
       selectedEffect = myAcc.effect || 'none';
       selectedBadges = myAcc.badges ? [...myAcc.badges] : [];
       customBadges = myAcc.customBadges ? [...myAcc.customBadges] : [];
@@ -1621,6 +1623,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (bToggleSocialGlow) bToggleSocialGlow.checked = true;
       const bToggleAudioSpectrum = document.getElementById('b-toggle-audio-spectrum');
       if (bToggleAudioSpectrum) bToggleAudioSpectrum.checked = true;
+
+      const bNameEffect = document.getElementById('b-name-effect');
+      const bCardAnimation = document.getElementById('b-card-animation');
+      const bAvatarFrame = document.getElementById('b-avatar-frame');
+      const bMusicStartSec = document.getElementById('b-music-start-sec');
+      const bBrandingBadgeColor = document.getElementById('b-branding-badge-color');
+      const bToggleTypewriter = document.getElementById('b-toggle-typewriter');
+      const bToggleTransparentCard = document.getElementById('b-toggle-transparent-card');
+      const bToggleCustomFavicon = document.getElementById('b-toggle-custom-favicon');
+      const bToggleNsfwGate = document.getElementById('b-toggle-nsfw-gate');
+      const bToggleHideHistory = document.getElementById('b-toggle-hide-history');
+
+      if (bNameEffect) bNameEffect.value = 'none';
+      if (bCardAnimation) bCardAnimation.value = 'none';
+      if (bAvatarFrame) bAvatarFrame.value = 'none';
+      if (bMusicStartSec) bMusicStartSec.value = '';
+      if (bBrandingBadgeColor) bBrandingBadgeColor.value = 'purple';
+      if (bToggleTypewriter) bToggleTypewriter.checked = false;
+      if (bToggleTransparentCard) bToggleTransparentCard.checked = false;
+      if (bToggleCustomFavicon) bToggleCustomFavicon.checked = true;
+      if (bToggleNsfwGate) bToggleNsfwGate.checked = false;
+      if (bToggleHideHistory) bToggleHideHistory.checked = false;
 
       selectedBadges = [];
       customBadges = [];
@@ -1753,7 +1777,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ── UNIFIED DISCORD PRESENCE ENGINE (Doğrudan Kendi Botumuzdan / Sunucumuzdan) ──
   async function getUnifiedDiscordPresence(id) {
     if (!id) return null;
 
@@ -2078,11 +2101,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       const label = bLinkLabel.value.trim() || platform.toUpperCase();
       const url = bLinkUrl.value.trim() || '#';
 
+      if (currentLinksState.length >= 50) {
+        showToast('En fazla 50 adet link ekleyebilirsiniz.', 'error');
+        return;
+      }
+
       currentLinksState.push({ platform, label, url });
       bLinkLabel.value = '';
       bLinkUrl.value = '';
       renderAddedLinks();
       updateLivePreview();
+      showToast(`Link eklendi (${currentLinksState.length}/50)`, 'success');
 
       // Close modal after adding
       const modal = document.getElementById('dash-link-modal');
@@ -2177,7 +2206,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return null;
   }
 
-  // ── RATE LIMITING / ANTI-SPAM ENGINE ──
   let lastSaveTimestamp = 0;
   const SAVE_RATE_LIMIT_MS = 1500; // 1.5 saniyeden sık profil kaydetme spamını engelle
 
@@ -2207,21 +2235,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const currentDiscordId = dSession.user.id;
 
-    // ── BAN CHECK ──
     const bannedUsers = getBannedUsers();
     if (bannedUsers.includes(unKey) || bannedUsers.includes(currentDiscordId)) {
       showToast('Hesabınız yasaklandığı için işlem yapamazsınız!', 'error');
       return false;
     }
 
-    // ── RESERVED NAME CHECK ──
     const reservedNames = getReservedUsernames();
     if (reservedNames.includes(unKey)) {
       showToast(`"${un}" kullanıcı adı ayrılmış/kilitlenmiştir, başka bir ad seçin!`, 'error');
       return false;
     }
 
-    // ── UNIQUE ACCOUNT & OWNERSHIP CHECK ──
     const existingProfiles = getProfiles();
     
     // 1. Check if the target profile already exists and belongs to someone else
@@ -2321,7 +2346,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       bgVideo: finalBgVideo || bgVideoDataUrl || '',
       bgUrl: finalBgVideo || '',
       music: finalMusic || bgMusicDataUrl || '',
-      musicUrl: finalMusic || '',
+      nameEffect: (document.getElementById('b-name-effect') && document.getElementById('b-name-effect').value) || 'none',
+      cardAnimation: (document.getElementById('b-card-animation') && document.getElementById('b-card-animation').value) || 'none',
+      avatarFrame: (document.getElementById('b-avatar-frame') && document.getElementById('b-avatar-frame').value) || 'none',
+      musicStartSec: (document.getElementById('b-music-start-sec') && parseInt(document.getElementById('b-music-start-sec').value)) || 0,
+      brandingBadgeColor: (document.getElementById('b-branding-badge-color') && document.getElementById('b-branding-badge-color').value) || 'purple',
+      toggleTypewriter: document.getElementById('b-toggle-typewriter') ? document.getElementById('b-toggle-typewriter').checked : false,
+      toggleTransparentCard: document.getElementById('b-toggle-transparent-card') ? document.getElementById('b-toggle-transparent-card').checked : false,
+      toggleCustomFavicon: document.getElementById('b-toggle-custom-favicon') ? document.getElementById('b-toggle-custom-favicon').checked : true,
+      toggleNsfwGate: document.getElementById('b-toggle-nsfw-gate') ? document.getElementById('b-toggle-nsfw-gate').checked : false,
+      toggleHideHistory: document.getElementById('b-toggle-hide-history') ? document.getElementById('b-toggle-hide-history').checked : false,
       links: [...currentLinksState],
       views: (existingProfile && existingProfile.views) || 0
     };
@@ -2331,11 +2365,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
-  // ── EFFECT & SOUND SELECTION STATE ──
   let selectedEffect = 'none';
   let selectedEnterSound = 'none';
 
-  // ── CANVAS BACKGROUND EFFECT ENGINES ──
   let particleAnimId = null;
 
   function stopBackgroundEffects() {
@@ -2681,7 +2713,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (canvas) canvas.style.display = 'none';
   }
 
-  // ── ANIMATED PAGE TRANSITION OVERLAY HELPER ──
   function triggerPageTransition(callback) {
     const pt = document.getElementById('page-transition');
     if (!pt) {
@@ -2697,11 +2728,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 450);
   }
 
-  // ── DYNAMIC PROFILE VIEW (GUNS.LOL AESTHETIC) ──
   async function renderProfilePage(profile) {
     const unKey = profile.username.toLowerCase();
     document.documentElement.style.setProperty('--user-color', profile.color || '#ffffff');
-    // ── TEKİL İZLENME SAYACI (Her kullanıcı / sekme için sadece 1 kere artar) ──
     const viewedKey = `momus_viewed_${unKey}`;
     const alreadyViewedInSession = sessionStorage.getItem(viewedKey);
     const isOwner = isProfileOwner(unKey);
@@ -2714,7 +2743,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const viewViewsCount = document.getElementById('view-views-count');
     if (viewViewsCount) viewViewsCount.textContent = profile.views || 0;
 
-    // ── OWNER PROTECTION FOR SETTINGS BUTTON ──
     const pSettingsBtn = document.getElementById('p-settings-btn');
     if (pSettingsBtn) {
       pSettingsBtn.onclick = (e) => {
@@ -2726,7 +2754,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
     }
 
-    // ── CLICK TO ENTER OVERLAY (guns.lol exact) ──
     const clickOverlay = document.getElementById('p-click-overlay');
     const audioEl = document.getElementById('p-bg-audio');
     const bgVidEl = document.getElementById('p-bg-video');
@@ -2764,7 +2791,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       clickOverlay.addEventListener('click', handleClick);
     }
 
-    // ── APPLY ADVANCED CUSTOMIZATIONS ──
     const pCard = document.getElementById('p-card');
     if (pCard) {
       pCard.style.opacity = (profile.opacity !== undefined ? profile.opacity : 80) / 100;
@@ -2776,9 +2802,50 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (profile.borderGlow && profile.borderGlow !== 'none') {
         pCard.classList.add(profile.borderGlow);
       }
+
+      // Card Opening Animations
+      ['card-anim-flip3d', 'card-anim-zoom', 'card-anim-slideup', 'card-anim-blurfocus'].forEach(c => pCard.classList.remove(c));
+      if (profile.cardAnimation && profile.cardAnimation !== 'none') {
+        pCard.classList.add(`card-anim-${profile.cardAnimation}`);
+      }
+
+      // Transparent Card
+      if (profile.toggleTransparentCard) {
+        pCard.classList.add('profile-card-transparent');
+      } else {
+        pCard.classList.remove('profile-card-transparent');
+      }
     }
 
-    // Render Preset & Custom Badges (with expiration time check)
+    // CRT Scanlines Effect (Admin / Seyoria Special)
+    if (profile.borderGlow === 'crt-retro' || profile.crtEffect || profile.username === 'seyoria') {
+      document.body.classList.add('crt-scanlines-active');
+    } else {
+      document.body.classList.remove('crt-scanlines-active');
+    }
+
+    // NSFW / +18 Gate Overlay
+    const nsfwOverlay = document.getElementById('nsfw-gate-overlay');
+    if (profile.toggleNsfwGate && nsfwOverlay && !sessionStorage.getItem(`momus_nsfw_${unKey}`)) {
+      nsfwOverlay.style.display = 'flex';
+      const nsfwAccept = document.getElementById('nsfw-accept-btn');
+      const nsfwDecline = document.getElementById('nsfw-decline-btn');
+      if (nsfwAccept) {
+        nsfwAccept.onclick = () => {
+          sessionStorage.setItem(`momus_nsfw_${unKey}`, '1');
+          nsfwOverlay.style.display = 'none';
+        };
+      }
+      if (nsfwDecline) {
+        nsfwDecline.onclick = () => {
+          window.location.hash = '#home';
+        };
+      }
+    } else if (nsfwOverlay) {
+      nsfwOverlay.style.display = 'none';
+    }
+
+    // Render Preset & Custom Badges (with expiration time check + Discord Account Age)
     const viewBadges = document.getElementById('view-badges');
     if (viewBadges) {
       viewBadges.innerHTML = '';
@@ -2790,6 +2857,39 @@ document.addEventListener('DOMContentLoaded', async () => {
           viewBadges.appendChild(badgeSpan);
         });
       }
+
+      // Otomatik Discord Hesap Yaşı Rozeti (Snowflake)
+      if (profile.discordId && profile.discordId.length >= 15) {
+        try {
+          const snowflake = BigInt(profile.discordId);
+          const timestamp = Number((snowflake >> 22n) + 1420070400000n);
+          const years = Math.floor((Date.now() - timestamp) / (1000 * 60 * 60 * 24 * 365.25));
+          if (years >= 1) {
+            const ageBadge = document.createElement('span');
+            ageBadge.className = 'p-badge custom-badge';
+            ageBadge.style.borderColor = '#38bdf8';
+            ageBadge.style.color = '#38bdf8';
+            ageBadge.style.background = '#38bdf81a';
+            ageBadge.style.boxShadow = '0 0 10px #38bdf844';
+            ageBadge.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;">⏳ ${years} YIL</span>`;
+            ageBadge.title = `Discord hesabı ${years} yıldır aktif.`;
+            viewBadges.appendChild(ageBadge);
+          }
+        } catch(e){}
+      }
+
+      // Doğrulanmış Mavi Tik Rozeti (Admin / Seyoria Özel)
+      if (profile.username === 'seyoria' || profile.isVerified) {
+        const verifiedBadge = document.createElement('span');
+        verifiedBadge.className = 'p-badge custom-badge';
+        verifiedBadge.style.borderColor = '#3b82f6';
+        verifiedBadge.style.color = '#3b82f6';
+        verifiedBadge.style.background = '#3b82f620';
+        verifiedBadge.style.boxShadow = '0 0 12px #3b82f666';
+        verifiedBadge.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> VERIFIED</span>`;
+        viewBadges.appendChild(verifiedBadge);
+      }
+
       if (profile.customBadges && profile.customBadges.length > 0) {
         const now = Date.now();
         // Filter out expired temporary badges
@@ -2825,10 +2925,30 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Apply Audio Toggle
+    // Apply Audio Toggle & Start Seconds
     const pAudioSec = document.querySelector('.p-audio-section');
     if (pAudioSec) {
       pAudioSec.style.display = (profile.toggleAudio !== false) ? 'flex' : 'none';
+    }
+
+    // Mute/Unmute Shortcut (M Tuşu)
+    if (!window._muteShortcutBound) {
+      window._muteShortcutBound = true;
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'm' || e.key === 'M') {
+          const curAudio = document.getElementById('p-bg-audio');
+          if (curAudio && curAudio.src) {
+            if (curAudio.paused) {
+              curAudio.play();
+              showToast('Müzik Başlatıldı 🔊', 'info');
+            } else {
+              curAudio.pause();
+              showToast('Müzik Duraklatıldı 🔇', 'info');
+            }
+            if (navigator.vibrate) navigator.vibrate([15]);
+          }
+        }
+      });
     }
 
     // Apply Animated Title
@@ -2853,8 +2973,97 @@ document.addEventListener('DOMContentLoaded', async () => {
     const viewBio    = document.getElementById('view-bio');
     const viewLinks  = document.getElementById('view-links');
 
-    if (viewName) viewName.textContent = profile.username;
-    if (viewBio) viewBio.textContent = profile.bio || 'currently doing nothing';
+    if (viewName) {
+      viewName.textContent = profile.username;
+      // Kullanıcı Adı Efekti
+      ['name-effect-neon', 'name-effect-glitch', 'name-effect-rainbow', 'name-effect-fire', 'name-effect-frost'].forEach(c => viewName.classList.remove(c));
+      if (profile.nameEffect && profile.nameEffect !== 'none') {
+        viewName.classList.add(`name-effect-${profile.nameEffect}`);
+      }
+    }
+
+    // Daktilo (Typewriter) Bio Efekti
+    if (viewBio) {
+      if (window._typewriterInterval) clearInterval(window._typewriterInterval);
+      if (profile.toggleTypewriter && profile.bio && profile.bio.includes('\n')) {
+        const bioLines = profile.bio.split('\n').filter(l => l.trim().length > 0);
+        let lineIdx = 0;
+        let charIdx = 0;
+        let isDeleting = false;
+        viewBio.innerHTML = '<span id="typewriter-content"></span><span class="typewriter-cursor">|</span>';
+        const typeContent = document.getElementById('typewriter-content');
+
+        window._typewriterInterval = setInterval(() => {
+          const currentLine = bioLines[lineIdx];
+          if (!isDeleting) {
+            charIdx++;
+            if (typeContent) typeContent.textContent = currentLine.substring(0, charIdx);
+            if (charIdx === currentLine.length) {
+              isDeleting = true;
+              clearInterval(window._typewriterInterval);
+              setTimeout(() => {
+                window._typewriterInterval = setInterval(typeWriterStep, 40);
+              }, 1800);
+            }
+          } else {
+            charIdx--;
+            if (typeContent) typeContent.textContent = currentLine.substring(0, charIdx);
+            if (charIdx === 0) {
+              isDeleting = false;
+              lineIdx = (lineIdx + 1) % bioLines.length;
+            }
+          }
+        }, 60);
+
+        function typeWriterStep() {
+          const cur = bioLines[lineIdx];
+          if (isDeleting) {
+            charIdx--;
+            if (typeContent) typeContent.textContent = cur.substring(0, charIdx);
+            if (charIdx === 0) {
+              isDeleting = false;
+              lineIdx = (lineIdx + 1) % bioLines.length;
+            }
+          }
+        }
+      } else {
+        viewBio.textContent = profile.bio || 'currently doing nothing';
+      }
+    }
+
+    // Rank / Avatar Çerçevesi
+    const avatarParent = viewAvatar ? viewAvatar.closest('.p-avatar-wrap') : null;
+    if (avatarParent) {
+      ['rank-frame-radiant', 'rank-frame-immortal', 'rank-frame-global', 'rank-frame-cyber', 'rank-frame-flame'].forEach(c => avatarParent.classList.remove(c));
+      if (profile.avatarFrame && profile.avatarFrame !== 'none') {
+        avatarParent.classList.add(`rank-frame-${profile.avatarFrame}`);
+      }
+    }
+
+    // Özel Favicon
+    if (profile.toggleCustomFavicon !== false) {
+      const iconLink = document.querySelector("link[rel*='icon']");
+      if (iconLink && profile.avatar) {
+        iconLink.href = profile.avatar;
+      }
+    }
+
+    // Branding Badge Stili
+    const brandingBadge = document.querySelector('.p-branding');
+    if (brandingBadge) {
+      if (profile.brandingBadgeColor === 'hidden') {
+        brandingBadge.style.display = 'none';
+      } else {
+        brandingBadge.style.display = 'inline-flex';
+        if (profile.brandingBadgeColor === 'gold') {
+          brandingBadge.style.color = '#eab308';
+        } else if (profile.brandingBadgeColor === 'white') {
+          brandingBadge.style.color = '#ffffff';
+        } else {
+          brandingBadge.style.color = '#a855f7';
+        }
+      }
+    }
 
     // Retrieve Custom Cursor from IndexedDB if stored
     const storedCursor = await getMediaItem(`cursor_${unKey}`);
@@ -3124,7 +3333,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // ── SECRET ADMIN PANEL CONTROLLER (#momus-admin) ──
   // ═══════════════════════════════════════════════════════════
   // Güvenlik: PIN kodu güvenli SHA-256 hash ile doğrulanır
   const ADMIN_PIN_HASH = 'ad0f982a6d2ac3cc6d38f713f03e672ebf677f582665a62f173aa1c52431e2dd';
@@ -3288,7 +3496,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // ── GÜNCEL KONTROLLER & VERİTABANI YÖNETİMİ ──
     const reservedList = getReservedUsernames();
     const bannedList = getBannedUsers();
 
@@ -3613,7 +3820,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderAdminAnalytics();
   }
 
-  // ── AUDIT LOGS CONTROLLER ──
   function addAuditLog(actionText, type = 'info') {
     try {
       let logs = JSON.parse(localStorage.getItem('momus_audit_logs') || '[]');
@@ -3998,7 +4204,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ── GLOBAL ANNOUNCEMENT ENGINE (HER SAYFADA DUYURU VE GERİ SAYIM GÖSTERİR) ──
   let annTimerInterval = null;
   function applyGlobalAnnouncement() {
     const banner = document.getElementById('global-announcement-banner');
@@ -4051,7 +4256,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ── COOKIE BANNER & LEGAL MODALS CONTROLLER ──
   function initCookieAndLegalModals() {
     const cookieBanner = document.getElementById('cookie-consent-banner');
     const cookieAcceptBtn = document.getElementById('cookie-accept-btn');
@@ -4125,16 +4329,66 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (e.target === termsModal) closeTerms();
       });
     }
-    if (openTermsLink && !openTermsLink.dataset.bound) {
-      openTermsLink.dataset.bound = '1';
-      openTermsLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (termsModal) termsModal.style.display = 'flex';
+    // Leaderboard Modal
+    const lbBtn = document.getElementById('nav-leaderboard-btn');
+    const lbModal = document.getElementById('leaderboard-modal');
+    const lbClose = document.getElementById('leaderboard-modal-close');
+    const lbList = document.getElementById('leaderboard-list');
+
+    function renderLeaderboard() {
+      if (!lbList) return;
+      const profiles = getProfiles();
+      const sorted = Object.values(profiles).sort((a, b) => (b.views || 0) - (a.views || 0));
+      lbList.innerHTML = '';
+
+      if (sorted.length === 0) {
+        lbList.innerHTML = '<div style="text-align:center; color:rgba(255,255,255,0.4); padding:20px;">Henüz kayıtlı profil bulunmuyor.</div>';
+        return;
+      }
+
+      sorted.slice(0, 15).forEach((p, index) => {
+        const row = document.createElement('a');
+        row.href = `#${p.username}`;
+        row.className = 'leaderboard-row';
+        row.addEventListener('click', () => {
+          if (lbModal) lbModal.style.display = 'none';
+        });
+
+        const rankClass = index === 0 ? 'leaderboard-rank-1' : (index === 1 ? 'leaderboard-rank-2' : (index === 2 ? 'leaderboard-rank-3' : ''));
+        const medal = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `#${index + 1}`));
+
+        row.innerHTML = `
+          <span class="leaderboard-rank ${rankClass}">${medal}</span>
+          <div class="leaderboard-user-info">
+            <img src="${p.avatar || 'https://api.dicebear.com/9.x/pixel-art/svg?seed=' + p.username}" class="leaderboard-avatar" onerror="this.src='https://api.dicebear.com/9.x/pixel-art/svg?seed=${p.username}'"/>
+            <span class="leaderboard-username">${p.username}</span>
+          </div>
+          <span class="leaderboard-views">👁️ ${p.views || 0}</span>
+        `;
+        lbList.appendChild(row);
+      });
+    }
+
+    if (lbBtn && !lbBtn.dataset.bound) {
+      lbBtn.dataset.bound = '1';
+      lbBtn.addEventListener('click', () => {
+        renderLeaderboard();
+        if (lbModal) lbModal.style.display = 'flex';
+      });
+    }
+    if (lbClose && !lbClose.dataset.bound) {
+      lbClose.dataset.bound = '1';
+      lbClose.addEventListener('click', () => {
+        if (lbModal) lbModal.style.display = 'none';
+      });
+    }
+    if (lbModal) {
+      lbModal.addEventListener('click', (e) => {
+        if (e.target === lbModal) lbModal.style.display = 'none';
       });
     }
   }
 
-  // ── INITIALIZE ROUTER AT END OF DOMContentLoaded ──
   // Her hash değişiminde (profil linkine tıklama, geri/ileri gitme vb.)
   // önce Supabase'den taze veri çekiyoruz, sonra route() çalışıyor —
   // böylece başka birinin oluşturduğu profil de görünür oluyor.
