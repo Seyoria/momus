@@ -952,21 +952,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       card.className = 'member-card';
       card.href = `#${p.username}`;
 
-      const storedAvatar = await getMediaItem(`avatar_${k.toLowerCase()}`);
-      let av = storedAvatar;
-      if (!av && p.avatar && !p.avatar.includes('dicebear')) {
+      if (!av && p.avatar) {
         av = p.avatar;
-      }
-      if (!av && p.discordAvatar) {
-        av = p.discordAvatar;
       }
       if (!av && p.customAvatarUrl) {
         av = p.customAvatarUrl;
       }
+      if (!av && p.discordAvatar) {
+        av = p.discordAvatar;
+      }
       if (!av && p.discordId) {
         av = defaultDiscordAvatarUrl(p.discordId);
       }
-      if (!av) av = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${p.username}&backgroundColor=111111`;
+      const defaultPinterestAv = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
+      if (!av || av.includes('dicebear')) {
+        av = defaultPinterestAv;
+      }
 
       let badgesHtml = '';
       if (p.badges && p.badges.length > 0) {
@@ -983,7 +984,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       card.innerHTML = `
         <div class="mc-bg"></div>
         <div class="mc-avatar-wrap">
-          <img class="mc-avatar" src="${av}" onerror="this.src='https://api.dicebear.com/9.x/pixel-art/svg?seed=${p.username}&backgroundColor=111111'" alt="${p.username}"/>
+          <img class="mc-avatar" src="${av}" onerror="this.src='${defaultPinterestAv}'" alt="${p.username}"/>
         </div>
         <div class="mc-info">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -3097,16 +3098,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!displayAvatar && profile.customAvatarUrl) {
       displayAvatar = profile.customAvatarUrl;
     }
-    if (!displayAvatar && profile.discordId) {
-      displayAvatar = defaultDiscordAvatarUrl(profile.discordId);
-    }
-    if (!displayAvatar) {
-      displayAvatar = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${profile.username}&backgroundColor=111111`;
+    const defaultPinterestAv = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
+    if (!displayAvatar || displayAvatar.includes('dicebear')) {
+      displayAvatar = defaultPinterestAv;
     }
     if (viewAvatar) {
       viewAvatar.src = displayAvatar;
       viewAvatar.onerror = () => {
-        viewAvatar.src = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${profile.username}&backgroundColor=111111`;
+        viewAvatar.src = defaultPinterestAv;
       };
     }
 
@@ -3833,51 +3832,66 @@ document.addEventListener('DOMContentLoaded', async () => {
       genBotsBtn.dataset.bound = '1';
       genBotsBtn.addEventListener('click', async () => {
         const count = parseInt(document.getElementById('admin-bot-count-select')?.value || '15', 10);
-        const style = document.getElementById('admin-bot-style-select')?.value || 'aesthetic';
-        const effectsMode = document.getElementById('admin-bot-effects-select')?.value || 'random';
+        const effectsMode = document.getElementById('admin-bot-effects-select')?.value || 'clean';
 
         if (botStatusEl) {
           botStatusEl.style.display = 'block';
-          botStatusEl.textContent = `⏳ ${count} adet bot hesap üretiliyor ve veritabanına yazılıyor...`;
+          botStatusEl.textContent = `${count} adet gercekci bot profil olusturuluyor...`;
         }
         genBotsBtn.disabled = true;
 
-        const namePool = [
-          'astral', 'vortex', 'phantom', 'zenith', 'lunacy', 'glitchboy', 'valkyrie', 'kismet',
-          'shadow', 'aurora', 'nexus', 'eclipse', 'solitude', 'voidwalker', 'cypher', 'nocturne',
-          'mirage', 'envy', 'abyss', 'requiem', 'wraith', 'spectral', 'oblivion', 'dusk', 'zeno',
-          'elysium', 'chronos', 'hades', 'nyx', 'valen', 'inferno', 'subzero', 'vandal', 'ronin',
-          'solaris', 'neptune', 'artemis', 'ares', 'hyperion', 'tempest', 'zephyr', 'morbid', 'siren'
+        // Gerçek ve temiz isim havuzu (sayı eki olmadan)
+        const realNames = [
+          'emir', 'berk', 'kaan', 'deniz', 'arda', 'eren', 'bora', 'alper', 'doruk', 'yigit',
+          'selin', 'derin', 'melis', 'arya', 'lara', 'ezgi', 'damla', 'alara', 'lucas', 'alex',
+          'leo', 'felix', 'noah', 'mia', 'chloe', 'oliver', 'elena', 'kai', 'zane', 'maya',
+          'clara', 'liam', 'sofia', 'can', 'mert', 'efe', 'alp', 'baris', 'cem', 'defne',
+          'ege', 'ilayda', 'irem', 'onur', 'ozan', 'serkan', 'tolga', 'utku', 'yagmur', 'zeynep',
+          'batu', 'kerem', 'tuna', 'atlas', 'kuzey', 'guney', 'poyraz', 'rüzgar', 'sarp', 'yaman',
+          'asli', 'beril', 'ceren', 'duru', 'ece', 'gaye', 'hazal', 'irmak', 'merve', 'nehir'
         ];
 
-        const bioPool = [
-          'living in the shadows ✦',
-          'lost in digital noise',
-          'stay humble, hustle hard ⚡',
+        // Emojisiz, temiz ve estetik biyografiler
+        const cleanBios = [
+          'living in the moment',
+          'digital creator & designer',
+          'stay humble, hustle hard',
           'do not disturb',
-          'cyber samurai 2026',
-          '404: feelings not found',
-          'aesthetic vibes only 🖤',
+          'silent moves, loud results',
+          'coffee, code & design',
+          'aesthetic vibes only',
           'drifting through reality',
-          'code, coffee & silence',
-          'the glitch in the simulation',
-          'whispers from the void',
-          'echoes of another lifetime'
+          'visual artist & music lover',
+          'somewhere between dreams and reality',
+          'minimalist lifestyle',
+          'always creating something new',
+          'vibing with good music',
+          'graphic design & photography',
+          'chasing aesthetic moments'
         ];
 
-        const aestheticAvatars = [
-          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
-          'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&q=80',
-          'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=80',
-          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&q=80',
-          'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&q=80',
-          'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80',
-          'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&q=80',
-          'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&q=80',
-          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80',
-          'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80',
-          'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400&q=80'
+        // Pinterest & Unsplash Doğrudan HD Portre ve Estetik Profil Fotoğrafları
+        const pinterestAvatars = [
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=500&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1514315384763-ba401779410f?w=500&auto=format&fit=crop&q=80'
         ];
 
         const effectsPool = ['none', 'neon', 'glitch', 'rainbow', 'fire', 'frost'];
@@ -3887,30 +3901,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let createdCount = 0;
         const currentProfiles = getProfiles();
+        const shuffledNames = [...realNames].sort(() => 0.5 - Math.random());
 
         for (let i = 0; i < count; i++) {
-          const randBase = namePool[Math.floor(Math.random() * namePool.length)];
-          const randSuffix = Math.random() > 0.4 ? Math.floor(Math.random() * 99) : '';
-          const uname = `${randBase}${randSuffix}`.toLowerCase();
-
-          // Skip if username already exists
+          let uname = shuffledNames[i % shuffledNames.length];
+          if (currentProfiles[uname]) {
+            uname = `${uname}${Math.floor(Math.random() * 89) + 10}`;
+          }
           if (currentProfiles[uname]) continue;
 
-          let avatarUrl = '';
-          if (style === 'aesthetic') {
-            avatarUrl = aestheticAvatars[Math.floor(Math.random() * aestheticAvatars.length)];
-          } else if (style === 'anime') {
-            avatarUrl = `https://api.dicebear.com/9.x/bottts/svg?seed=${uname}&backgroundColor=111111`;
-          } else if (style === 'lofi') {
-            avatarUrl = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${uname}&backgroundColor=111111`;
-          } else {
-            avatarUrl = Math.random() > 0.5 
-              ? aestheticAvatars[Math.floor(Math.random() * aestheticAvatars.length)] 
-              : `https://api.dicebear.com/9.x/bottts/svg?seed=${uname}&backgroundColor=111111`;
-          }
+          const avatarUrl = pinterestAvatars[i % pinterestAvatars.length];
 
           const randomLinks = [];
-          const numLinks = Math.floor(Math.random() * 3) + 1;
+          const numLinks = Math.floor(Math.random() * 2) + 1;
           for (let l = 0; l < numLinks; l++) {
             const p = platformsPool[Math.floor(Math.random() * platformsPool.length)];
             randomLinks.push({
@@ -3922,7 +3925,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           const botProfile = {
             username: uname,
-            bio: bioPool[Math.floor(Math.random() * bioPool.length)],
+            bio: cleanBios[Math.floor(Math.random() * cleanBios.length)],
             avatar: avatarUrl,
             customAvatarUrl: avatarUrl,
             hasCustomAvatar: true,
@@ -3943,16 +3946,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             toggleBadgesDisplay: true,
             toggleSocialGlow: true,
             toggleAudioSpectrum: true,
-            toggleTypewriter: Math.random() > 0.7,
+            toggleTypewriter: false,
             toggleTransparentCard: false,
             toggleCustomFavicon: true,
             toggleNsfwGate: false,
             toggleHideHistory: false,
-            badges: Math.random() > 0.6 ? ['verified'] : [],
+            badges: Math.random() > 0.7 ? ['verified'] : [],
             customBadges: [],
             links: randomLinks,
-            views: Math.floor(Math.random() * 450) + 12,
-            isBot: true // Flag to identify bot accounts easily
+            views: Math.floor(Math.random() * 320) + 15,
+            isBot: true
           };
 
           await saveProfileData(botProfile);
@@ -3961,21 +3964,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         genBotsBtn.disabled = false;
         if (botStatusEl) {
-          botStatusEl.textContent = `✅ Başarıyla ${createdCount} adet bot hesap üretildi ve sitede yayına alındı!`;
+          botStatusEl.textContent = `${createdCount} adet Pinterest profil olusturuldu ve yayina alindi.`;
         }
-        addAuditLog(`${createdCount} adet estetik bot hesap oluşturuldu.`, 'info');
-        showToast(`${createdCount} bot profil oluşturuldu!`, 'success');
+        addAuditLog(`${createdCount} adet gercekci bot hesap olusturuldu.`, 'info');
+        showToast(`${createdCount} bot profil olusturuldu!`, 'success');
         renderAdminProfiles();
         renderAdminAnalytics();
         updateNavButton();
       });
     }
 
-    // 13. Tüm Bot Hesapları Silme (Purge Bots)
+    // 13. Tum Bot Hesaplari Silme (Purge Bots)
     if (purgeBotsBtn && !purgeBotsBtn.dataset.bound) {
       purgeBotsBtn.dataset.bound = '1';
       purgeBotsBtn.addEventListener('click', async () => {
-        if (!confirm('Tüm üretilmiş bot profilleri silmek istediğinizden emin misiniz?')) return;
+        if (!confirm('Tum uretilmis bot profilleri silmek istediginizden emin misiniz?')) return;
         const profiles = getProfiles();
         let deleted = 0;
         for (const k of Object.keys(profiles)) {
@@ -3985,7 +3988,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         }
         addAuditLog(`${deleted} adet bot hesap temizlendi.`, 'warning');
-        showToast(`${deleted} bot hesap başarıyla silindi.`, 'success');
+        showToast(`${deleted} bot hesap basariyla silindi.`, 'success');
         renderAdminProfiles();
         renderAdminAnalytics();
         updateNavButton();
