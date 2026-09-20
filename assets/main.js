@@ -1475,8 +1475,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           if (dropdown.id === 'b-effect-dropdown') {
             selectedEffect = val || 'none';
-          } else if (dropdown.id === 'b-sound-dropdown') {
-            selectedEnterSound = val || 'none';
+          } else if (dropdown.id === 'b-name-effect-dropdown') {
+            selectedNameEffect = val || 'none';
+          } else if (dropdown.id === 'b-card-anim-dropdown') {
+            selectedCardAnim = val || 'none';
+          } else if (dropdown.id === 'b-avatar-frame-dropdown') {
+            selectedAvatarFrame = val || 'none';
+          } else if (dropdown.id === 'b-branding-color-dropdown') {
+            selectedBrandingColor = val || 'purple';
           }
           triggerAutoSave();
         }
@@ -1486,6 +1492,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Close all dropdowns when clicking outside
       document.querySelectorAll('.dash-custom-dropdown.open').forEach(d => d.classList.remove('open'));
     });
+  }
+
+  function syncDropdownUI(dropdownId, selectedVal) {
+    const dropdown = document.getElementById(dropdownId);
+    if (!dropdown) return;
+    const activeItem = dropdown.querySelector(`.dash-dropdown-item[data-value="${selectedVal}"]`) || dropdown.querySelector('.dash-dropdown-item');
+    if (activeItem) {
+      dropdown.querySelectorAll('.dash-dropdown-item').forEach(i => i.classList.remove('active'));
+      activeItem.classList.add('active');
+      const label = dropdown.querySelector('.dash-dropdown-trigger-content span');
+      if (label) label.textContent = activeItem.textContent.trim();
+    }
   }
 
   function initBuilder() {
@@ -1570,22 +1588,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (bBgUrl) bBgUrl.value = (myAcc.bgVideo && !myAcc.bgVideo.startsWith('data:')) ? myAcc.bgVideo : (myAcc.bgUrl || '');
       if (bMusicUrl) bMusicUrl.value = (myAcc.music && !myAcc.music.startsWith('data:')) ? myAcc.music : (myAcc.musicUrl || '');
 
-      const bNameEffect = document.getElementById('b-name-effect');
-      const bCardAnimation = document.getElementById('b-card-animation');
-      const bAvatarFrame = document.getElementById('b-avatar-frame');
       const bMusicStartSec = document.getElementById('b-music-start-sec');
-      const bBrandingBadgeColor = document.getElementById('b-branding-badge-color');
       const bToggleTypewriter = document.getElementById('b-toggle-typewriter');
       const bToggleTransparentCard = document.getElementById('b-toggle-transparent-card');
       const bToggleCustomFavicon = document.getElementById('b-toggle-custom-favicon');
       const bToggleNsfwGate = document.getElementById('b-toggle-nsfw-gate');
       const bToggleHideHistory = document.getElementById('b-toggle-hide-history');
 
-      if (bNameEffect) bNameEffect.value = myAcc.nameEffect || 'none';
-      if (bCardAnimation) bCardAnimation.value = myAcc.cardAnimation || 'none';
-      if (bAvatarFrame) bAvatarFrame.value = myAcc.avatarFrame || 'none';
+      selectedNameEffect = myAcc.nameEffect || 'none';
+      selectedCardAnim = myAcc.cardAnimation || 'none';
+      selectedAvatarFrame = myAcc.avatarFrame || 'none';
+      selectedBrandingColor = myAcc.brandingBadgeColor || 'purple';
+
       if (bMusicStartSec) bMusicStartSec.value = myAcc.musicStartSec || '';
-      if (bBrandingBadgeColor) bBrandingBadgeColor.value = myAcc.brandingBadgeColor || 'purple';
       if (bToggleTypewriter) bToggleTypewriter.checked = !!myAcc.toggleTypewriter;
       if (bToggleTransparentCard) bToggleTransparentCard.checked = !!myAcc.toggleTransparentCard;
       if (bToggleCustomFavicon) bToggleCustomFavicon.checked = myAcc.toggleCustomFavicon !== false;
@@ -1599,6 +1614,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentLinksState = myAcc.links ? [...myAcc.links] : [];
     } else {
       selectedEffect = 'none';
+      selectedNameEffect = 'none';
+      selectedCardAnim = 'none';
+      selectedAvatarFrame = 'none';
+      selectedBrandingColor = 'purple';
+
       if (bUsername) bUsername.value = '';
       if (bBio) bBio.value = '';
       if (bDiscordId) bDiscordId.value = dSession ? dSession.user.id : '';
@@ -1624,22 +1644,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       const bToggleAudioSpectrum = document.getElementById('b-toggle-audio-spectrum');
       if (bToggleAudioSpectrum) bToggleAudioSpectrum.checked = true;
 
-      const bNameEffect = document.getElementById('b-name-effect');
-      const bCardAnimation = document.getElementById('b-card-animation');
-      const bAvatarFrame = document.getElementById('b-avatar-frame');
       const bMusicStartSec = document.getElementById('b-music-start-sec');
-      const bBrandingBadgeColor = document.getElementById('b-branding-badge-color');
       const bToggleTypewriter = document.getElementById('b-toggle-typewriter');
       const bToggleTransparentCard = document.getElementById('b-toggle-transparent-card');
       const bToggleCustomFavicon = document.getElementById('b-toggle-custom-favicon');
       const bToggleNsfwGate = document.getElementById('b-toggle-nsfw-gate');
       const bToggleHideHistory = document.getElementById('b-toggle-hide-history');
 
-      if (bNameEffect) bNameEffect.value = 'none';
-      if (bCardAnimation) bCardAnimation.value = 'none';
-      if (bAvatarFrame) bAvatarFrame.value = 'none';
       if (bMusicStartSec) bMusicStartSec.value = '';
-      if (bBrandingBadgeColor) bBrandingBadgeColor.value = 'purple';
       if (bToggleTypewriter) bToggleTypewriter.checked = false;
       if (bToggleTransparentCard) bToggleTransparentCard.checked = false;
       if (bToggleCustomFavicon) bToggleCustomFavicon.checked = true;
@@ -1654,16 +1666,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Setup Guns.lol Custom Dropdown UI
     setupCustomDropdown();
-    const dropdown = document.getElementById('b-effect-dropdown');
-    const label = document.getElementById('b-effect-selected-label');
-    if (dropdown) {
-      const activeItem = dropdown.querySelector(`.dash-dropdown-item[data-value="${selectedEffect || 'none'}"]`);
-      if (activeItem) {
-        dropdown.querySelectorAll('.dash-dropdown-item').forEach(i => i.classList.remove('active'));
-        activeItem.classList.add('active');
-        if (label) label.textContent = activeItem.textContent.trim();
-      }
-    }
+    syncDropdownUI('b-effect-dropdown', selectedEffect || 'none');
+    syncDropdownUI('b-name-effect-dropdown', selectedNameEffect || 'none');
+    syncDropdownUI('b-card-anim-dropdown', selectedCardAnim || 'none');
+    syncDropdownUI('b-avatar-frame-dropdown', selectedAvatarFrame || 'none');
+    syncDropdownUI('b-branding-color-dropdown', selectedBrandingColor || 'purple');
 
     // Sync badge buttons UI & render custom badges list
     document.querySelectorAll('.badge-toggle-btn').forEach(btn => {
@@ -2346,11 +2353,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       bgVideo: finalBgVideo || bgVideoDataUrl || '',
       bgUrl: finalBgVideo || '',
       music: finalMusic || bgMusicDataUrl || '',
-      nameEffect: (document.getElementById('b-name-effect') && document.getElementById('b-name-effect').value) || 'none',
-      cardAnimation: (document.getElementById('b-card-animation') && document.getElementById('b-card-animation').value) || 'none',
-      avatarFrame: (document.getElementById('b-avatar-frame') && document.getElementById('b-avatar-frame').value) || 'none',
+      nameEffect: selectedNameEffect || 'none',
+      cardAnimation: selectedCardAnim || 'none',
+      avatarFrame: selectedAvatarFrame || 'none',
       musicStartSec: (document.getElementById('b-music-start-sec') && parseInt(document.getElementById('b-music-start-sec').value)) || 0,
-      brandingBadgeColor: (document.getElementById('b-branding-badge-color') && document.getElementById('b-branding-badge-color').value) || 'purple',
+      brandingBadgeColor: selectedBrandingColor || 'purple',
       toggleTypewriter: document.getElementById('b-toggle-typewriter') ? document.getElementById('b-toggle-typewriter').checked : false,
       toggleTransparentCard: document.getElementById('b-toggle-transparent-card') ? document.getElementById('b-toggle-transparent-card').checked : false,
       toggleCustomFavicon: document.getElementById('b-toggle-custom-favicon') ? document.getElementById('b-toggle-custom-favicon').checked : true,
@@ -2366,6 +2373,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   let selectedEffect = 'none';
+  let selectedNameEffect = 'none';
+  let selectedCardAnim = 'none';
+  let selectedAvatarFrame = 'none';
+  let selectedBrandingColor = 'purple';
   let selectedEnterSound = 'none';
 
   let particleAnimId = null;
