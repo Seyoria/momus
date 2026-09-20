@@ -952,18 +952,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       card.className = 'member-card';
       card.href = `#${p.username}`;
 
-      if (!av && p.avatar) {
-        av = p.avatar;
-      }
-      if (!av && p.customAvatarUrl) {
-        av = p.customAvatarUrl;
-      }
-      if (!av && p.discordAvatar) {
-        av = p.discordAvatar;
-      }
-      if (!av && p.discordId) {
-        av = defaultDiscordAvatarUrl(p.discordId);
-      }
+      let av = '';
+      const storedAvatar = await getMediaItem(`avatar_${k.toLowerCase()}`);
+      if (storedAvatar) av = storedAvatar;
+      if (!av && p.avatar) av = p.avatar;
+      if (!av && p.customAvatarUrl) av = p.customAvatarUrl;
+      if (!av && p.discordAvatar) av = p.discordAvatar;
+      if (!av && p.discordId) av = defaultDiscordAvatarUrl(p.discordId);
+
       const defaultPinterestAv = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
       if (!av || av.includes('dicebear')) {
         av = defaultPinterestAv;
@@ -3954,7 +3950,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             badges: Math.random() > 0.7 ? ['verified'] : [],
             customBadges: [],
             links: randomLinks,
-            views: Math.floor(Math.random() * 320) + 15,
+            views: Math.floor(Math.random() * 30) + 5,
             isBot: true
           };
 
