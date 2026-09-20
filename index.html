@@ -12,7 +12,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=23"/>
+  <link rel="stylesheet" href="assets/main.css?v=24"/>
+
+  <!-- HTTPS Zorunluluğu (Enforce HTTPS) -->
+  <script>
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      location.replace(`https:${location.href.substring(location.protocol.length)}`);
+    }
+  </script>
 
   <!-- Supabase (profil verisinin herkese ortak gösterildiği veritabanı) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -89,6 +96,10 @@
         <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.04.035.05a19.906 19.906 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
         <span>Discord ile Giriş Yap</span>
       </button>
+      <div class="dg-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Discord sunucumuza katılmazsanız bot verilerinizi çekemez ve profiliniz düzgün görünmez. <a href="https://discord.gg/Mrw293bayE" target="_blank" style="color:#a855f7;text-decoration:underline;">Sunucuya Katıl</a></span>
+      </div>
       <a href="#home" class="dg-back">Ana sayfaya dön</a>
     </div>
   </div>
@@ -154,6 +165,11 @@
     <footer id="site-footer">
       <div class="footer-left">
         <span class="footer-brand">momus</span>
+      </div>
+      <div class="footer-center" style="display:flex; gap:16px; font-size:0.8rem;">
+        <a href="#privacy" id="open-privacy-link" style="color:rgba(255,255,255,0.5); text-decoration:none; transition:color 0.2s;">Gizlilik Politikası</a>
+        <span style="color:rgba(255,255,255,0.2);">&bull;</span>
+        <a href="#terms" id="open-terms-link" style="color:rgba(255,255,255,0.5); text-decoration:none; transition:color 0.2s;">Kullanım Koşulları</a>
       </div>
       <div class="footer-right">
         <span class="footer-copy">&copy; 2026 &mdash; Tüm hakları saklıdır.</span>
@@ -604,7 +620,23 @@
 
 
   <!-- ═══════════════════════════════════════════════════════════ -->
-  <!-- 4. SECRET ADMIN PANEL VIEW (#momus-admin)                   -->
+  <!-- 4. CUSTOM 404 NOT FOUND VIEW (#404)                         -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div id="view-404" class="app-view hidden">
+    <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; position:relative; z-index:10;">
+      <div style="font-family:var(--font-display); font-size:clamp(4rem, 12vw, 8rem); font-weight:900; background:linear-gradient(135deg, #a855f7, #6366f1); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; line-height:1; margin-bottom:10px;">404</div>
+      <h2 style="font-family:var(--font-display); font-size:1.5rem; color:#fff; margin-bottom:10px;">Kullanıcı veya Sayfa Bulunamadı</h2>
+      <p style="color:rgba(255,255,255,0.5); font-size:0.95rem; max-width:420px; margin-bottom:24px;">Aradığınız bio profili henüz oluşturulmamış, silinmiş veya bağlantı hatalı olabilir.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+        <a href="#home" class="dash-btn-primary" style="padding:12px 24px; font-size:0.85rem; text-decoration:none;">Ana Sayfaya Dön</a>
+        <a href="#builder" class="dash-btn-outline" style="padding:12px 24px; font-size:0.85rem; text-decoration:none;">Bu İsmi Sen Al</a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- 5. SECRET ADMIN PANEL VIEW (#momus-admin)                   -->
   <!-- ═══════════════════════════════════════════════════════════ -->
   <div id="view-admin" class="app-view hidden">
     <!-- Admin PIN Auth Screen -->
@@ -638,15 +670,36 @@
       </header>
 
       <main class="admin-container">
-        <!-- Admin Stats Top Bar -->
-        <div class="admin-stats-bar">
-          <div class="admin-stat-box">
-            <span class="admin-stat-num" id="admin-total-users">0</span>
+        <!-- Admin Supercharged Stats Top Bar -->
+        <div class="admin-stats-bar" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:24px;">
+          <div class="admin-stat-box" style="background:linear-gradient(135deg, rgba(168,85,247,0.1), rgba(0,0,0,0.4)); border:1px solid rgba(168,85,247,0.3);">
+            <span class="admin-stat-num" id="admin-total-users" style="color:#a855f7;">0</span>
             <span class="admin-stat-name">Kayıtlı Profil</span>
           </div>
-          <div class="admin-stat-box">
-            <span class="admin-stat-num" id="admin-total-views">0</span>
+          <div class="admin-stat-box" style="background:linear-gradient(135deg, rgba(59,130,246,0.1), rgba(0,0,0,0.4)); border:1px solid rgba(59,130,246,0.3);">
+            <span class="admin-stat-num" id="admin-total-views" style="color:#3b82f6;">0</span>
             <span class="admin-stat-name">Toplam Görüntülenme</span>
+          </div>
+          <div class="admin-stat-box" style="background:linear-gradient(135deg, rgba(234,179,8,0.1), rgba(0,0,0,0.4)); border:1px solid rgba(234,179,8,0.3);">
+            <span class="admin-stat-num" id="admin-stat-spotlight-count" style="color:#eab308;">0</span>
+            <span class="admin-stat-name">Öne Çıkan Profil</span>
+          </div>
+          <div class="admin-stat-box" style="background:linear-gradient(135deg, rgba(34,197,94,0.1), rgba(0,0,0,0.4)); border:1px solid rgba(34,197,94,0.3);">
+            <span class="admin-stat-num" id="admin-stat-active-badges" style="color:#22c55e;">0</span>
+            <span class="admin-stat-name">Aktif Rozet</span>
+          </div>
+        </div>
+
+        <!-- Quick Actions Toolbar -->
+        <div class="admin-section-card" style="margin-bottom:20px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:rgba(18,18,24,0.7); border:1px solid rgba(255,255,255,0.08);">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.2rem;">⚡</span>
+            <span style="font-family:var(--font-display); font-size:0.9rem; font-weight:700; color:#fff;">Hızlı Sistem Eylemleri</span>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" id="admin-btn-export-backup" class="dash-btn-outline" style="padding:8px 14px; font-size:0.75rem; border-color:rgba(168,85,247,0.4); color:#a855f7;">💾 JSON Yedeği İndir</button>
+            <button type="button" id="admin-btn-clean-ghosts" class="dash-btn-outline" style="padding:8px 14px; font-size:0.75rem; border-color:rgba(234,179,8,0.4); color:#eab308;">🧹 Boş Hesapları Tara</button>
+            <button type="button" id="admin-btn-broadcast-alert" class="dash-btn-primary" style="padding:8px 14px; font-size:0.75rem;">📢 Acil Duyuru Fırlat</button>
           </div>
         </div>
 
@@ -660,6 +713,7 @@
           <button type="button" class="admin-tab-btn" data-tab="border-glow">Çerçeve Efektleri</button>
           <button type="button" class="admin-tab-btn" data-tab="dm-sender">Discord DM</button>
           <button type="button" class="admin-tab-btn" data-tab="invite-codes">Davet Kodları</button>
+          <button type="button" class="admin-tab-btn" data-tab="audit-logs">İşlem Günlüğü</button>
           <button type="button" class="admin-tab-btn" data-tab="analytics">İstatistikler</button>
           <button type="button" class="admin-tab-btn" data-tab="changelog">Changelog</button>
         </div>
@@ -858,6 +912,23 @@
           </div>
         </div>
 
+        <!-- TAB: Sistem İşlem & Güvenlik Günlüğü (Audit Logs) -->
+        <div class="admin-tab-content" id="admin-tab-audit-logs" style="display:none;">
+          <div class="admin-section-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <h3 class="admin-card-heading">Sistem İşlem & Güvenlik Günlüğü</h3>
+                <p class="admin-card-desc">Gerçekleştirilen tüm profil kayıtları, banlamalar, rozet atamaları ve admin işlemlerinin anlık akışı.</p>
+              </div>
+              <button type="button" id="admin-clear-audit-logs-btn" class="dash-btn-outline" style="padding:6px 12px; font-size:0.75rem; color:#ef4444; border-color:rgba(239,68,68,0.3);">Günlüğü Temizle</button>
+            </div>
+
+            <div id="admin-audit-logs-list" style="display:flex; flex-direction:column; gap:10px; max-height:450px; overflow-y:auto; padding-right:6px;">
+              <!-- JS fills dynamically -->
+            </div>
+          </div>
+        </div>
+
         <!-- TAB 5: Detaylı İstatistikler & Grafikler -->
         <div class="admin-tab-content" id="admin-tab-analytics" style="display:none;">
           <div class="admin-section-card">
@@ -980,25 +1051,72 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════ -->
-  <!-- VIRUSTOTAL SAFE LINK SCANNER MODAL                          -->
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <div id="virus-scan-modal" class="link-modal-overlay" style="display:none; z-index:99999;">
-    <div class="link-modal" style="max-width:440px; text-align:center;">
-      <div style="font-size:2.5rem; color:#22c55e; margin-bottom:10px;">🛡️</div>
-      <h3 style="font-family:var(--font-display); color:#fff; font-size:1.15rem; margin-bottom:6px;">Momus Güvenlik Taraması</h3>
-      <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-bottom:16px;">
-        Ziyaret etmek istediğiniz harici bağlantı güvenlik kontrolünden geçiriliyor:
-      </p>
-      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px; font-family:var(--font-mono); font-size:0.75rem; color:#a855f7; word-break:break-all; margin-bottom:16px;" id="virus-scan-target-url">https://...</div>
-      
-      <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
-        <a id="virus-scan-vt-btn" target="_blank" class="dash-btn-outline" style="padding:10px 16px; font-size:0.8rem; color:#3b82f6; border-color:#3b82f6;">🔍 VirusTotal Raporu</a>
-        <a id="virus-scan-proceed-btn" target="_blank" class="dash-btn-primary" style="padding:10px 18px; font-size:0.8rem;">Devam Et (Siteyi Aç)</a>
-        <button type="button" id="virus-scan-cancel-btn" class="dash-btn-outline" style="padding:10px 14px; font-size:0.8rem;">Vazgeç</button>
+  <!-- COOKIE CONSENT BANNER (ÇEREZ ONAY BANDI)                    -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div id="cookie-consent-banner" class="cookie-banner-wrap" style="display:none;">
+    <div class="cookie-banner-inner">
+      <div class="cookie-banner-text">
+        <span>🍪 Sitemizde oturum güvenliği ve deneyiminizi geliştirmek amacıyla temel çerezler kullanılmaktadır. Detaylar için <a href="#privacy" id="cookie-privacy-link" style="color:#a855f7; text-decoration:underline;">Gizlilik Politikamızı</a> inceleyebilirsiniz.</span>
+      </div>
+      <div class="cookie-banner-actions">
+        <button type="button" id="cookie-accept-btn" class="dash-btn-primary" style="padding:8px 18px; font-size:0.8rem;">Kabul Et</button>
       </div>
     </div>
   </div>
 
-  <script src="assets/main.js?v=23"></script>
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PRIVACY POLICY MODAL (GİZLİLİK POLİTİKASI)                  -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div id="privacy-modal" class="link-modal-overlay" style="display:none; z-index:99999;">
+    <div class="link-modal" style="max-width:540px; max-height:80vh; display:flex; flex-direction:column;">
+      <div class="link-modal-header" style="justify-content:space-between;">
+        <h3 style="color:#fff; font-size:1.1rem; display:flex; align-items:center; gap:8px;">🔒 Gizlilik Politikası</h3>
+        <button id="privacy-modal-close" class="link-modal-close">&times;</button>
+      </div>
+      <div class="link-modal-body" style="overflow-y:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); line-height:1.6; padding:16px 20px;">
+        <h4 style="color:#fff; margin-bottom:6px;">1. Toplanan Veriler</h4>
+        <p style="margin-bottom:12px;">Momus, profil oluşturma ve giriş işlemleri için yalnızca Discord kullanıcı kimliğinizi (ID), kullanıcı adınızı ve isteğe bağlı olarak yüklediğiniz profil bio/medya verilerini saklar.</p>
+        
+        <h4 style="color:#fff; margin-bottom:6px;">2. Verilerin Kullanımı</h4>
+        <p style="margin-bottom:12px;">Toplanan veriler sadece profilinizi yayınlamak, bağlantılarınızı yönlendirmek ve platform içi güvenliği sağlamak amacıyla kullanılır. Verileriniz 3. taraflarla satılmaz veya paylaşılmaz.</p>
+        
+        <h4 style="color:#fff; margin-bottom:6px;">3. Çerezler ve Depolama</h4>
+        <p style="margin-bottom:12px;">Tarayıcınızın LocalStorage ve IndexedDB alanları oturum kontrolü, tema tercihleri ve hızlı medya yüklemesi için kullanılır.</p>
+        
+        <h4 style="color:#fff; margin-bottom:6px;">4. Güvenlik</h4>
+        <p>Verileriniz Supabase bulut altyapısında şifreli bağlantılar (HTTPS/SSL) üzerinden korunmaktadır.</p>
+      </div>
+      <div class="link-modal-footer">
+        <button type="button" id="privacy-modal-ok" class="dash-btn-primary" style="padding:8px 20px; font-size:0.8rem;">Anladım</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- TERMS OF SERVICE MODAL (KULLANIM KOŞULLARI)                 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div id="terms-modal" class="link-modal-overlay" style="display:none; z-index:99999;">
+    <div class="link-modal" style="max-width:540px; max-height:80vh; display:flex; flex-direction:column;">
+      <div class="link-modal-header" style="justify-content:space-between;">
+        <h3 style="color:#fff; font-size:1.1rem; display:flex; align-items:center; gap:8px;">📜 Kullanım Koşulları</h3>
+        <button id="terms-modal-close" class="link-modal-close">&times;</button>
+      </div>
+      <div class="link-modal-body" style="overflow-y:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); line-height:1.6; padding:16px 20px;">
+        <h4 style="color:#fff; margin-bottom:6px;">1. Kabul Edilebilir Kullanım</h4>
+        <p style="margin-bottom:12px;">Momus platformunda yasa dışı, zararlı yazılım içeren (phishing, malware, virüs vb.), telif hakkı ihlali oluşturan veya taciz/nefret söylemi barındıran içerikler paylaşmak kesinlikle yasaktır.</p>
+        
+        <h4 style="color:#fff; margin-bottom:6px;">2. Hesap Güvenliği ve İsim Hakkı</h4>
+        <p style="margin-bottom:12px;">Yetkili/yönetici isimleri ve genel marka adları sistem tarafından rezerve edilebilir. Kuralları ihlal eden profiller yöneticiler tarafından uyarı yapılmaksızın silinebilir veya yasaklanabilir.</p>
+        
+        <h4 style="color:#fff; margin-bottom:6px;">3. Hizmet Garantisi</h4>
+        <p>Momus hizmetleri "olduğu gibi" sunulmaktadır. Platform kesintisiz erişim veya veri kaybı yaşanmayacağına dair garanti vermez, ancak güvenliği en üst seviyede tutmayı taahhüt eder.</p>
+      </div>
+      <div class="link-modal-footer">
+        <button type="button" id="terms-modal-ok" class="dash-btn-primary" style="padding:8px 20px; font-size:0.8rem;">Kabul Ediyorum</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/main.js?v=24"></script>
 </body>
 </html>
