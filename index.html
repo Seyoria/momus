@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=26"/>
+  <link rel="stylesheet" href="assets/main.css?v=28"/>
 
   <!-- HTTPS Zorunluluğu (Enforce HTTPS) -->
   <script>
@@ -122,9 +122,6 @@
     <nav id="top-nav">
       <a href="#home" class="nav-brand">momus</a>
       <div class="nav-actions">
-        <button id="nav-leaderboard-btn" class="nav-btn" style="background:rgba(234,179,8,0.12); color:#eab308; border:1px solid rgba(234,179,8,0.25);">
-          <span>🏆 Sıralama</span>
-        </button>
         <button id="nav-create-btn" class="nav-btn hero-cta-btn">
           <span class="btn-plus">+</span>
           <span>Profil Oluştur</span>
@@ -409,54 +406,91 @@
           <h2 class="dash-title" style="margin-top:32px;">Gelişmiş Kart & İsim Efektleri</h2>
           <div class="dash-section-card">
             <div class="dash-settings-grid">
+              <!-- Kullanıcı Adı Efekti Dropdown -->
               <div class="dash-stat-card" style="padding:16px;">
                 <div class="dash-stat-header" style="margin-bottom:8px;"><span>Kullanıcı Adı Efekti</span></div>
-                <select id="b-name-effect" class="dash-select-input">
-                  <option value="none">Normal (Efektsiz)</option>
-                  <option value="neon">⚡ Neon Parıltı</option>
-                  <option value="glitch">👾 Glitch Bozulma</option>
-                  <option value="rainbow">🌈 RGB Gökkuşağı</option>
-                  <option value="fire">🔥 Alev / Ateş</option>
-                  <option value="frost">❄️ Buz / Don</option>
-                </select>
+                <div class="dash-custom-dropdown" id="b-name-effect-dropdown">
+                  <div class="dash-dropdown-trigger" id="b-name-effect-trigger">
+                    <div class="dash-dropdown-trigger-content">
+                      <span id="b-name-effect-selected-label">Normal (Efektsiz)</span>
+                    </div>
+                    <svg class="dash-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
+                  <div class="dash-dropdown-menu" id="b-name-effect-menu">
+                    <div class="dash-dropdown-item active" data-value="none"><span>Normal (Efektsiz)</span></div>
+                    <div class="dash-dropdown-item" data-value="neon"><span style="color:#a855f7; text-shadow:0 0 8px #a855f7;">Neon Parıltı</span></div>
+                    <div class="dash-dropdown-item" data-value="glitch"><span>Glitch Bozulma</span></div>
+                    <div class="dash-dropdown-item" data-value="rainbow"><span style="background:linear-gradient(90deg,#f43f5e,#eab308,#06b6d4,#a855f7); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:700;">RGB Gökkuşağı</span></div>
+                    <div class="dash-dropdown-item" data-value="fire"><span style="color:#f97316;">Alev / Ateş</span></div>
+                    <div class="dash-dropdown-item" data-value="frost"><span style="color:#38bdf8;">Buz / Don</span></div>
+                  </div>
+                </div>
               </div>
 
+              <!-- Kart Açılış Animasyonu Dropdown -->
               <div class="dash-stat-card" style="padding:16px;">
                 <div class="dash-stat-header" style="margin-bottom:8px;"><span>Kart Açılış Animasyonu</span></div>
-                <select id="b-card-animation" class="dash-select-input">
-                  <option value="none">Varsayılan Fade</option>
-                  <option value="flip3d">🎭 3D Flip Dönüş</option>
-                  <option value="zoom">💥 Patlama (Zoom In)</option>
-                  <option value="slideup">🚀 Aşağıdan Akıcı Kayma</option>
-                  <option value="blurfocus">👁️ Bulanıktan Netleşmeye</option>
-                </select>
+                <div class="dash-custom-dropdown" id="b-card-anim-dropdown">
+                  <div class="dash-dropdown-trigger" id="b-card-anim-trigger">
+                    <div class="dash-dropdown-trigger-content">
+                      <span id="b-card-anim-selected-label">Varsayılan Fade</span>
+                    </div>
+                    <svg class="dash-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
+                  <div class="dash-dropdown-menu" id="b-card-anim-menu">
+                    <div class="dash-dropdown-item active" data-value="none"><span>Varsayılan Fade</span></div>
+                    <div class="dash-dropdown-item" data-value="flip3d"><span>3D Flip Dönüş</span></div>
+                    <div class="dash-dropdown-item" data-value="zoom"><span>Patlama (Zoom In)</span></div>
+                    <div class="dash-dropdown-item" data-value="slideup"><span>Aşağıdan Akıcı Kayma</span></div>
+                    <div class="dash-dropdown-item" data-value="blurfocus"><span>Bulanıktan Netleşmeye</span></div>
+                  </div>
+                </div>
               </div>
 
+              <!-- Avatar / Rank Çerçevesi Dropdown -->
               <div class="dash-stat-card" style="padding:16px;">
                 <div class="dash-stat-header" style="margin-bottom:8px;"><span>Avatar / Rank Çerçevesi</span></div>
-                <select id="b-avatar-frame" class="dash-select-input">
-                  <option value="none">Çerçevesiz</option>
-                  <option value="radiant">👑 Valorant: Radiant</option>
-                  <option value="immortal">💎 Valorant: Immortal</option>
-                  <option value="global">⭐ CS2: Global Elite</option>
-                  <option value="cyber">⚡ Cyberpunk Neon Halka</option>
-                  <option value="flame">🔥 Ateş Çemberi</option>
-                </select>
+                <div class="dash-custom-dropdown" id="b-avatar-frame-dropdown">
+                  <div class="dash-dropdown-trigger" id="b-avatar-frame-trigger">
+                    <div class="dash-dropdown-trigger-content">
+                      <span id="b-avatar-frame-selected-label">Çerçevesiz</span>
+                    </div>
+                    <svg class="dash-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
+                  <div class="dash-dropdown-menu" id="b-avatar-frame-menu">
+                    <div class="dash-dropdown-item active" data-value="none"><span>Çerçevesiz</span></div>
+                    <div class="dash-dropdown-item" data-value="radiant"><span style="color:#ffea79;">Valorant: Radiant</span></div>
+                    <div class="dash-dropdown-item" data-value="immortal"><span style="color:#ef4444;">Valorant: Immortal</span></div>
+                    <div class="dash-dropdown-item" data-value="global"><span style="color:#38bdf8;">CS2: Global Elite</span></div>
+                    <div class="dash-dropdown-item" data-value="cyber"><span style="color:#06b6d4;">Cyberpunk Neon Halka</span></div>
+                    <div class="dash-dropdown-item" data-value="flame"><span style="color:#f97316;">Ateş Çemberi</span></div>
+                  </div>
+                </div>
               </div>
 
+              <!-- Müzik Başlangıç Saniyesi -->
               <div class="dash-stat-card" style="padding:16px;">
                 <div class="dash-stat-header" style="margin-bottom:8px;"><span>Müzik Başlangıç Saniyesi</span></div>
                 <input type="number" id="b-music-start-sec" class="dash-stat-value-input" min="0" max="600" placeholder="Örn: 45 (saniye)"/>
               </div>
 
+              <!-- "momus" Rozet Rengi Dropdown -->
               <div class="dash-stat-card" style="padding:16px;">
                 <div class="dash-stat-header" style="margin-bottom:8px;"><span>"momus" Rozet Rengi</span></div>
-                <select id="b-branding-badge-color" class="dash-select-input">
-                  <option value="purple">💜 Neon Mor</option>
-                  <option value="gold">⭐ Altın Sarısı</option>
-                  <option value="white">🤍 Minimal Beyaz</option>
-                  <option value="hidden">🚫 Gizle</option>
-                </select>
+                <div class="dash-custom-dropdown" id="b-branding-color-dropdown">
+                  <div class="dash-dropdown-trigger" id="b-branding-color-trigger">
+                    <div class="dash-dropdown-trigger-content">
+                      <span id="b-branding-color-selected-label">Neon Mor</span>
+                    </div>
+                    <svg class="dash-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
+                  <div class="dash-dropdown-menu" id="b-branding-color-menu">
+                    <div class="dash-dropdown-item active" data-value="purple"><span style="color:#a855f7;">Neon Mor</span></div>
+                    <div class="dash-dropdown-item" data-value="gold"><span style="color:#eab308;">Altın Sarısı</span></div>
+                    <div class="dash-dropdown-item" data-value="white"><span style="color:#ffffff;">Minimal Beyaz</span></div>
+                    <div class="dash-dropdown-item" data-value="hidden"><span style="color:rgba(255,255,255,0.4);">Gizle</span></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1111,11 +1145,14 @@
           <span style="font-family:var(--font-mono); font-size:0.65rem; color:#a855f7; letter-spacing:0.05em;">MOMUS BIO</span>
         </div>
       </div>
-      <div class="link-modal-footer" style="justify-content:center; gap:10px;">
-        <button type="button" id="qr-download-btn" class="dash-btn-primary" style="padding:10px 18px; font-size:0.8rem; display:inline-flex; align-items:center; gap:6px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          PNG İndir
+        <button type="button" id="qr-copy-btn" class="dash-btn-outline" style="padding:10px 18px; font-size:0.8rem; display:inline-flex; align-items:center; gap:6px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Linki Kopyala
         </button>
+      </div>
+    </div>
+  </div>
+
   <div id="nsfw-gate-overlay" class="maintenance-overlay" style="display:none; z-index:999999; background:rgba(0,0,0,0.95); backdrop-filter:blur(30px);">
     <div class="maint-card" style="max-width:400px; text-align:center;">
       <div class="maint-icon" style="color:#ef4444; background:rgba(239,68,68,0.15); width:64px; height:64px; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; border-radius:50%;">
@@ -1126,25 +1163,6 @@
       <div style="display:flex; gap:12px; justify-content:center;">
         <button id="nsfw-accept-btn" class="dash-btn-primary" style="padding:12px 24px;">İçeriği Gör</button>
         <button id="nsfw-decline-btn" class="dash-btn-outline" style="padding:12px 20px;">Geri Dön</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="leaderboard-modal" class="link-modal-overlay" style="display:none;">
-    <div class="link-modal" style="max-width:540px;">
-      <div class="link-modal-header">
-        <div class="link-modal-title-row">
-          <span class="link-modal-platform-icon" style="color:#eab308; background:rgba(234,179,8,0.12);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-          </span>
-          <h3 style="color:#fff;">En Popüler Profiller</h3>
-        </div>
-        <button id="leaderboard-modal-close" class="link-modal-close">&times;</button>
-      </div>
-      <div class="link-modal-body" style="padding:16px 20px;">
-        <div id="leaderboard-list" class="leaderboard-list-container" style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto;">
-          <!-- JS fills top profiles -->
-        </div>
       </div>
     </div>
   </div>
@@ -1169,7 +1187,7 @@
   <div id="privacy-modal" class="link-modal-overlay" style="display:none; z-index:99999;">
     <div class="link-modal" style="max-width:540px; max-height:80vh; display:flex; flex-direction:column;">
       <div class="link-modal-header" style="justify-content:space-between;">
-        <h3 style="color:#fff; font-size:1.1rem; display:flex; align-items:center; gap:8px;">Gizlilik Politikası</h3>
+        <h3 style="color:#fff; font-size:1.1rem; display:flex; align-items:center; gap:8px;">🔒 Gizlilik Politikası</h3>
         <button id="privacy-modal-close" class="link-modal-close">&times;</button>
       </div>
       <div class="link-modal-body" style="overflow-y:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); line-height:1.6; padding:16px 20px;">
@@ -1194,7 +1212,7 @@
   <div id="terms-modal" class="link-modal-overlay" style="display:none; z-index:99999;">
     <div class="link-modal" style="max-width:540px; max-height:80vh; display:flex; flex-direction:column;">
       <div class="link-modal-header" style="justify-content:space-between;">
-        <h3 style="color:#fff; font-size:1.1rem; display:flex; align-items:center; gap:8px;">Kullanım Koşulları</h3>
+        <h3 style="color:#fff; font-size:1.1rem; display:flex; align-items:center; gap:8px;">📜 Kullanım Koşulları</h3>
         <button id="terms-modal-close" class="link-modal-close">&times;</button>
       </div>
       <div class="link-modal-body" style="overflow-y:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); line-height:1.6; padding:16px 20px;">
@@ -1213,6 +1231,6 @@
     </div>
   </div>
 
-  <script src="assets/main.js?v=26"></script>
+  <script src="assets/main.js?v=27"></script>
 </body>
 </html>
