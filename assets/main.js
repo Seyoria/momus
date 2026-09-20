@@ -1818,23 +1818,44 @@ document.addEventListener('DOMContentLoaded', async () => {
   let cursorFileObj = null;
 
   if (bAvatarFile) {
-    bAvatarFile.addEventListener('change', (e) => {
+    bAvatarFile.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (file) {
         avatarFileObj = file;
-        bAvatarFileName.textContent = file.name;
+        bAvatarFileName.textContent = 'Yükleniyor...';
         if (bAvatarDeleteBtn) bAvatarDeleteBtn.style.display = 'inline-flex';
+        
+        // Yerel önizleme
         const reader = new FileReader();
         reader.onload = (evt) => {
           avatarDataUrl = evt.target.result;
           updateLivePreview();
         };
         reader.readAsDataURL(file);
+
+        // Supabase Storage'a doğrudan yükle
+        const myAcc = getMyAccount();
+        const unKey = (myAcc && myAcc.username ? myAcc.username : (bUsername ? bUsername.value.trim() : 'temp')).toLowerCase();
+        showToast('Avatar buluta yükleniyor...', 'info');
+        const cloudUrl = await uploadMediaToStorage(file, `avatar_${unKey}`);
+        if (cloudUrl) {
+          bAvatarFileName.textContent = file.name;
+          showToast('Avatar buluta yüklendi!', 'success');
+          const p = getProfiles()[unKey];
+          if (p) {
+            p.avatar = cloudUrl;
+            p.customAvatarUrl = cloudUrl;
+            p.hasCustomAvatar = true;
+            await saveProfileData(p);
+          }
+        } else {
+          bAvatarFileName.textContent = file.name;
+        }
       }
     });
   }
   if (bAvatarDeleteBtn) {
-    bAvatarDeleteBtn.addEventListener('click', (e) => {
+    bAvatarDeleteBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       avatarDataUrl = '';
       avatarFileObj = null;
@@ -1843,9 +1864,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       bAvatarDeleteBtn.style.display = 'none';
       const myAcc = getMyAccount();
       if (myAcc && myAcc.username) {
-        saveMediaItem(`avatar_${myAcc.username.toLowerCase()}`, null);
+        const unKey = myAcc.username.toLowerCase();
+        saveMediaItem(`avatar_${unKey}`, null);
         myAcc.avatar = '';
         myAcc.customAvatarUrl = '';
+        myAcc.hasCustomAvatar = false;
+        await saveProfileData(myAcc);
       }
       updateLivePreview();
       showToast('Profil avatarı silindi.', 'success');
@@ -1853,7 +1877,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (bBgVideoFile) {
-    bBgVideoFile.addEventListener('change', (e) => {
+    bBgVideoFile.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (file) {
         if (file.size > 20 * 1024 * 1024) {
@@ -1862,18 +1886,39 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
         bgVideoFileObj = file;
-        bBgVideoFileName.textContent = file.name;
+        bBgVideoFileName.textContent = 'Buluta yükleniyor...';
         if (bBgVideoDeleteBtn) bBgVideoDeleteBtn.style.display = 'inline-flex';
+
+        // Yerel önizleme
         const reader = new FileReader();
         reader.onload = (evt) => {
           bgVideoDataUrl = evt.target.result;
         };
         reader.readAsDataURL(file);
+
+        // Supabase Storage'a doğrudan yükle
+        const myAcc = getMyAccount();
+        const unKey = (myAcc && myAcc.username ? myAcc.username : (bUsername ? bUsername.value.trim() : 'temp')).toLowerCase();
+        showToast('Arka plan medyası buluta yükleniyor...', 'info');
+        const cloudUrl = await uploadMediaToStorage(file, `video_${unKey}`);
+        if (cloudUrl) {
+          bBgVideoFileName.textContent = file.name;
+          showToast('Arka plan medyası buluta yüklendi!', 'success');
+          const p = getProfiles()[unKey];
+          if (p) {
+            p.bgVideo = cloudUrl;
+            p.bgUrl = cloudUrl;
+            p.hasBgVideo = true;
+            await saveProfileData(p);
+          }
+        } else {
+          bBgVideoFileName.textContent = file.name;
+        }
       }
     });
   }
   if (bBgVideoDeleteBtn) {
-    bBgVideoDeleteBtn.addEventListener('click', (e) => {
+    bBgVideoDeleteBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       bgVideoDataUrl = '';
       bgVideoFileObj = null;
@@ -1882,16 +1927,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       bBgVideoDeleteBtn.style.display = 'none';
       const myAcc = getMyAccount();
       if (myAcc && myAcc.username) {
-        saveMediaItem(`video_${myAcc.username.toLowerCase()}`, null);
+        const unKey = myAcc.username.toLowerCase();
+        saveMediaItem(`video_${unKey}`, null);
         myAcc.bgVideo = '';
         myAcc.bgUrl = '';
+        myAcc.hasBgVideo = false;
+        await saveProfileData(myAcc);
       }
       showToast('Arka plan medyası silindi.', 'success');
     });
   }
 
   if (bBgMusicFile) {
-    bBgMusicFile.addEventListener('change', (e) => {
+    bBgMusicFile.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (file) {
         if (file.size > 20 * 1024 * 1024) {
@@ -1900,18 +1948,39 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
         bgMusicFileObj = file;
-        bBgMusicFileName.textContent = file.name;
+        bBgMusicFileName.textContent = 'Buluta yükleniyor...';
         if (bBgMusicDeleteBtn) bBgMusicDeleteBtn.style.display = 'inline-flex';
+
+        // Yerel önizleme
         const reader = new FileReader();
         reader.onload = (evt) => {
           bgMusicDataUrl = evt.target.result;
         };
         reader.readAsDataURL(file);
+
+        // Supabase Storage'a doğrudan yükle
+        const myAcc = getMyAccount();
+        const unKey = (myAcc && myAcc.username ? myAcc.username : (bUsername ? bUsername.value.trim() : 'temp')).toLowerCase();
+        showToast('Ses dosyası buluta yükleniyor...', 'info');
+        const cloudUrl = await uploadMediaToStorage(file, `music_${unKey}`);
+        if (cloudUrl) {
+          bBgMusicFileName.textContent = file.name;
+          showToast('Ses dosyası buluta yüklendi!', 'success');
+          const p = getProfiles()[unKey];
+          if (p) {
+            p.music = cloudUrl;
+            p.musicUrl = cloudUrl;
+            p.hasBgMusic = true;
+            await saveProfileData(p);
+          }
+        } else {
+          bBgMusicFileName.textContent = file.name;
+        }
       }
     });
   }
   if (bBgMusicDeleteBtn) {
-    bBgMusicDeleteBtn.addEventListener('click', (e) => {
+    bBgMusicDeleteBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       bgMusicDataUrl = '';
       bgMusicFileObj = null;
@@ -1920,9 +1989,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       bBgMusicDeleteBtn.style.display = 'none';
       const myAcc = getMyAccount();
       if (myAcc && myAcc.username) {
-        saveMediaItem(`music_${myAcc.username.toLowerCase()}`, null);
+        const unKey = myAcc.username.toLowerCase();
+        saveMediaItem(`music_${unKey}`, null);
         myAcc.music = '';
         myAcc.musicUrl = '';
+        myAcc.hasBgMusic = false;
+        await saveProfileData(myAcc);
       }
       showToast('Ses dosyası silindi.', 'success');
     });
@@ -3439,10 +3511,124 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
+    // 8. Quick Actions: Backup JSON Exporter
+    const exportBtn = document.getElementById('admin-btn-export-backup');
+    if (exportBtn && !exportBtn.dataset.bound) {
+      exportBtn.dataset.bound = '1';
+      exportBtn.addEventListener('click', () => {
+        const data = {
+          profiles: getProfiles(),
+          banned: getBannedUsers(),
+          reserved: getReservedUsernames(),
+          invites: getInviteCodes(),
+          announcement: getGlobalAnnouncement(),
+          exportedAt: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `momus_backup_${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        addAuditLog('Veritabanı JSON yedeği başarıyla indirildi.', 'backup');
+        showToast('Veritabanı yedeği indirildi!', 'success');
+      });
+    }
+
+    // 9. Quick Actions: Ghost / Empty Profile Cleaner
+    const cleanGhostsBtn = document.getElementById('admin-btn-clean-ghosts');
+    if (cleanGhostsBtn && !cleanGhostsBtn.dataset.bound) {
+      cleanGhostsBtn.dataset.bound = '1';
+      cleanGhostsBtn.addEventListener('click', async () => {
+        const profiles = getProfiles();
+        let ghostCount = 0;
+        for (const k in profiles) {
+          const p = profiles[k];
+          if (!p.username || (!p.discordId && (!p.links || p.links.length === 0) && (p.views || 0) === 0)) {
+            ghostCount++;
+            await deleteProfileFromDB(k);
+          }
+        }
+        addAuditLog(`Sistem taraması: ${ghostCount} boş/hayalet profil temizlendi.`, 'cleanup');
+        showToast(`${ghostCount} adet boş profil temizlendi!`, 'success');
+        renderAdminProfiles();
+        renderAdminAnalytics();
+      });
+    }
+
+    // 10. Quick Actions: Broadcast Alert
+    const broadcastBtn = document.getElementById('admin-btn-broadcast-alert');
+    if (broadcastBtn && !broadcastBtn.dataset.bound) {
+      broadcastBtn.dataset.bound = '1';
+      broadcastBtn.addEventListener('click', () => {
+        const msg = prompt('Site genelinde anında yayınlanacak acil duyuru metnini girin:');
+        if (!msg || !msg.trim()) return;
+        const ann = { active: true, text: msg.trim(), until: '' };
+        localStorage.setItem('momus_global_announcement', JSON.stringify(ann));
+        applyGlobalAnnouncement();
+        addAuditLog(`Canlı site duyurusu yayınlandı: "${msg.trim()}"`, 'announcement');
+        showToast('Canlı duyuru tüm siteye fırlatıldı!', 'success');
+      });
+    }
+
+    // 11. Audit Logs Clear
+    const clearLogsBtn = document.getElementById('admin-clear-audit-logs-btn');
+    if (clearLogsBtn && !clearLogsBtn.dataset.bound) {
+      clearLogsBtn.dataset.bound = '1';
+      clearLogsBtn.addEventListener('click', () => {
+        localStorage.setItem('momus_audit_logs', JSON.stringify([]));
+        renderAuditLogs();
+        showToast('İşlem günlüğü temizlendi.', 'info');
+      });
+    }
+
     renderReservedTags();
     renderBannedTags();
     renderInviteCodesTags();
+    renderAuditLogs();
     renderAdminAnalytics();
+  }
+
+  // ── AUDIT LOGS CONTROLLER ──
+  function addAuditLog(actionText, type = 'info') {
+    try {
+      let logs = JSON.parse(localStorage.getItem('momus_audit_logs') || '[]');
+      logs.unshift({
+        text: actionText,
+        type: type,
+        time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      });
+      if (logs.length > 50) logs = logs.slice(0, 50);
+      localStorage.setItem('momus_audit_logs', JSON.stringify(logs));
+      renderAuditLogs();
+    } catch(e){}
+  }
+
+  function renderAuditLogs() {
+    const listEl = document.getElementById('admin-audit-logs-list');
+    if (!listEl) return;
+    try {
+      const logs = JSON.parse(localStorage.getItem('momus_audit_logs') || '[]');
+      if (logs.length === 0) {
+        listEl.innerHTML = '<div style="color:rgba(255,255,255,0.4); font-size:0.85rem; padding:12px;">Henüz kaydedilmiş işlem kaydı bulunmuyor.</div>';
+        return;
+      }
+      listEl.innerHTML = '';
+      logs.forEach(log => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; font-size:0.8rem;';
+        const color = log.type === 'danger' ? '#ef4444' : (log.type === 'success' ? '#22c55e' : (log.type === 'backup' ? '#a855f7' : '#3b82f6'));
+        item.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:8px; height:8px; border-radius:50%; background:${color}; box-shadow:0 0 8px ${color};"></span>
+            <span style="color:#fff;">${log.text}</span>
+          </div>
+          <span style="font-family:var(--font-mono); font-size:0.7rem; color:rgba(255,255,255,0.4);">${log.time}</span>
+        `;
+        listEl.appendChild(item);
+      });
+    } catch(e){}
   }
 
   function getInviteCodes() {
@@ -3474,6 +3660,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let items = getInviteCodes().filter(x => x !== code);
         localStorage.setItem('momus_invite_codes', JSON.stringify(items));
         renderInviteCodesTags();
+        addAuditLog(`"${code}" davet kodu silindi.`, 'info');
         showToast(`"${code}" davet kodu silindi.`, 'info');
       });
     });
