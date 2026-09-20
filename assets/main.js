@@ -3824,6 +3824,174 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
+    // 12. Bot Hesap Üretici (Bot Generator)
+    const genBotsBtn = document.getElementById('admin-generate-bots-btn');
+    const purgeBotsBtn = document.getElementById('admin-purge-bots-btn');
+    const botStatusEl = document.getElementById('admin-bot-gen-status');
+
+    if (genBotsBtn && !genBotsBtn.dataset.bound) {
+      genBotsBtn.dataset.bound = '1';
+      genBotsBtn.addEventListener('click', async () => {
+        const count = parseInt(document.getElementById('admin-bot-count-select')?.value || '15', 10);
+        const style = document.getElementById('admin-bot-style-select')?.value || 'aesthetic';
+        const effectsMode = document.getElementById('admin-bot-effects-select')?.value || 'random';
+
+        if (botStatusEl) {
+          botStatusEl.style.display = 'block';
+          botStatusEl.textContent = `⏳ ${count} adet bot hesap üretiliyor ve veritabanına yazılıyor...`;
+        }
+        genBotsBtn.disabled = true;
+
+        const namePool = [
+          'astral', 'vortex', 'phantom', 'zenith', 'lunacy', 'glitchboy', 'valkyrie', 'kismet',
+          'shadow', 'aurora', 'nexus', 'eclipse', 'solitude', 'voidwalker', 'cypher', 'nocturne',
+          'mirage', 'envy', 'abyss', 'requiem', 'wraith', 'spectral', 'oblivion', 'dusk', 'zeno',
+          'elysium', 'chronos', 'hades', 'nyx', 'valen', 'inferno', 'subzero', 'vandal', 'ronin',
+          'solaris', 'neptune', 'artemis', 'ares', 'hyperion', 'tempest', 'zephyr', 'morbid', 'siren'
+        ];
+
+        const bioPool = [
+          'living in the shadows ✦',
+          'lost in digital noise',
+          'stay humble, hustle hard ⚡',
+          'do not disturb',
+          'cyber samurai 2026',
+          '404: feelings not found',
+          'aesthetic vibes only 🖤',
+          'drifting through reality',
+          'code, coffee & silence',
+          'the glitch in the simulation',
+          'whispers from the void',
+          'echoes of another lifetime'
+        ];
+
+        const aestheticAvatars = [
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
+          'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&q=80',
+          'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=80',
+          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&q=80',
+          'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&q=80',
+          'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80',
+          'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&q=80',
+          'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&q=80',
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80',
+          'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80',
+          'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400&q=80'
+        ];
+
+        const effectsPool = ['none', 'neon', 'glitch', 'rainbow', 'fire', 'frost'];
+        const framesPool = ['none', 'radiant', 'immortal', 'global', 'cyber', 'flame'];
+        const cardAnimPool = ['none', 'flip3d', 'zoom', 'slideup', 'blurfocus'];
+        const platformsPool = ['spotify', 'soundcloud', 'instagram', 'twitter', 'github', 'twitch', 'kick', 'steam'];
+
+        let createdCount = 0;
+        const currentProfiles = getProfiles();
+
+        for (let i = 0; i < count; i++) {
+          const randBase = namePool[Math.floor(Math.random() * namePool.length)];
+          const randSuffix = Math.random() > 0.4 ? Math.floor(Math.random() * 99) : '';
+          const uname = `${randBase}${randSuffix}`.toLowerCase();
+
+          // Skip if username already exists
+          if (currentProfiles[uname]) continue;
+
+          let avatarUrl = '';
+          if (style === 'aesthetic') {
+            avatarUrl = aestheticAvatars[Math.floor(Math.random() * aestheticAvatars.length)];
+          } else if (style === 'anime') {
+            avatarUrl = `https://api.dicebear.com/9.x/bottts/svg?seed=${uname}&backgroundColor=111111`;
+          } else if (style === 'lofi') {
+            avatarUrl = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${uname}&backgroundColor=111111`;
+          } else {
+            avatarUrl = Math.random() > 0.5 
+              ? aestheticAvatars[Math.floor(Math.random() * aestheticAvatars.length)] 
+              : `https://api.dicebear.com/9.x/bottts/svg?seed=${uname}&backgroundColor=111111`;
+          }
+
+          const randomLinks = [];
+          const numLinks = Math.floor(Math.random() * 3) + 1;
+          for (let l = 0; l < numLinks; l++) {
+            const p = platformsPool[Math.floor(Math.random() * platformsPool.length)];
+            randomLinks.push({
+              platform: p,
+              label: p.toUpperCase(),
+              url: `https://${p}.com/${uname}`
+            });
+          }
+
+          const botProfile = {
+            username: uname,
+            bio: bioPool[Math.floor(Math.random() * bioPool.length)],
+            avatar: avatarUrl,
+            customAvatarUrl: avatarUrl,
+            hasCustomAvatar: true,
+            color: '#ffffff',
+            textColor: '#ffffff',
+            bgColor: '#080808',
+            iconColor: '#ffffff',
+            opacity: 80,
+            blur: 0,
+            nameEffect: effectsMode === 'random' ? effectsPool[Math.floor(Math.random() * effectsPool.length)] : 'none',
+            cardAnimation: effectsMode === 'random' ? cardAnimPool[Math.floor(Math.random() * cardAnimPool.length)] : 'none',
+            avatarFrame: effectsMode === 'random' ? framesPool[Math.floor(Math.random() * framesPool.length)] : 'none',
+            brandingBadgeColor: 'purple',
+            toggleAudio: true,
+            toggleDiscordAvatar: false,
+            toggleAnimatedTitle: false,
+            toggleViewsCount: true,
+            toggleBadgesDisplay: true,
+            toggleSocialGlow: true,
+            toggleAudioSpectrum: true,
+            toggleTypewriter: Math.random() > 0.7,
+            toggleTransparentCard: false,
+            toggleCustomFavicon: true,
+            toggleNsfwGate: false,
+            toggleHideHistory: false,
+            badges: Math.random() > 0.6 ? ['verified'] : [],
+            customBadges: [],
+            links: randomLinks,
+            views: Math.floor(Math.random() * 450) + 12,
+            isBot: true // Flag to identify bot accounts easily
+          };
+
+          await saveProfileData(botProfile);
+          createdCount++;
+        }
+
+        genBotsBtn.disabled = false;
+        if (botStatusEl) {
+          botStatusEl.textContent = `✅ Başarıyla ${createdCount} adet bot hesap üretildi ve sitede yayına alındı!`;
+        }
+        addAuditLog(`${createdCount} adet estetik bot hesap oluşturuldu.`, 'info');
+        showToast(`${createdCount} bot profil oluşturuldu!`, 'success');
+        renderAdminProfiles();
+        renderAdminAnalytics();
+        updateNavButton();
+      });
+    }
+
+    // 13. Tüm Bot Hesapları Silme (Purge Bots)
+    if (purgeBotsBtn && !purgeBotsBtn.dataset.bound) {
+      purgeBotsBtn.dataset.bound = '1';
+      purgeBotsBtn.addEventListener('click', async () => {
+        if (!confirm('Tüm üretilmiş bot profilleri silmek istediğinizden emin misiniz?')) return;
+        const profiles = getProfiles();
+        let deleted = 0;
+        for (const k of Object.keys(profiles)) {
+          if (profiles[k].isBot) {
+            await deleteProfileFromDB(k);
+            deleted++;
+          }
+        }
+        addAuditLog(`${deleted} adet bot hesap temizlendi.`, 'warning');
+        showToast(`${deleted} bot hesap başarıyla silindi.`, 'success');
+        renderAdminProfiles();
+        renderAdminAnalytics();
+        updateNavButton();
+      });
+    }
+
     renderReservedTags();
     renderBannedTags();
     renderInviteCodesTags();
