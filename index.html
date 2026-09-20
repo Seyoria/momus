@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>momus ✦ bio platform</title>
+  <title>momus - bio platform</title>
   <meta name="description" content="momus — link in bio platform"/>
   
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='28' fill='%230e0e0e'/%3E%3Ctext x='50' y='68' font-family='sans-serif' font-weight='900' font-size='55' fill='%23a855f7' text-anchor='middle'%3Em%3C/text%3E%3C/svg%3E"/>
@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=28"/>
+  <link rel="stylesheet" href="assets/main.css?v=30"/>a
 
   <!-- HTTPS Zorunluluğu (Enforce HTTPS) -->
   <script>
@@ -141,7 +141,7 @@
       </div>
 
       <div id="hero-content">
-        <div id="hero-tag">the #1 bio platform ✦</div>
+        <div id="hero-tag">the #1 bio platform</div>
         <!-- Temiz Harf Hover Efekti (Kutu/Arka plan olmadan doğrudan harf renk değişimi) -->
         <h1 id="hero-title">
           <span class="title-char">m</span><span class="title-char">o</span><span class="title-char">m</span><span class="title-char">u</span><span class="title-char">s</span>
@@ -782,11 +782,10 @@
     <div id="admin-main-screen" class="admin-main-wrap" style="display:none;">
       <header class="admin-header">
         <div class="admin-brand">
-          <span class="dash-logo">✦</span>
           <span class="admin-title-text">momus <strong>Yönetici Paneli</strong></span>
         </div>
         <div class="admin-actions">
-          <button id="admin-refresh-btn" class="dash-btn-outline">🔄 Yenile</button>
+          <button id="admin-refresh-btn" class="dash-btn-outline">Yenile</button>
           <a href="#home" class="dash-btn-outline">Ana Sayfa</a>
           <button id="admin-logout-btn" class="dash-btn-outline" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">Çıkış Yap</button>
         </div>
@@ -816,13 +815,12 @@
         <!-- Quick Actions Toolbar -->
         <div class="admin-section-card" style="margin-bottom:20px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:rgba(18,18,24,0.7); border:1px solid rgba(255,255,255,0.08);">
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:1.2rem;">⚡</span>
             <span style="font-family:var(--font-display); font-size:0.9rem; font-weight:700; color:#fff;">Hızlı Sistem Eylemleri</span>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button type="button" id="admin-btn-export-backup" class="dash-btn-outline" style="padding:8px 14px; font-size:0.75rem; border-color:rgba(168,85,247,0.4); color:#a855f7;">💾 JSON Yedeği İndir</button>
-            <button type="button" id="admin-btn-clean-ghosts" class="dash-btn-outline" style="padding:8px 14px; font-size:0.75rem; border-color:rgba(234,179,8,0.4); color:#eab308;">🧹 Boş Hesapları Tara</button>
-            <button type="button" id="admin-btn-broadcast-alert" class="dash-btn-primary" style="padding:8px 14px; font-size:0.75rem;">📢 Acil Duyuru Fırlat</button>
+            <button type="button" id="admin-btn-export-backup" class="dash-btn-outline" style="padding:8px 14px; font-size:0.75rem; border-color:rgba(168,85,247,0.4); color:#a855f7;">JSON Yedeği İndir</button>
+            <button type="button" id="admin-btn-clean-ghosts" class="dash-btn-outline" style="padding:8px 14px; font-size:0.75rem; border-color:rgba(234,179,8,0.4); color:#eab308;">Boş Hesapları Tara</button>
+            <button type="button" id="admin-btn-broadcast-alert" class="dash-btn-primary" style="padding:8px 14px; font-size:0.75rem;">Acil Duyuru Fırlat</button>
           </div>
         </div>
 
@@ -836,7 +834,7 @@
           <button type="button" class="admin-tab-btn" data-tab="border-glow">Çerçeve Efektleri</button>
           <button type="button" class="admin-tab-btn" data-tab="dm-sender">Discord DM</button>
           <button type="button" class="admin-tab-btn" data-tab="invite-codes">Davet Kodları</button>
-          <button type="button" class="admin-tab-btn" data-tab="bot-generator">🤖 Bot Hesaplar</button>
+          <button type="button" class="admin-tab-btn" data-tab="bot-generator">Bot Hesaplar</button>
           <button type="button" class="admin-tab-btn" data-tab="changelog">Changelog</button>
         </div>
 
@@ -1078,11 +1076,11 @@
           <div class="admin-section-card">
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
               <div>
-                <h3 class="admin-card-heading">🤖 Otomatik Bot Hesap Üretici</h3>
-                <p class="admin-card-desc">Sitede üye ve profil sayısını artırmak için estetik avatarlarla gerçekçi bot profiller üretin.</p>
+                <h3 class="admin-card-heading">Otomatik Bot Hesap Üretici</h3>
+                <p class="admin-card-desc">Sitede üye ve profil sayısını artırmak için estetik Pinterest avatarlarıyla gerçekçi profiller üretin.</p>
               </div>
               <button type="button" id="admin-purge-bots-btn" class="dash-btn-outline" style="color:#ef4444; border-color:rgba(239,68,68,0.3); padding:8px 16px; font-size:0.8rem;">
-                🗑️ Tüm Botları Sil
+                Tüm Botları Sil
               </button>
             </div>
 
@@ -1099,27 +1097,17 @@
               </div>
 
               <div class="dash-stat-card" style="padding:16px;">
-                <label class="admin-form-label">Avatar / Görsel Tarzı</label>
-                <select id="admin-bot-style-select" class="admin-input" style="background:#16161a; color:#fff; cursor:pointer;">
-                  <option value="aesthetic" selected>Pinterest & Dark Aesthetic</option>
-                  <option value="anime">Anime / Cyberpunk Portreler</option>
-                  <option value="lofi">Lofi / Pixel Art</option>
-                  <option value="mixed">Karışık (Tüm Tarzlar)</option>
-                </select>
-              </div>
-
-              <div class="dash-stat-card" style="padding:16px;">
                 <label class="admin-form-label">Görünüm Efektleri</label>
                 <select id="admin-bot-effects-select" class="admin-input" style="background:#16161a; color:#fff; cursor:pointer;">
-                  <option value="random" selected>Rastgele Efektler & Çerçeveler</option>
-                  <option value="clean">Minimal (Efektsiz)</option>
+                  <option value="clean" selected>Minimal (Efektsiz)</option>
+                  <option value="random">Rastgele Efektler & Çerçeveler</option>
                 </select>
               </div>
             </div>
 
             <div class="admin-form-actions" style="margin-top:10px;">
               <button type="button" id="admin-generate-bots-btn" class="dash-btn-primary" style="padding:12px 24px;">
-                ✨ Bot Hesapları Oluştur & Sitede Yayınla
+                Bot Hesapları Oluştur & Sitede Yayınla
               </button>
             </div>
 
@@ -1285,6 +1273,6 @@
     </div>
   </div>
 
-  <script src="assets/main.js?v=29"></script>
+  <script src="assets/main.js?v=30"></script>
 </body>
 </html>
