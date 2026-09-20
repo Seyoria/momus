@@ -871,6 +871,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.style.cursor = '';
         viewBuilder.classList.remove('hidden');
         initBuilder();
+      } else if (hash === '#privacy') {
+        renderDiscordGate(false);
+        stopProfileAudioImmediately();
+        if (dot) dot.style.display = 'block';
+        if (ring) ring.style.display = 'block';
+        viewLanding.classList.remove('hidden');
+        renderLandingMembers();
+        const pModal = document.getElementById('privacy-modal');
+        if (pModal) pModal.style.display = 'flex';
+      } else if (hash === '#terms') {
+        renderDiscordGate(false);
+        stopProfileAudioImmediately();
+        if (dot) dot.style.display = 'block';
+        if (ring) ring.style.display = 'block';
+        viewLanding.classList.remove('hidden');
+        renderLandingMembers();
+        const tModal = document.getElementById('terms-modal');
+        if (tModal) tModal.style.display = 'flex';
       } else {
         renderDiscordGate(false);
         const username = hash.replace('#', '').toLowerCase();
@@ -900,7 +918,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           viewProfile.classList.remove('hidden');
           renderProfilePage(profile);
         } else {
-          window.location.hash = '#home';
+          // Özel 404 Ekranı
+          stopProfileAudioImmediately();
+          if (dot) dot.style.display = 'block';
+          if (ring) ring.style.display = 'block';
+          document.body.style.cursor = '';
+          const view404 = document.getElementById('view-404');
+          if (view404) {
+            view404.classList.remove('hidden');
+          } else {
+            window.location.hash = '#home';
+          }
         }
       }
     }
@@ -2054,7 +2082,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     return null;
   }
 
+  // ── RATE LIMITING / ANTI-SPAM ENGINE ──
+  let lastSaveTimestamp = 0;
+  const SAVE_RATE_LIMIT_MS = 1500; // 1.5 saniyeden sık profil kaydetme spamını engelle
+
   async function saveCurrentBuilder() {
+    const now = Date.now();
+    if (now - lastSaveTimestamp < SAVE_RATE_LIMIT_MS) {
+      showToast('Lütfen çok hızlı istek göndermeyin, biraz bekleyin.', 'error');
+      return false;
+    }
+    lastSaveTimestamp = now;
+
     const un = (bUsername && bUsername.value.trim()) || 'seyoria_o';
     const unKey = un.toLowerCase();
     const discordIdVal = (bDiscordId && bDiscordId.value.trim()) || '';
@@ -2992,9 +3031,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ═══════════════════════════════════════════════════════════
   // ── SECRET ADMIN PANEL CONTROLLER (#momus-admin) ──
   // ═══════════════════════════════════════════════════════════
-  // Güvenlik: PIN kodu SHA-256 hash olarak saklanır — kodda düz şifre yazmaz!
-  // Gizli PIN: !*#MomusRoot99!
-  // SHA-256: ad0f982a6d2ac3cc6d38f713f03e672ebf677f582665a62f173aa1c52431e2dd
+  // Güvenlik: PIN kodu güvenli SHA-256 hash ile doğrulanır
   const ADMIN_PIN_HASH = 'ad0f982a6d2ac3cc6d38f713f03e672ebf677f582665a62f173aa1c52431e2dd';
   let isAdminAuthenticated = false;
 
@@ -3804,6 +3841,89 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // ── COOKIE BANNER & LEGAL MODALS CONTROLLER ──
+  function initCookieAndLegalModals() {
+    const cookieBanner = document.getElementById('cookie-consent-banner');
+    const cookieAcceptBtn = document.getElementById('cookie-accept-btn');
+    const cookieAccepted = localStorage.getItem('momus_cookie_consent') === '1';
+
+    if (cookieBanner && !cookieAccepted) {
+      setTimeout(() => { cookieBanner.style.display = 'block'; }, 1000);
+    }
+
+    if (cookieAcceptBtn && !cookieAcceptBtn.dataset.bound) {
+      cookieAcceptBtn.dataset.bound = '1';
+      cookieAcceptBtn.addEventListener('click', () => {
+        localStorage.setItem('momus_cookie_consent', '1');
+        if (cookieBanner) cookieBanner.style.display = 'none';
+        showToast('Çerez tercihleriniz kaydedildi.', 'success');
+      });
+    }
+
+    // Privacy Modal
+    const privacyModal = document.getElementById('privacy-modal');
+    const privacyClose = document.getElementById('privacy-modal-close');
+    const privacyOk = document.getElementById('privacy-modal-ok');
+    const openPrivacyLink = document.getElementById('open-privacy-link');
+    const cookiePrivacyLink = document.getElementById('cookie-privacy-link');
+
+    function closePrivacy() {
+      if (privacyModal) privacyModal.style.display = 'none';
+      if (window.location.hash === '#privacy') window.location.hash = '#home';
+    }
+
+    [privacyClose, privacyOk].forEach(el => {
+      if (el && !el.dataset.bound) {
+        el.dataset.bound = '1';
+        el.addEventListener('click', closePrivacy);
+      }
+    });
+    if (privacyModal) {
+      privacyModal.addEventListener('click', (e) => {
+        if (e.target === privacyModal) closePrivacy();
+      });
+    }
+    [openPrivacyLink, cookiePrivacyLink].forEach(el => {
+      if (el && !el.dataset.bound) {
+        el.dataset.bound = '1';
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (privacyModal) privacyModal.style.display = 'flex';
+        });
+      }
+    });
+
+    // Terms Modal
+    const termsModal = document.getElementById('terms-modal');
+    const termsClose = document.getElementById('terms-modal-close');
+    const termsOk = document.getElementById('terms-modal-ok');
+    const openTermsLink = document.getElementById('open-terms-link');
+
+    function closeTerms() {
+      if (termsModal) termsModal.style.display = 'none';
+      if (window.location.hash === '#terms') window.location.hash = '#home';
+    }
+
+    [termsClose, termsOk].forEach(el => {
+      if (el && !el.dataset.bound) {
+        el.dataset.bound = '1';
+        el.addEventListener('click', closeTerms);
+      }
+    });
+    if (termsModal) {
+      termsModal.addEventListener('click', (e) => {
+        if (e.target === termsModal) closeTerms();
+      });
+    }
+    if (openTermsLink && !openTermsLink.dataset.bound) {
+      openTermsLink.dataset.bound = '1';
+      openTermsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (termsModal) termsModal.style.display = 'flex';
+      });
+    }
+  }
+
   // ── INITIALIZE ROUTER AT END OF DOMContentLoaded ──
   // Her hash değişiminde (profil linkine tıklama, geri/ileri gitme vb.)
   // önce Supabase'den taze veri çekiyoruz, sonra route() çalışıyor —
@@ -3814,6 +3934,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     route();
   }
   window.addEventListener('hashchange', routeWithFreshData);
+  initCookieAndLegalModals();
   await handleDiscordAuthCallback();
   await refreshProfilesCache();
   applyGlobalAnnouncement();
