@@ -5,11 +5,11 @@
 
   <br/><br/>
 
-  <h1>momus</h1>
+  <h1>✦ momus</h1>
   <p><strong>Yeni Nesil, Fütüristik Bio-Link Platformu</strong></p>
   <p>
     <a href="https://seyoria.github.io/momus/">Canlı Site</a> •
-    <a href="https://discord.gg/Mrw293bayE">Discord Topluluğu</a>
+    <a href="https://discord.gg/U3eKc9NBPx">Discord Topluluğu</a>
   </p>
 </div>
 
@@ -48,7 +48,7 @@ Tamamen statik frontend (GitHub Pages) + Supabase bulut veritabanı + Discord bo
 - **Gizlilik Politikası ve Kullanım Koşulları** — Yasal modal sayfaları
 - **Çerez Onay Bandı** — KVKK uyumlu cookie consent banner
 - **Ban ve IP Engelleme** — Admin panelinden kullanıcı yasaklama
-- 
+
 ### Kullanıcı Deneyimi
 - **Özel 404 Sayfası** — "Kullanıcı Bulunamadı" gradient tasarımlı sayfa
 - **Mobil Uyumlu** — Tüm sayfalarda responsive tasarım
