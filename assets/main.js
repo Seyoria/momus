@@ -1658,36 +1658,59 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (myAcc && myAcc.username) {
       const unKey = myAcc.username.toLowerCase();
-      getMediaItem(`video_${unKey}`).then(v => {
-        if (v) {
-          bgVideoDataUrl = v;
-          if (bBgVideoFileName) bBgVideoFileName.textContent = 'Arka plan yüklü';
-          if (bBgVideoDeleteBtn) bBgVideoDeleteBtn.style.display = 'inline-flex';
-        } else {
-          if (bBgVideoFileName) bBgVideoFileName.textContent = 'Dosya yüklemek için tıkla';
-          if (bBgVideoDeleteBtn) bBgVideoDeleteBtn.style.display = 'none';
-        }
-      });
-      getMediaItem(`music_${unKey}`).then(m => {
-        if (m) {
-          bgMusicDataUrl = m;
-          if (bBgMusicFileName) bBgMusicFileName.textContent = 'Ses dosyası yüklü';
-          if (bBgMusicDeleteBtn) bBgMusicDeleteBtn.style.display = 'inline-flex';
-        } else {
-          if (bBgMusicFileName) bBgMusicFileName.textContent = 'Ses dosyası yükle';
-          if (bBgMusicDeleteBtn) bBgMusicDeleteBtn.style.display = 'none';
-        }
-      });
-      getMediaItem(`avatar_${unKey}`).then(a => {
-        if (a) {
-          avatarDataUrl = a;
-          if (bAvatarFileName) bAvatarFileName.textContent = 'Avatar yüklü';
-          if (bAvatarDeleteBtn) bAvatarDeleteBtn.style.display = 'inline-flex';
-        } else {
-          if (bAvatarFileName) bAvatarFileName.textContent = 'PNG, JPG, GIF';
-          if (bAvatarDeleteBtn) bAvatarDeleteBtn.style.display = 'none';
-        }
-      });
+      
+      // 1. Cloud URL veya IndexedDB'den medya durumunu eşitle
+      if (myAcc.bgVideo || myAcc.bgUrl) {
+        bgVideoDataUrl = myAcc.bgVideo || myAcc.bgUrl;
+        if (bBgVideoFileName) bBgVideoFileName.textContent = 'Arka plan yüklü (Bulut)';
+        if (bBgVideoDeleteBtn) bBgVideoDeleteBtn.style.display = 'inline-flex';
+      } else {
+        getMediaItem(`video_${unKey}`).then(v => {
+          if (v) {
+            bgVideoDataUrl = v;
+            if (bBgVideoFileName) bBgVideoFileName.textContent = 'Arka plan yüklü';
+            if (bBgVideoDeleteBtn) bBgVideoDeleteBtn.style.display = 'inline-flex';
+          } else {
+            if (bBgVideoFileName) bBgVideoFileName.textContent = 'Dosya yüklemek için tıkla';
+            if (bBgVideoDeleteBtn) bBgVideoDeleteBtn.style.display = 'none';
+          }
+        });
+      }
+
+      if (myAcc.music || myAcc.musicUrl) {
+        bgMusicDataUrl = myAcc.music || myAcc.musicUrl;
+        if (bBgMusicFileName) bBgMusicFileName.textContent = 'Ses dosyası yüklü (Bulut)';
+        if (bBgMusicDeleteBtn) bBgMusicDeleteBtn.style.display = 'inline-flex';
+      } else {
+        getMediaItem(`music_${unKey}`).then(m => {
+          if (m) {
+            bgMusicDataUrl = m;
+            if (bBgMusicFileName) bBgMusicFileName.textContent = 'Ses dosyası yüklü';
+            if (bBgMusicDeleteBtn) bBgMusicDeleteBtn.style.display = 'inline-flex';
+          } else {
+            if (bBgMusicFileName) bBgMusicFileName.textContent = 'Ses dosyası yükle';
+            if (bBgMusicDeleteBtn) bBgMusicDeleteBtn.style.display = 'none';
+          }
+        });
+      }
+
+      if (myAcc.customAvatarUrl || (myAcc.avatar && !myAcc.avatar.includes('discordapp') && !myAcc.avatar.includes('dicebear'))) {
+        avatarDataUrl = myAcc.customAvatarUrl || myAcc.avatar;
+        if (bAvatarFileName) bAvatarFileName.textContent = 'Avatar yüklü (Bulut)';
+        if (bAvatarDeleteBtn) bAvatarDeleteBtn.style.display = 'inline-flex';
+      } else {
+        getMediaItem(`avatar_${unKey}`).then(a => {
+          if (a) {
+            avatarDataUrl = a;
+            if (bAvatarFileName) bAvatarFileName.textContent = 'Avatar yüklü';
+            if (bAvatarDeleteBtn) bAvatarDeleteBtn.style.display = 'inline-flex';
+          } else {
+            if (bAvatarFileName) bAvatarFileName.textContent = 'PNG, JPG, GIF';
+            if (bAvatarDeleteBtn) bAvatarDeleteBtn.style.display = 'none';
+          }
+        });
+      }
+
       getMediaItem(`cursor_${unKey}`).then(c => {
         if (c) {
           cursorDataUrl = c;
