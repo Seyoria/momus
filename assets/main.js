@@ -43,6 +43,11 @@ async function refreshProfilesCache() {
     }
   } catch(e){}
 
+  const grid = document.getElementById('members-grid');
+  if (grid && (!window.location.hash || window.location.hash === '#home')) {
+    renderLandingMembers();
+  }
+
   return profilesCache;
 }
 
@@ -946,60 +951,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (noMembers) noMembers.style.display = 'none';
     grid.innerHTML = '';
 
-    keys.forEach(async (k) => {
-      const p = profiles[k];
-      const card = document.createElement('a');
-      card.className = 'member-card';
-      card.href = `#${p.username}`;
+    keys.forEach((k) => {
+      try {
+        const p = profiles[k];
+        if (!p) return;
+        const uname = p.username || k;
+        const card = document.createElement('a');
+        card.className = 'member-card';
+        card.href = `#${uname}`;
 
-      let av = '';
-      const storedAvatar = await getMediaItem(`avatar_${k.toLowerCase()}`);
-      if (storedAvatar) av = storedAvatar;
-      if (!av && p.avatar) av = p.avatar;
-      if (!av && p.customAvatarUrl) av = p.customAvatarUrl;
-      if (!av && p.discordAvatar) av = p.discordAvatar;
-      if (!av && p.discordId) av = defaultDiscordAvatarUrl(p.discordId);
+        let av = p.avatar || p.customAvatarUrl || p.discordAvatar || '';
+        const defaultPinterestAv = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
+        if (!av || av.includes('dicebear')) {
+          av = defaultPinterestAv;
+        }
 
-      const defaultPinterestAv = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
-      if (!av || av.includes('dicebear')) {
-        av = defaultPinterestAv;
-      }
+        let badgesHtml = '';
+        if (p.badges && Array.isArray(p.badges) && p.badges.length > 0) {
+          p.badges.forEach(b => {
+            badgesHtml += `<span class="p-badge ${b}" style="font-size:0.55rem;padding:1px 5px;">${b.toUpperCase()}</span>`;
+          });
+        }
+        if (p.customBadges && Array.isArray(p.customBadges) && p.customBadges.length > 0) {
+          p.customBadges.forEach(b => {
+            badgesHtml += `<span class="p-badge custom-badge" style="font-size:0.55rem;padding:1px 5px;border-color:${b.color};color:${b.color};background:${b.color}1f">${b.text.toUpperCase()}</span>`;
+          });
+        }
 
-      let badgesHtml = '';
-      if (p.badges && p.badges.length > 0) {
-        p.badges.forEach(b => {
-          badgesHtml += `<span class="p-badge ${b}" style="font-size:0.55rem;padding:1px 5px;">${b.toUpperCase()}</span>`;
-        });
-      }
-      if (p.customBadges && p.customBadges.length > 0) {
-        p.customBadges.forEach(b => {
-          badgesHtml += `<span class="p-badge custom-badge" style="font-size:0.55rem;padding:1px 5px;border-color:${b.color};color:${b.color};background:${b.color}1f">${b.text.toUpperCase()}</span>`;
-        });
-      }
-
-      card.innerHTML = `
-        <div class="mc-bg"></div>
-        <div class="mc-avatar-wrap">
-          <img class="mc-avatar" src="${av}" onerror="this.src='${defaultPinterestAv}'" alt="${p.username}"/>
-        </div>
-        <div class="mc-info">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            <span class="mc-name" style="color: ${p.color || '#fff'}">${p.username}</span>
-            <div class="mc-badges" style="display:inline-flex;gap:4px;">${badgesHtml}</div>
+        card.innerHTML = `
+          <div class="mc-bg"></div>
+          <div class="mc-avatar-wrap">
+            <img class="mc-avatar" src="${av}" onerror="this.src='${defaultPinterestAv}'" alt="${uname}"/>
           </div>
-          <span class="mc-bio">${p.bio || 'currently doing nothing'}</span>
-        </div>
-        <span class="mc-arrow">&nearr;</span>
-      `;
-      grid.appendChild(card);
+          <div class="mc-info">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span class="mc-name" style="color: ${p.color || '#fff'}">${uname}</span>
+              <div class="mc-badges" style="display:inline-flex;gap:4px;">${badgesHtml}</div>
+            </div>
+            <span class="mc-bio">${p.bio || 'currently doing nothing'}</span>
+          </div>
+          <span class="mc-arrow">&nearr;</span>
+        `;
+        grid.appendChild(card);
 
-      if (p.discordId && (!av || av.includes('embed/avatars') || av.includes('dicebear'))) {
-        getUnifiedDiscordPresence(p.discordId).then(d => {
-          if (d && d.avatar) {
+        // Async try load from IndexedDB or Discord if available
+        getMediaItem(`avatar_${k.toLowerCase()}`).then(storedAvatar => {
+          if (storedAvatar) {
             const imgEl = card.querySelector('.mc-avatar');
-            if (imgEl) imgEl.src = d.avatar;
+            if (imgEl) imgEl.src = storedAvatar;
           }
-        });
+        }).catch(() => {});
+
+        if (p.discordId && (!av || av.includes('embed/avatars') || av.includes('dicebear'))) {
+          getUnifiedDiscordPresence(p.discordId).then(d => {
+            if (d && d.avatar) {
+              const imgEl = card.querySelector('.mc-avatar');
+              if (imgEl) imgEl.src = d.avatar;
+            }
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.warn('Error rendering member card:', k, err);
       }
     });
   }
