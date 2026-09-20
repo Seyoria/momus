@@ -836,8 +836,7 @@
           <button type="button" class="admin-tab-btn" data-tab="border-glow">Çerçeve Efektleri</button>
           <button type="button" class="admin-tab-btn" data-tab="dm-sender">Discord DM</button>
           <button type="button" class="admin-tab-btn" data-tab="invite-codes">Davet Kodları</button>
-          <button type="button" class="admin-tab-btn" data-tab="audit-logs">İşlem Günlüğü</button>
-          <button type="button" class="admin-tab-btn" data-tab="analytics">İstatistikler</button>
+          <button type="button" class="admin-tab-btn" data-tab="bot-generator">🤖 Bot Hesaplar</button>
           <button type="button" class="admin-tab-btn" data-tab="changelog">Changelog</button>
         </div>
 
@@ -1074,7 +1073,62 @@
           </div>
         </div>
 
-        <!-- TAB 6: Changelog Gönderici Paneli -->
+        <!-- TAB: Bot / Sahte Hesap Üretici -->
+        <div class="admin-tab-content" id="admin-tab-bot-generator" style="display:none;">
+          <div class="admin-section-card">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div>
+                <h3 class="admin-card-heading">🤖 Otomatik Bot Hesap Üretici</h3>
+                <p class="admin-card-desc">Sitede üye ve profil sayısını artırmak için estetik avatarlarla gerçekçi bot profiller üretin.</p>
+              </div>
+              <button type="button" id="admin-purge-bots-btn" class="dash-btn-outline" style="color:#ef4444; border-color:rgba(239,68,68,0.3); padding:8px 16px; font-size:0.8rem;">
+                🗑️ Tüm Botları Sil
+              </button>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:20px;">
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Üretilecek Bot Miktarı</label>
+                <select id="admin-bot-count-select" class="admin-input" style="background:#16161a; color:#fff; cursor:pointer;">
+                  <option value="5">5 Bot Hesap</option>
+                  <option value="15" selected>15 Bot Hesap</option>
+                  <option value="30">30 Bot Hesap</option>
+                  <option value="50">50 Bot Hesap</option>
+                  <option value="100">100 Bot Hesap</option>
+                </select>
+              </div>
+
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Avatar / Görsel Tarzı</label>
+                <select id="admin-bot-style-select" class="admin-input" style="background:#16161a; color:#fff; cursor:pointer;">
+                  <option value="aesthetic" selected>Pinterest & Dark Aesthetic</option>
+                  <option value="anime">Anime / Cyberpunk Portreler</option>
+                  <option value="lofi">Lofi / Pixel Art</option>
+                  <option value="mixed">Karışık (Tüm Tarzlar)</option>
+                </select>
+              </div>
+
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Görünüm Efektleri</label>
+                <select id="admin-bot-effects-select" class="admin-input" style="background:#16161a; color:#fff; cursor:pointer;">
+                  <option value="random" selected>Rastgele Efektler & Çerçeveler</option>
+                  <option value="clean">Minimal (Efektsiz)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="admin-form-actions" style="margin-top:10px;">
+              <button type="button" id="admin-generate-bots-btn" class="dash-btn-primary" style="padding:12px 24px;">
+                ✨ Bot Hesapları Oluştur & Sitede Yayınla
+              </button>
+            </div>
+
+            <!-- Bot Generator Log / Status -->
+            <div id="admin-bot-gen-status" style="margin-top:16px; font-size:0.85rem; color:#a855f7; display:none;"></div>
+          </div>
+        </div>
+
+        <!-- TAB: Changelog Gönderici Paneli -->
         <div class="admin-tab-content" id="admin-tab-changelog" style="display:none;">
           <div class="admin-section-card">
             <h3 class="admin-card-heading">Discord Changelog Kanalına Güncelleme Gönder</h3>
@@ -1231,6 +1285,6 @@
     </div>
   </div>
 
-  <script src="assets/main.js?v=27"></script>
+  <script src="assets/main.js?v=29"></script>
 </body>
 </html>
