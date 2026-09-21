@@ -24,9 +24,7 @@ async function refreshProfilesCache() {
       const next = {};
       data.forEach(row => {
         const p = row.data || {};
-        if (p.isBot) {
-          // Otomatik bot temizleme: veritabanından arka planda sil
-          supabaseClient.from('profiles').delete().eq('username', row.username).then(() => {});
+        if (p.isBot || row.username.toLowerCase() === 'zera') {
           return;
         }
         p.username = p.username || row.username;
