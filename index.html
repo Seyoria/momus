@@ -7,10 +7,11 @@
   <meta name="description" content="momus — link in bio platform"/>
   
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='28' fill='%230e0e0e'/%3E%3Ctext x='50' y='68' font-family='sans-serif' font-weight='900' font-size='55' fill='%23a855f7' text-anchor='middle'%3Em%3C/text%3E%3C/svg%3E"/>
+
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=32"/>
+  <link rel="stylesheet" href="assets/main.css?v=30"/>a
 
   <!-- HTTPS Zorunluluğu (Enforce HTTPS) -->
   <script>
@@ -42,81 +43,80 @@
       <h1 class="maint-title">Bakımdayız</h1>
       <p class="maint-desc">Platformumuzda iyileştirmeler yapıyoruz.<br>Kısa süre içinde geri döneceğiz.</p>
       <div class="maint-status">
-        <span class="maint-dot"></span>
-        <span>Sistem güncelleniyor</span>
+        <span class="maint-status-dot"></span>
+        <span class="maint-status-text">Bakım devam ediyor</span>
+      </div>
+      <div class="maint-progress">
+        <div class="maint-progress-bar"></div>
+      </div>
+      <div class="maint-footer">
+        <a href="https://discord.gg/U3eKc9NBPx" target="_blank" class="maint-discord-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.04.035.05a19.906 19.906 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          Discord
+        </a>
+        <span class="maint-sep">•</span>
+        <span class="maint-copy">© 2026 momus</span>
       </div>
     </div>
   </div>
 
-  <div id="toast" class="toast"></div>
-
-  <!-- Global Announcement Banner -->
   <div id="global-announcement-banner" class="global-announcement-banner" style="display:none;">
-    <div class="global-announcement-inner">
-      <div class="global-announcement-left">
-        <span class="global-announcement-badge">DUYURU</span>
-        <span id="global-announcement-text" class="global-announcement-text"></span>
-      </div>
-      <div class="global-announcement-right">
-        <span id="global-announcement-countdown" class="global-announcement-countdown" style="display:none;"></span>
-        <button id="global-announcement-close" class="global-announcement-close">&times;</button>
-      </div>
+    <div class="announcement-content">
+      <span class="announcement-badge">DUYURU</span>
+      <span id="announcement-text" class="announcement-text"></span>
+      <span id="announcement-timer" class="announcement-timer" style="display:none;"></span>
     </div>
+    <button id="announcement-close-btn" class="announcement-close">&times;</button>
   </div>
 
-  <div id="cursor-dot" class="cursor-dot"></div>
-  <div id="cursor-ring" class="cursor-ring"></div>
+  <div id="c-dot"></div>
+  <div id="c-ring"></div>
 
-  <!-- DISCORD GATE OVERLAY -->
-  <div id="dg-overlay" class="dg-overlay" style="display:none;">
-    <div class="dg-backdrop">
+  <!-- Guns.lol Custom Toast Notifications Container -->
+  <div id="toast-container"></div>
+
+  <div id="discord-gate" class="hidden">
+    <div class="dg-bg">
+      <div class="dg-particles"></div>
       <div class="dg-glow dg-glow-1"></div>
       <div class="dg-glow dg-glow-2"></div>
-      <div class="dg-glow dg-glow-3"></div>
-      <div class="dg-grid-lines"></div>
     </div>
+    <div class="dg-content">
+      <img src="https://i.ibb.co/pChc4dB/Chat-GPT-mage-5-A-u-2026-22-44-20.png" alt="momus" class="dg-logo"/>
+      <h1 class="dg-title">Hoş geldin</h1>
+      <p class="dg-sub">Profil oluşturmak ve düzenlemek için Discord hesabınla giriş yap.</p>
 
-    <div class="dg-fullscreen-content">
-      <div class="dg-logo-hero">
-        <img src="https://i.ibb.co/pChc4dB/Chat-GPT-mage-5-A-u-2026-22-44-20.png" alt="momus" class="dg-hero-img"/>
-        <div class="dg-brand-sub">the #1 bio platform</div>
+      <button id="dg-login-btn" class="dg-login-btn">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.04.035.05a19.906 19.906 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        <span>Discord ile Giris Yap</span>
+      </button>
+
+      <div class="dg-divider">
+        <span class="dg-divider-line"></span>
+        <span class="dg-divider-text">ZORUNLU</span>
+        <span class="dg-divider-line"></span>
       </div>
 
-      <div class="dg-action-box">
-        <div class="dg-step-guide">
-          <div class="dg-step-title">Giriş Yapmak İçin 2 Basit Adım</div>
-          <p class="dg-step-desc">Profil oluşturmak ve düzenlemek için Discord sunucumuza katılıp ardından Discord hesabınızla giriş yapmalısınız.</p>
+      <div class="dg-warning-box">
+        <div class="dg-warning-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </div>
-
-        <a href="https://discord.gg/U3eKc9NBPx" target="_blank" rel="noopener" class="dg-join-server-btn">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-          </svg>
-          <span>1. Discord Sunucusuna Katıl</span>
-        </a>
-
-        <div class="dg-step-divider">
-          <span>ZORUNLU</span>
+        <div class="dg-warning-text">
+          <strong>Discord sunucumuza katilman gerekiyor</strong>
+          <p>Sunucuya katilmadan bot verilerini cekemeyiz. Profilin, Discord durumun ve aktivitelerin duzgun gorunmez.</p>
         </div>
-
-        <button id="dg-login-btn" class="dg-auth-btn">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-          </svg>
-          <span>2. Discord ile Yetkilendir</span>
-        </button>
-
-        <div class="dg-warn-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <span>Sunucuda bulunmayan hesapların profili kaydedilmez.</span>
-        </div>
-
-        <a href="#home" class="dg-home-btn">&larr; Ana Sayfaya Dön</a>
       </div>
+
+      <a href="https://discord.gg/U3eKc9NBPx" target="_blank" class="dg-join-btn">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.04.035.05a19.906 19.906 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        <span>Sunucuya Katil</span>
+      </a>
+
+      <a href="#home" class="dg-back">Ana sayfaya don</a>
     </div>
   </div>
+
+  <div id="noise"></div>
 
   <div id="view-landing" class="app-view">
     <nav id="top-nav">
@@ -142,6 +142,7 @@
 
       <div id="hero-content">
         <div id="hero-tag">the #1 bio platform</div>
+        <!-- Temiz Harf Hover Efekti (Kutu/Arka plan olmadan doğrudan harf renk değişimi) -->
         <h1 id="hero-title">
           <span class="title-char">m</span><span class="title-char">o</span><span class="title-char">m</span><span class="title-char">u</span><span class="title-char">s</span>
         </h1>
@@ -247,174 +248,131 @@
       <!-- Content Panels -->
       <div class="dash-content">
 
-        <!-- TAB 1: HESAP (Account) -->
-        <div class="dash-tab-panel active" id="tab-panel-account">
-          <h2 class="dash-title">Hesap Detayları</h2>
+        <!-- HESAP TAB -->
+        <div class="dash-panel active" id="dash-tab-account">
+          <h2 class="dash-title">Hesap Özeti</h2>
 
-          <div class="dash-stats-row">
+          <div class="dash-stat-row">
             <div class="dash-stat-card">
-              <div class="dash-stat-header">
-                <span>Görüntülenme</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </div>
-              <div class="dash-stat-value" id="b-views-count">0 görüntüleme</div>
+              <div class="dash-stat-header"><span>Görüntülenme</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="3"/><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/></svg></div>
+              <div id="b-views-count" class="dash-stat-value-text">0 görüntüleme</div>
             </div>
             <div class="dash-stat-card">
-              <div class="dash-stat-header">
-                <span>Profil URL</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              </div>
-              <div class="dash-stat-value dash-url-preview" id="dash-url-text">momus/#kullanici</div>
+              <div class="dash-stat-header"><span>Kullanıcı adı</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              <input type="text" id="b-username" class="dash-stat-value-input" placeholder="Kullanıcı adını yaz..."/>
+            </div>
+            <div class="dash-stat-card">
+              <div class="dash-stat-header"><span>Discord ID</span><span class="discord-label-badge">DISCORD</span></div>
+              <input type="text" id="b-discord-id" class="dash-stat-value-input" placeholder="Discord User ID"/>
+            </div>
+            <div class="dash-stat-card">
+              <div class="dash-stat-header"><span>Durum / Biyografi</span></div>
+              <textarea id="b-bio" class="dash-stat-value-input dash-textarea" placeholder="Biyografini yaz..."></textarea>
             </div>
           </div>
 
           <div class="dash-section-card">
-            <div class="dash-avatar-section">
-              <div class="dash-avatar-preview" id="b-avatar-preview-wrap">
-                <img id="b-avatar-img" src="" alt="Avatar" style="display:none;"/>
-                <div id="b-avatar-placeholder" class="dash-avatar-ph">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                </div>
-              </div>
-              <div class="dash-avatar-info">
-                <div class="dash-avatar-actions">
-                  <label class="dash-upload-btn">
-                    <span>Dosya Seç</span>
-                    <input type="file" id="b-avatar-file" accept="image/png, image/jpeg, image/gif, image/webp" style="display:none;"/>
-                  </label>
-                  <button type="button" id="b-avatar-delete-btn" class="dash-btn-icon-danger" title="Avatarı Sil" style="display:none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                  </button>
-                </div>
-                <div class="dash-upload-filename" id="b-avatar-filename">Resim seçilmedi</div>
-                <div class="dash-upload-tip">Maks 20MB &bull; GIF, PNG, JPG, WEBP</div>
-              </div>
-            </div>
-
-            <div class="dash-form-row">
-              <label class="dash-label">Kullanıcı Adı</label>
-              <input type="text" id="b-username" class="dash-input" placeholder="kullanici_adi" autocomplete="off"/>
-            </div>
-
-            <div class="dash-form-row">
-              <label class="dash-label">Biyografi</label>
-              <textarea id="b-bio" class="dash-textarea" placeholder="Kendinden bahset..." rows="3"></textarea>
-            </div>
-
-            <div class="dash-form-row">
-              <label class="dash-label">Konum (Opsiyonel)</label>
-              <input type="text" id="b-location" class="dash-input" placeholder="İstanbul, Türkiye"/>
-            </div>
-
-            <div class="dash-form-row" style="display:none;">
-              <input type="text" id="b-discord-id"/>
-            </div>
+            <h3>Profili Kaydet</h3>
+            <p class="dash-muted">Değişikliklerini kaydedip profilini güncelle.</p>
+            <button id="b-save-btn" class="dash-btn-primary">Profili Kaydet</button>
           </div>
         </div>
 
-        <!-- TAB 2: ÖZELLEŞTİR (Customize) -->
-        <div class="dash-tab-panel" id="tab-panel-customize">
-          <h2 class="dash-title">Görsel Özelleştirme</h2>
+        <!-- ÖZELLEŞTİR TAB -->
+        <div class="dash-panel" id="dash-tab-customize">
+          <h2 class="dash-title">Dosya Yükleyici</h2>
 
-          <!-- Medya Yüklemeleri -->
+          <div class="dash-upload-grid">
+            <div class="dash-upload-card" id="b-bgvideo-card">
+              <div class="dash-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+              <span class="dash-upload-label">Arka Plan</span>
+              <span class="dash-upload-sub" id="b-bgvideo-file-name">Dosya yüklemek için tıkla</span>
+              <input type="file" id="b-bgvideo-file" accept="video/mp4,video/*,image/gif" class="dash-upload-input"/>
+              <button type="button" class="dash-upload-delete-btn" id="b-bgvideo-delete-btn" style="display:none;" title="Dosyayı Sil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Sil</button>
+            </div>
+            <div class="dash-upload-card" id="b-bgmusic-card">
+              <div class="dash-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+              <span class="dash-upload-label">Ses</span>
+              <span class="dash-upload-sub" id="b-bgmusic-file-name">Ses dosyası yükle</span>
+              <input type="file" id="b-bgmusic-file" accept="audio/mp3,audio/*" class="dash-upload-input"/>
+              <button type="button" class="dash-upload-delete-btn" id="b-bgmusic-delete-btn" style="display:none;" title="Ses Dosyasını Sil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Sil</button>
+            </div>
+            <div class="dash-upload-card" id="b-avatar-card">
+              <div class="dash-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+              <span class="dash-upload-label">Profil Avatarı</span>
+              <span class="dash-upload-sub" id="b-avatar-file-name">PNG, JPG, GIF</span>
+              <input type="file" id="b-avatar-file" accept="image/*" class="dash-upload-input"/>
+              <button type="button" class="dash-upload-delete-btn" id="b-avatar-delete-btn" style="display:none;" title="Avatarı Sil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Sil</button>
+            </div>
+            <div class="dash-upload-card" id="b-cursor-card">
+              <div class="dash-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><polyline points="12 12 12 21"/><polyline points="8 17 12 21 16 17"/></svg></div>
+              <span class="dash-upload-label">Özel İmleç</span>
+              <span class="dash-upload-sub" id="b-cursor-file-name">GIF veya PNG yükle</span>
+              <input type="file" id="b-cursor-file" accept="image/gif,image/png" class="dash-upload-input"/>
+              <button type="button" class="dash-upload-delete-btn" id="b-cursor-delete-btn" style="display:none;" title="İmleci Sil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Sil</button>
+            </div>
+          </div>
+
+          <h2 class="dash-title" style="margin-top:32px;">Genel Özelleştirme</h2>
           <div class="dash-section-card">
-            <h3 class="dash-section-subtitle">Medya</h3>
-            <div class="dash-media-grid">
-              <div class="dash-media-item">
-                <label class="dash-label">Arka Plan (Video veya GIF)</label>
-                <div class="dash-file-drop">
-                  <label class="dash-upload-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    <span id="b-bg-video-filename">Dosya Yükle</span>
-                    <input type="file" id="b-bg-video-file" accept="video/mp4, video/webm, image/gif, image/png, image/jpeg, image/webp" style="display:none;"/>
-                  </label>
-                  <button type="button" id="b-bg-video-delete-btn" class="dash-btn-icon-danger" title="Medyayı Sil" style="display:none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                  </button>
-                </div>
-                <div class="dash-upload-tip">Maks 20MB &bull; MP4, WEBM, GIF</div>
+            <div class="dash-settings-grid">
+              <div class="dash-stat-card" style="padding:16px;">
+                <div class="dash-stat-header" style="margin-bottom:8px;"><span>Konum</span></div>
+                <input type="text" id="b-location" class="dash-stat-value-input" placeholder="Konumun (örn: İstanbul, TR)"/>
               </div>
-
-              <div class="dash-media-item">
-                <label class="dash-label">Arka Plan Müziği</label>
-                <div class="dash-file-drop">
-                  <label class="dash-upload-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                    <span id="b-bg-music-filename">Ses Dosyası Yükle</span>
-                    <input type="file" id="b-bg-music-file" accept="audio/mp3, audio/mpeg, audio/ogg, audio/wav, audio/m4a" style="display:none;"/>
-                  </label>
-                  <button type="button" id="b-bg-music-delete-btn" class="dash-btn-icon-danger" title="Müziği Sil" style="display:none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                  </button>
+              <div class="dash-slider-group" style="padding:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <label>Profil Opaklığı</label>
+                  <span id="b-opacity-val" style="font-family:var(--font-mono); font-size:0.75rem; color:#a855f7; font-weight:700;">80%</span>
                 </div>
-                <div class="dash-upload-tip">Maks 20MB &bull; MP3, WAV, OGG</div>
+                <div class="dash-slider-row" style="margin-top:6px;">
+                  <input type="range" id="b-opacity" min="20" max="100" value="80"/>
+                </div>
+                <div class="dash-slider-labels"><span>20%</span><span>50%</span><span>80%</span><span>100%</span></div>
               </div>
-
-              <div class="dash-media-item">
-                <label class="dash-label">Özel İmleç (Cursor)</label>
-                <div class="dash-file-drop">
-                  <label class="dash-upload-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
-                    <span id="b-cursor-filename">GIF veya PNG Yükle</span>
-                    <input type="file" id="b-cursor-file" accept="image/png, image/gif, image/cur" style="display:none;"/>
-                  </label>
-                  <button type="button" id="b-cursor-delete-btn" class="dash-btn-icon-danger" title="İmleci Sil" style="display:none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                  </button>
+              <div class="dash-slider-group" style="padding:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <label>Profil Bulanıklığı</label>
+                  <span id="b-blur-val" style="font-family:var(--font-mono); font-size:0.75rem; color:#a855f7; font-weight:700;">0px</span>
                 </div>
-                <div class="dash-upload-tip">Maks 2MB &bull; 32x32 önerilir</div>
+                <div class="dash-slider-row" style="margin-top:6px;">
+                  <input type="range" id="b-blur" min="0" max="80" value="0"/>
+                </div>
+                <div class="dash-slider-labels"><span>0px</span><span>20px</span><span>50px</span><span>80px</span></div>
               </div>
             </div>
           </div>
 
-          <!-- Renkler ve Opaklık -->
-          <h2 class="dash-title" style="margin-top:32px;">Renkler & Kart Ayarları</h2>
+          <h2 class="dash-title" style="margin-top:32px;">Renk Özelleştirme</h2>
           <div class="dash-section-card">
-            <div class="dash-colors-grid">
+            <div class="dash-color-grid">
               <div class="dash-color-item">
-                <label class="dash-label">İsim Rengi</label>
-                <div class="dash-color-input-wrap">
-                  <input type="color" id="b-color" class="dash-color-picker" value="#ffffff"/>
-                  <input type="text" id="b-color-hex" class="dash-hex-input" value="#ffffff" maxlength="7"/>
-                </div>
-              </div>
-              <div class="dash-color-item">
-                <label class="dash-label">Yazı Rengi</label>
-                <div class="dash-color-input-wrap">
-                  <input type="color" id="b-text-color" class="dash-color-picker" value="#ffffff"/>
-                  <input type="text" id="b-text-color-hex" class="dash-hex-input" value="#ffffff" maxlength="7"/>
+                <span>Vurgu Rengi</span>
+                <div class="dash-color-picker">
+                  <input type="color" id="b-color" value="#ffffff"/>
+                  <input type="text" id="b-color-hex" class="dash-color-hex" value="#ffffff" placeholder="#ffffff"/>
                 </div>
               </div>
               <div class="dash-color-item">
-                <label class="dash-label">Kart Rengi</label>
-                <div class="dash-color-input-wrap">
-                  <input type="color" id="b-bg-color" class="dash-color-picker" value="#080808"/>
-                  <input type="text" id="b-bg-color-hex" class="dash-hex-input" value="#080808" maxlength="7"/>
+                <span>Metin Rengi</span>
+                <div class="dash-color-picker">
+                  <input type="color" id="b-text-color" value="#ffffff"/>
+                  <input type="text" id="b-text-color-hex" class="dash-color-hex" value="#ffffff" placeholder="#ffffff"/>
                 </div>
               </div>
               <div class="dash-color-item">
-                <label class="dash-label">İkon Rengi</label>
-                <div class="dash-color-input-wrap">
-                  <input type="color" id="b-icon-color" class="dash-color-picker" value="#ffffff"/>
-                  <input type="text" id="b-icon-color-hex" class="dash-hex-input" value="#ffffff" maxlength="7"/>
+                <span>Arka Plan Rengi</span>
+                <div class="dash-color-picker">
+                  <input type="color" id="b-bg-color" value="#080808"/>
+                  <input type="text" id="b-bg-color-hex" class="dash-color-hex" value="#080808" placeholder="#080808"/>
                 </div>
               </div>
-            </div>
-
-            <div class="dash-sliders-grid" style="margin-top:20px;">
-              <div class="dash-slider-item">
-                <div class="dash-slider-header">
-                  <label class="dash-label">Kart Opaklığı</label>
-                  <span id="b-opacity-val" class="dash-slider-val">80%</span>
+              <div class="dash-color-item">
+                <span>İkon Rengi</span>
+                <div class="dash-color-picker">
+                  <input type="color" id="b-icon-color" value="#ffffff"/>
+                  <input type="text" id="b-icon-color-hex" class="dash-color-hex" value="#ffffff" placeholder="#ffffff"/>
                 </div>
-                <input type="range" id="b-opacity" class="dash-range-slider" min="0" max="100" value="80"/>
-              </div>
-              <div class="dash-slider-item">
-                <div class="dash-slider-header">
-                  <label class="dash-label">Kart Bulanıklığı (Blur)</label>
-                  <span id="b-blur-val" class="dash-slider-val">0px</span>
-                </div>
-                <input type="range" id="b-blur" class="dash-range-slider" min="0" max="30" value="0"/>
               </div>
             </div>
           </div>
@@ -555,49 +513,14 @@
                 </label>
               </div>
               <div class="dash-toggle-item">
-                <span>Sekme Başlığı Animasyonu</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="b-toggle-animated-title">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="dash-toggle-item">
-                <span>Görüntülenme Sayısını Göster</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="b-toggle-views-count">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="dash-toggle-item">
-                <span>Rozetleri Göster</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="b-toggle-badges-display">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="dash-toggle-item">
-                <span>Sosyal Medya İkon Parlaması</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="b-toggle-social-glow">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="dash-toggle-item">
-                <span>Müzik Spektrumu (Dalga)</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="b-toggle-audio-spectrum" checked>
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="dash-toggle-item">
-                <span>Daktilo (Typewriter) Biyografi</span>
+                <span>Daktilo (Typewriter) Bio</span>
                 <label class="toggle-switch">
                   <input type="checkbox" id="b-toggle-typewriter">
                   <span class="toggle-slider"></span>
                 </label>
               </div>
               <div class="dash-toggle-item">
-                <span>Görünmez / Şeffaf Profil Kartı</span>
+                <span>Görünmez/Şeffaf Kart</span>
                 <label class="toggle-switch">
                   <input type="checkbox" id="b-toggle-transparent-card">
                   <span class="toggle-slider"></span>
@@ -611,7 +534,7 @@
                 </label>
               </div>
               <div class="dash-toggle-item">
-                <span>+18 / Hassas İçerik Kapısı</span>
+                <span>+18 / NSFW Onay Perdesi</span>
                 <label class="toggle-switch">
                   <input type="checkbox" id="b-toggle-nsfw-gate">
                   <span class="toggle-slider"></span>
@@ -624,38 +547,87 @@
                   <span class="toggle-slider"></span>
                 </label>
               </div>
+              <div class="dash-toggle-item">
+                <span>Animasyonlu Başlık</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-animated-title">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dash-toggle-item">
+                <span>Görüntülenme Sayacı</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-views-count" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dash-toggle-item">
+                <span>Rozet Alanı</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-badges-display" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dash-toggle-item">
+                <span>Sosyal İkon Parıltısı</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-social-glow" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dash-toggle-item">
+                <span>Canlı Ses Dalgaları</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="b-toggle-audio-spectrum" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
             </div>
           </div>
 
-          <h2 class="dash-title" style="margin-top:32px;">Rozetlerim</h2>
-          <div class="dash-section-card">
-            <div class="dash-badges-row" id="dash-badges-list">
-              <span class="dash-empty-tip">Sahip olduğunuz rozetler burada görüntülenir (Rozetler sadece yöneticiler tarafından verilebilir).</span>
-            </div>
-            <div id="dash-custom-badges-list" class="dash-badges-row" style="margin-top:12px;"></div>
+          <div class="dash-section-card" style="margin-top:24px;">
+            <button id="b-save-btn-2" class="dash-btn-primary">Değişiklikleri Kaydet</button>
           </div>
         </div>
 
-        <!-- TAB 3: LİNKLER (Links) -->
-        <div class="dash-tab-panel" id="tab-panel-links">
-          <h2 class="dash-title">Sosyal Medya & Bağlantılar</h2>
+        <!-- LİNKLER TAB -->
+        <div class="dash-panel" id="dash-tab-links">
+          <h2 class="dash-title">Sosyal medya profillerini bağla.</h2>
+          <p class="dash-muted">Profiline eklemek için bir sosyal medya seç.</p>
 
-          <div class="dash-social-grid" id="dash-social-selector">
-            <!-- JS Dinamik Oluşturur -->
+          <div class="dash-social-grid" id="dash-social-icons">
+            <!-- Social icons will be dynamically generated -->
           </div>
 
-          <div class="dash-link-form" id="dash-link-form" style="display:none;">
-            <h3 id="dash-link-form-title">Bağlantı Ekle</h3>
-            <input type="text" id="dash-link-input-label" class="dash-input" placeholder="Görünen İsim (örn: Spotify Profilim)"/>
-            <input type="url" id="dash-link-input-url" class="dash-input" placeholder="https://..."/>
-            <div class="dash-link-form-actions">
-              <button type="button" id="dash-link-save-btn" class="dash-btn-primary">Kaydet</button>
-              <button type="button" id="dash-link-cancel-btn" class="dash-btn-outline">İptal</button>
+          <!-- Guns.lol Style Social Link Modal Popup -->
+          <div id="dash-link-modal" class="link-modal-overlay" style="display:none;">
+            <div class="link-modal">
+              <div class="link-modal-header">
+                <div class="link-modal-title-row">
+                  <span id="link-modal-icon" class="link-modal-platform-icon"></span>
+                  <h3 id="dash-link-form-title">Sosyalini ekle</h3>
+                </div>
+                <button id="dash-link-modal-close" class="link-modal-close">&times;</button>
+              </div>
+              <div class="link-modal-body">
+                <input type="hidden" id="b-link-label"/>
+                <div class="link-modal-input-row">
+                  <span id="link-modal-input-icon" class="link-modal-input-ico"></span>
+                  <input type="text" id="b-link-url" class="link-modal-input" placeholder="https://..."/>
+                </div>
+              </div>
+              <div class="link-modal-footer">
+                <button id="b-link-add-btn" class="link-modal-add-btn">Ekle</button>
+                <span class="link-modal-help">Yardıma mı ihtiyacın var?</span>
+              </div>
             </div>
           </div>
 
-          <div class="dash-added-links" id="dash-added-links-container">
-            <!-- JS Eklenen Linkleri Listeler -->
+          <h3 class="dash-title" style="margin-top:32px;">Eklenen Linkler</h3>
+          <div id="b-links-list" class="dash-added-links"></div>
+
+          <div class="dash-section-card" style="margin-top:24px;">
+            <button id="b-save-btn-3" class="dash-btn-primary">Linkleri Kaydet</button>
           </div>
         </div>
 
@@ -664,87 +636,111 @@
   </div>
 
 
-  <!-- PROFİL GÖRÜNÜMÜ -->
   <div id="view-profile" class="app-view hidden">
-    <!-- Arka Plan Efekti Katmanı -->
-    <div id="p-effect-container" class="profile-effect-layer"></div>
-    <canvas id="p-particles-canvas" class="profile-particles-canvas"></canvas>
-
-    <!-- Arka Plan Medyası -->
-    <div id="p-bg-media" class="profile-bg-media">
-      <video id="p-bg-video" autoplay loop muted playsinline style="display:none;"></video>
-      <img id="p-bg-img" alt="Background" style="display:none;"/>
-      <div class="profile-bg-dim"></div>
+    <!-- Guns.lol Exact Click to Enter Overlay -->
+    <div id="p-click-overlay" class="click-overlay">
+      <span class="click-text">click to enter...</span>
     </div>
 
-    <!-- Müzik Çalar -->
-    <audio id="p-audio" loop preload="auto" style="display:none;"></audio>
+    <!-- Arka plan medya -->
+    <div id="p-bg-media">
+      <video id="p-bg-video" autoplay muted loop playsinline style="display:none"></video>
+      <img id="p-bg-img" alt="" style="display:none"/>
+      <div id="p-bg-overlay"></div>
+      <canvas id="p-particles-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"></canvas>
+    </div>
+    <audio id="p-bg-audio" loop></audio>
 
-    <!-- Ses Butonu (Sağ Üst) -->
-    <button id="p-audio-btn" class="profile-audio-toggle" style="display:none;" title="Sesi Aç/Kapat">
-      <svg class="icon-unmuted" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-      <svg class="icon-muted" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
-    </button>
+    <a id="p-back-btn" href="#home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+      momus
+    </a>
 
-    <div class="profile-card-wrap">
-      <div id="p-card" class="profile-card">
-        <!-- Banner -->
-        <div id="p-banner" class="profile-banner" style="display:none;">
-          <img id="p-banner-img" src="" alt="Banner"/>
+    <!-- Top Right Settings Gear Button -->
+    <a id="p-settings-btn" class="p-settings-gear-btn" href="#builder" title="Profil Ayarlarını Düzenle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Ayarlar</span>
+    </a>
+
+    <div id="p-profile-page">
+      <div id="p-card" class="profile-card guns-card">
+
+        <!-- Discord Banner Görseli -->
+        <div id="view-banner" class="p-banner-wrap" style="display:none;">
+          <img id="view-banner-img" class="p-banner-img" src="" alt="banner"/>
         </div>
 
-        <div class="profile-card-body">
-          <!-- Avatar + Rank Çerçevesi -->
-          <div class="profile-avatar-row">
-            <div id="p-avatar-frame-wrap" class="profile-avatar-frame-wrap">
-              <img id="p-avatar" class="profile-avatar-img" src="" alt="Avatar"/>
+        <!-- Guns.lol Badge Header (Avatar + Username + Status Text) -->
+        <div class="guns-header-badge">
+          <div class="p-avatar-wrap">
+            <img id="view-avatar-img" class="p-avatar" src="" alt="avatar"/>
+          </div>
+          <div class="guns-user-info">
+            <div class="p-username-row">
+              <div id="view-username" class="p-username"></div>
+              <span id="view-status-dot" class="inline-status-dot offline"></span>
+              <span id="view-status-label" class="inline-status-label"></span>
+            </div>
+            <div id="view-badges" class="p-badges-row"></div>
+            <div id="view-bio" class="p-bio"></div>
+            <div id="view-location" class="p-location" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span id="view-location-text"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Discord Live Status & Activity & Spotify Widget -->
+        <div id="view-discord-box" class="discord-activity-box" style="display:none;">
+          <!-- Spotify Card -->
+          <div id="view-spotify-card" class="spotify-card" style="display:none;">
+            <div class="sp-icon-col">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="color:#1db954;"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            </div>
+            <div class="sp-info-col">
+              <span class="sp-status-tag">LISTENING TO SPOTIFY</span>
+              <span id="view-sp-song" class="sp-title-text">—</span>
+              <span id="view-sp-artist" class="sp-artist-text">—</span>
+            </div>
+            <div class="sp-bars">
+              <span></span><span></span><span></span><span></span>
             </div>
           </div>
 
-          <!-- Canlı Discord Durumu / Spotify Çaları -->
-          <div id="p-discord-presence" class="profile-discord-box" style="display:none;">
-            <!-- JS Dinamik Oluşturur -->
+          <!-- Activity / Game Card -->
+          <div id="view-activity-card" class="activity-card" style="display:none;">
+            <span class="act-tag">ACTIViTY</span>
+            <span id="view-act-text" class="act-text">—</span>
+            <span id="view-act-timer" class="act-timer" style="font-size:0.75rem; color:#a855f7; font-family:var(--font-mono); margin-top:2px;"></span>
           </div>
+        </div>
 
-          <!-- İsim ve Rozetler -->
-          <div class="profile-title-row">
-            <h1 id="p-name" class="profile-name"></h1>
-            <div id="p-badges" class="profile-badges"></div>
+        <!-- Guns.lol Style Glowing Social Icon Row -->
+        <div id="view-links" class="p-icon-row"></div>
+
+        <div class="p-audio-section">
+          <canvas id="p-audio-visualizer-canvas" class="p-audio-visualizer" width="100" height="24"></canvas>
+          <span class="audio-label">ses</span>
+          <div class="audio-slider-wrap">
+            <input type="range" id="p-volume-slider" min="0" max="100" value="30"/>
           </div>
+          <button class="audio-mute-btn" id="p-mute-btn" title="Sessiz">
+            <span id="p-mute-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              </svg>
+            </span>
+          </button>
+        </div>
 
-          <!-- Biyografi -->
-          <div id="p-bio" class="profile-bio"></div>
-
-          <!-- Konum -->
-          <div id="p-location" class="profile-location" style="display:none;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span id="p-location-text"></span>
-          </div>
-
-          <!-- Müzik Dalga Spektrumu -->
-          <div id="p-spectrum-wrap" class="profile-spectrum-wrap" style="display:none;">
-            <div class="p-spec-bar"></div>
-            <div class="p-spec-bar"></div>
-            <div class="p-spec-bar"></div>
-            <div class="p-spec-bar"></div>
-            <div class="p-spec-bar"></div>
-            <div class="p-spec-bar"></div>
-            <div class="p-spec-bar"></div>
-            <div class="p-spec-bar"></div>
-          </div>
-
-          <!-- Sosyal Linkler -->
-          <div id="p-links" class="profile-links-list"></div>
-
-          <!-- Profil İçi Alt Bilgi -->
-          <div class="profile-card-footer">
-            <div id="p-views-stat" class="profile-stat-item" style="display:none;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              <span id="p-views-count">0</span>
-            </div>
-            <a href="#home" class="profile-brand-link">
-              <span class="p-brand-badge" id="p-branding-badge">momus</span>
-            </a>
+        <div class="p-footer">
+          <a href="#home">momus</a>
+          <div id="view-views-badge" class="p-views-badge" title="Görüntülenme Sayısı">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            <span id="view-views-count">0</span>
           </div>
         </div>
       </div>
@@ -752,34 +748,33 @@
   </div>
 
 
-  <!-- 404 GÖRÜNÜMÜ -->
-  <div id="view-404" class="app-view hidden" style="display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; text-align:center;">
-    <div style="background:rgba(18,18,24,0.75); border:1px solid rgba(168,85,247,0.2); border-radius:24px; padding:48px 32px; max-width:440px; width:100%; box-shadow:0 0 40px rgba(0,0,0,0.8), 0 0 30px rgba(168,85,247,0.1); backdrop-filter:blur(20px);">
+  <div id="view-404" class="app-view hidden">
+    <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; position:relative; z-index:10;">
       <div style="font-family:var(--font-display); font-size:clamp(4rem, 12vw, 8rem); font-weight:900; background:linear-gradient(135deg, #a855f7, #6366f1); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; line-height:1; margin-bottom:10px;">404</div>
-      <h2 style="font-family:var(--font-display); font-size:1.4rem; font-weight:700; color:#fff; margin-bottom:12px;">Profil Bulunamadı</h2>
-      <p style="font-size:0.88rem; color:rgba(255,255,255,0.5); line-height:1.6; margin-bottom:28px;">Aradığınız kullanıcı profili henüz oluşturulmamış veya silinmiş olabilir.</p>
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <a href="#builder" class="dash-btn-primary" style="padding:14px; text-decoration:none; display:inline-block; font-weight:700;">Bu İsmi Sen Al &rarr;</a>
-        <a href="#home" class="dash-btn-outline" style="padding:12px; text-decoration:none; display:inline-block;">Ana Sayfaya Dön</a>
+      <h2 style="font-family:var(--font-display); font-size:1.5rem; color:#fff; margin-bottom:10px;">Kullanıcı veya Sayfa Bulunamadı</h2>
+      <p style="color:rgba(255,255,255,0.5); font-size:0.95rem; max-width:420px; margin-bottom:24px;">Aradığınız bio profili henüz oluşturulmamış, silinmiş veya bağlantı hatalı olabilir.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+        <a href="#home" class="dash-btn-primary" style="padding:12px 24px; font-size:0.85rem; text-decoration:none;">Ana Sayfaya Dön</a>
+        <a href="#builder" class="dash-btn-outline" style="padding:12px 24px; font-size:0.85rem; text-decoration:none;">Bu İsmi Sen Al</a>
       </div>
     </div>
   </div>
 
 
-  <!-- YÖNETİCİ PANELİ (Admin Panel) -->
   <div id="view-admin" class="app-view hidden">
-    <!-- Admin Login Screen -->
-    <div id="admin-login-screen" class="admin-login-wrap">
-      <div class="admin-login-card">
-        <h2 class="admin-title">Yönetici Girişi</h2>
-        <p class="admin-subtitle">Devam etmek için yönetici PIN kodunuzu girin.</p>
-        <div class="admin-form-group">
-          <input type="password" id="admin-pin-input" class="admin-input" placeholder="PIN Kodu" autocomplete="off"/>
+    <!-- Admin PIN Auth Screen -->
+    <div id="admin-auth-screen" class="admin-auth-wrap">
+      <div class="admin-auth-card">
+        <div class="admin-shield-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" width="36" height="36"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
-        <div class="admin-form-actions">
+        <h2 class="admin-auth-title">Momus Yönetici Girişi</h2>
+        <p class="admin-auth-sub">Devam etmek için yönetici PIN kodunu girin.</p>
+        <div class="admin-pin-wrap">
+          <input type="password" id="admin-pin-input" class="admin-pin-field" maxlength="30" placeholder="••••••••" autocomplete="off"/>
           <button id="admin-login-btn" class="dash-btn-primary">Giriş Yap</button>
         </div>
-        <a href="#home" class="admin-back-link">&larr; Ana Sayfaya Dön</a>
+        <a href="#home" class="admin-back-link">← Ana Sayfaya Dön</a>
       </div>
     </div>
 
@@ -850,224 +845,224 @@
             <input type="text" id="admin-search-input" class="admin-search-box" placeholder="Kullanıcı adı veya Discord ID ile ara..."/>
           </div>
 
-          <div class="admin-users-list" id="admin-users-container">
-            <!-- JS Dinamik Oluşturur -->
+          <!-- Profiles Management Table / Grid -->
+          <div class="admin-users-list" id="admin-users-list">
+            <!-- JS fills dynamically -->
           </div>
         </div>
 
-        <!-- TAB 2: Canlı Site Duyurusu -->
+        <!-- TAB 2: Canlı Global Site Duyurusu -->
         <div class="admin-tab-content" id="admin-tab-announcement" style="display:none;">
           <div class="admin-section-card">
-            <h3 class="admin-card-heading">Site Geneli Canlı Duyuru</h3>
-            <p class="admin-card-desc">Sitenin en üstünde tüm ziyaretçilere görünecek canlı bir bildirim çubuğu yayınlayın.</p>
-            
+            <h3 class="admin-card-heading">Global Site Duyurusu Yönetimi</h3>
+            <p class="admin-card-desc">Sitenin en üstünde tüm ziyaretçilere anlık olarak gösterilecek canlı duyuru metnini ve bitiş zamanını ayarlayın.</p>
+
             <div class="admin-form-group">
               <label class="admin-form-label">Duyuru Durumu</label>
               <label class="toggle-switch">
-                <input type="checkbox" id="admin-ann-active">
+                <input type="checkbox" id="admin-ann-toggle">
                 <span class="toggle-slider"></span>
               </label>
             </div>
 
             <div class="admin-form-group">
               <label class="admin-form-label">Duyuru Metni</label>
-              <textarea id="admin-ann-text" class="admin-textarea" placeholder="Örn: Yeni güncelleme yayınlandı!"></textarea>
+              <input type="text" id="admin-ann-text" class="admin-input" placeholder="Örn: Momus v2.0 Güncellemesi yayında! Sunucumuza katılmayı unutmayın."/>
             </div>
 
             <div class="admin-form-group">
-              <label class="admin-form-label">Bitiş Zamanı / Geri Sayım (Opsiyonel)</label>
-              <input type="datetime-local" id="admin-ann-until" class="admin-input"/>
+              <label class="admin-form-label">Bitiş Zamanı / Saat (İsteğe Bağlı - Geri Sayım Gösterir)</label>
+              <input type="datetime-local" id="admin-ann-until" class="admin-input" style="color-scheme:dark;"/>
             </div>
 
             <div class="admin-form-actions">
-              <button type="button" id="admin-save-announcement-btn" class="dash-btn-primary">Duyuruyu Kaydet & Yayınla</button>
+              <button type="button" id="admin-save-ann-btn" class="dash-btn-primary">Duyuruyu Kaydet & Yayınla</button>
             </div>
           </div>
         </div>
 
-        <!-- TAB 3: Kilitli / Rezerve Kullanıcı İsimleri -->
+        <!-- TAB 3: Ayrılmış / Kilitli Kullanıcı Adları -->
         <div class="admin-tab-content" id="admin-tab-reserved" style="display:none;">
           <div class="admin-section-card">
-            <h3 class="admin-card-heading">Kilitli / Rezerve Kullanıcı Adları</h3>
-            <p class="admin-card-desc">Normal kullanıcıların almasını engellemek istediğiniz özel kullanıcı adlarını (örn: admin, owner, official) buraya ekleyin.</p>
-            
-            <div style="display:flex; gap:10px; margin-bottom:16px;">
-              <input type="text" id="admin-new-reserved-input" class="admin-input" placeholder="Kilitlenecek kullanıcı adı..."/>
-              <button type="button" id="admin-add-reserved-btn" class="dash-btn-primary" style="white-space:nowrap;">İsim Kilitle</button>
+            <h3 class="admin-card-heading">Kullanıcı Adı Kilitleme / Ayırma</h3>
+            <p class="admin-card-desc">Başkaları tarafından alınmasını engellemek istediğiniz özel kullanıcı adlarını buraya ekleyin.</p>
+
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+              <input type="text" id="admin-reserve-input" class="admin-input" style="max-width:280px;" placeholder="Kullanıcı adı (örn: staff, mod, root)"/>
+              <button type="button" id="admin-add-reserve-btn" class="dash-btn-primary">+ İsmi Kilitle</button>
             </div>
 
-            <div id="admin-reserved-tags-list" class="admin-tags-container">
-              <!-- JS ile doldurulur -->
-            </div>
+            <div class="admin-tags-list" id="admin-reserved-tags-list"></div>
           </div>
         </div>
 
-        <!-- TAB 4: Yasaklı Kullanıcılar (Blacklist / Ban) -->
+        <!-- TAB 4: Yasaklı Listesi (Blacklist / IP & Cihaz Ban) -->
         <div class="admin-tab-content" id="admin-tab-blacklist" style="display:none;">
           <div class="admin-section-card">
-            <h3 class="admin-card-heading">Kara Liste / Yasaklılar (Ban)</h3>
-            <p class="admin-card-desc">Platformdan yasaklamak istediğiniz kullanıcı adını veya Discord ID'sini buraya ekleyin. Yasaklanan kullanıcılar sitenize erişemez.</p>
-            
-            <div style="display:flex; gap:10px; margin-bottom:16px;">
-              <input type="text" id="admin-new-ban-input" class="admin-input" placeholder="Kullanıcı adı veya Discord ID..."/>
-              <button type="button" id="admin-add-ban-btn" class="dash-btn-danger" style="white-space:nowrap; padding:10px 20px;">Yasakla (Banla)</button>
+            <h3 class="admin-card-heading">Yasaklı Kullanıcılar, Cihazlar & IP/Fingerprint</h3>
+            <p class="admin-card-desc">Yasaklanan kullanıcıların profilleri sitede askıya alınır, yeni profil oluşturamaz ve siteye erişemezler.</p>
+
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+              <input type="text" id="admin-ban-input" class="admin-input" style="max-width:320px;" placeholder="Kullanıcı adı, Discord ID veya IP/Cihaz ID"/>
+              <button type="button" id="admin-add-ban-btn" class="dash-btn-danger">+ Kullanıcıyı/Cihazı Yasakla</button>
             </div>
 
-            <div id="admin-banned-tags-list" class="admin-tags-container">
-              <!-- JS ile doldurulur -->
-            </div>
+            <div class="admin-tags-list" id="admin-banned-tags-list"></div>
           </div>
         </div>
 
-        <!-- TAB 5: Rozet Galerisi & Özel Rozet Oluşturucu -->
+        <!-- TAB: Rozet İkon Galerisi & Süreli Rozet Verme -->
         <div class="admin-tab-content" id="admin-tab-badge-gallery" style="display:none;">
           <div class="admin-section-card">
-            <h3 class="admin-card-heading">Rozet Galerisi & Yeni Rozet Tanımlama</h3>
-            <p class="admin-card-desc">Platformda kullanılabilecek rozetleri görüntüleyin veya sisteme özel rozetler tanımlayın.</p>
-            
-            <div class="admin-badge-gallery-grid">
-              <div class="admin-gallery-card">
-                <span class="p-badge verified">VERIFIED</span>
-                <span class="admin-badge-desc">Onaylanmış Resmi Profil</span>
+            <h3 class="admin-card-heading">Özel Rozet Tanımla & Süreli Rozet Dağıt</h3>
+            <p class="admin-card-desc">20+ hazır SVG ikon veya özel metin kullanarak kullanıcılara süreli / kalıcı rozetler tanımlayın.</p>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; margin-bottom:20px;">
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Hedef Kullanıcı Adı</label>
+                <input type="text" id="admin-badge-target-user" class="admin-input" placeholder="örn: seyoria"/>
               </div>
-              <div class="admin-gallery-card">
-                <span class="p-badge premium">PREMIUM</span>
-                <span class="admin-badge-desc">Premium Üye Rozeti</span>
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Rozet Metni / Adı</label>
+                <input type="text" id="admin-badge-name-input" class="admin-input" placeholder="örn: VIP, KRAL, ELMAS"/>
               </div>
-              <div class="admin-gallery-card">
-                <span class="p-badge staff">STAFF</span>
-                <span class="admin-badge-desc">Yetkili / Destek Ekibi</span>
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Rozet Rengi</label>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                  <input type="color" id="admin-badge-color-picker" value="#a855f7" style="width:36px; height:36px; border:none; border-radius:50%; background:none; cursor:pointer;"/>
+                  <input type="text" id="admin-badge-color-hex" class="admin-input" value="#a855f7" style="max-width:110px;"/>
+                </div>
               </div>
-              <div class="admin-gallery-card">
-                <span class="p-badge og">OG</span>
-                <span class="admin-badge-desc">İlk Katılan Özel Üyeler</span>
-              </div>
-              <div class="admin-gallery-card">
-                <span class="p-badge dev">DEV</span>
-                <span class="admin-badge-desc">Sistem Geliştiricisi</span>
-              </div>
-              <div class="admin-gallery-card">
-                <span class="p-badge bot">BOT</span>
-                <span class="admin-badge-desc">Bot / Entegrasyon Hesabı</span>
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Rozet Süresi</label>
+                <select id="admin-badge-duration" class="admin-input" style="background:#16161a; color:#fff; cursor:pointer;">
+                  <option value="permanent">Kalıcı (Süresiz)</option>
+                  <option value="3days">3 Günlük</option>
+                  <option value="7days">7 Günlük (1 Hafta)</option>
+                  <option value="30days">30 Günlük (1 Ay)</option>
+                </select>
               </div>
             </div>
+
+            <label class="admin-form-label" style="margin-bottom:10px; display:block;">Hazır İkon Galerisi (Tıkla ve Seç):</label>
+            <div id="admin-badge-icon-grid" class="admin-icon-gallery-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(52px, 1fr)); gap:10px; margin-bottom:24px;">
+              <!-- JS dynamically renders 20+ preset icons -->
+            </div>
+
+            <button type="button" id="admin-assign-gallery-badge-btn" class="dash-btn-primary">Kullanıcıya Rozeti Ata</button>
           </div>
         </div>
 
-        <!-- TAB: Profil Kartı Çerçeve Efektleri (Border Glow) -->
+        <!-- TAB: Özel Arka Plan Çerçevesi (Border Glow) -->
         <div class="admin-tab-content" id="admin-tab-border-glow" style="display:none;">
           <div class="admin-section-card">
-            <h3 class="admin-card-heading">Özel Kart Çerçeve Efektleri (Border Glow)</h3>
-            <p class="admin-card-desc">Kullanıcıların profillerine parlak, animasyonlu neon çerçeve efektleri tanımlayın.</p>
-            
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px; margin-top:16px;">
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(168,85,247,0.3); border-radius:12px; padding:16px;">
-                <h4 style="color:#a855f7; font-weight:700; margin-bottom:6px;">Neon Mor Glow</h4>
-                <p style="font-size:0.8rem; color:rgba(255,255,255,0.6); margin-bottom:12px;">Profil kartı etrafında dönen mor neon ışığı.</p>
-                <button type="button" class="admin-glow-btn dash-btn-primary" data-glow="purple" style="font-size:0.75rem; padding:6px 12px;">Kullanıcıya Tanımla</button>
-              </div>
+            <h3 class="admin-card-heading">Özel Profil Çerçeve Efektleri (Border Glow)</h3>
+            <p class="admin-card-desc">Seçtiğiniz kullanıcının profil kartına dış çerçeve parlama (Neon, Altın, Ateş, Gökkuşağı) efekti uygulayın.</p>
 
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(59,130,246,0.3); border-radius:12px; padding:16px;">
-                <h4 style="color:#3b82f6; font-weight:700; margin-bottom:6px;">Siber Mavi Glow</h4>
-                <p style="font-size:0.8rem; color:rgba(255,255,255,0.6); margin-bottom:12px;">Fütüristik mavi neon enerji dalgası.</p>
-                <button type="button" class="admin-glow-btn dash-btn-primary" data-glow="blue" style="font-size:0.75rem; padding:6px 12px; background:linear-gradient(135deg, #3b82f6, #06b6d4);">Kullanıcıya Tanımla</button>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; margin-bottom:20px;">
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Hedef Kullanıcı Adı</label>
+                <input type="text" id="admin-glow-target-user" class="admin-input" placeholder="örn: seyoria"/>
               </div>
-
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(234,179,8,0.3); border-radius:12px; padding:16px;">
-                <h4 style="color:#eab308; font-weight:700; margin-bottom:6px;">Altın Sarısı (Gold)</h4>
-                <p style="font-size:0.8rem; color:rgba(255,255,255,0.6); margin-bottom:12px;">VIP ve özel profiller için altın parlaklığı.</p>
-                <button type="button" class="admin-glow-btn dash-btn-primary" data-glow="gold" style="font-size:0.75rem; padding:6px 12px; background:linear-gradient(135deg, #eab308, #f59e0b); color:#000;">Kullanıcıya Tanımla</button>
-              </div>
-
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(239,68,68,0.3); border-radius:12px; padding:16px;">
-                <h4 style="color:#ef4444; font-weight:700; margin-bottom:6px;">RGB Rainbow Dalgası</h4>
-                <p style="font-size:0.8rem; color:rgba(255,255,255,0.6); margin-bottom:12px;">Kartın etrafında 360 derece dönen gökkuşağı rengi.</p>
-                <button type="button" class="admin-glow-btn dash-btn-primary" data-glow="rainbow" style="font-size:0.75rem; padding:6px 12px; background:linear-gradient(135deg, #f43f5e, #8b5cf6);">Kullanıcıya Tanımla</button>
+              <div class="dash-stat-card" style="padding:16px;">
+                <label class="admin-form-label">Çerçeve Efekti Seçin</label>
+                <select id="admin-glow-effect-select" class="admin-input" style="background:#16161a; color:#fff; cursor:pointer;">
+                  <option value="none">Efekt Yok (Varsayılan)</option>
+                  <option value="glow-purple">Neon Mor Parlama</option>
+                  <option value="glow-gold">Lüks Altın Parlama</option>
+                  <option value="glow-fire">Alev / Ateş Parıltısı</option>
+                  <option value="glow-cyan">Cyberpunk Cyan</option>
+                  <option value="glow-rainbow">RGB Canlı Gökkuşağı</option>
+                </select>
               </div>
             </div>
+
+            <button type="button" id="admin-save-glow-btn" class="dash-btn-primary">Çerçeve Efektini Kaydet</button>
           </div>
         </div>
 
-        <!-- TAB: Discord Özel DM Gönderici -->
+        <!-- TAB: Discord DM Bildirimi -->
         <div class="admin-tab-content" id="admin-tab-dm-sender" style="display:none;">
           <div class="admin-section-card">
-            <h3 class="admin-card-heading">Discord Kullanıcısına Özel DM Gönder</h3>
-            <p class="admin-card-desc">Sistem botu aracılığıyla kayıtlı bir kullanıcının Discord hesabına direkt özel mesaj gönderin.</p>
-            
+            <h3 class="admin-card-heading">Kullanıcıya Özel Discord DM Bildirimi</h3>
+            <p class="admin-card-desc">Momus Botu aracılığıyla doğrudan kullanıcının Discord DM'sine şık bir bildirim mesajı iletin.</p>
+
             <div class="admin-form-group">
-              <label class="admin-form-label">Discord ID veya Kullanıcı Adı</label>
-              <input type="text" id="admin-dm-target-id" class="admin-input" placeholder="Hedef Discord ID veya @kullanici..."/>
+              <label class="admin-form-label">Hedef Kullanıcı (Kullanıcı Adı veya Discord ID)</label>
+              <input type="text" id="admin-dm-target" class="admin-input" placeholder="örn: seyoria veya 1534645478514233524"/>
             </div>
 
             <div class="admin-form-group">
-              <label class="admin-form-label">Mesaj Başlığı</label>
-              <input type="text" id="admin-dm-title" class="admin-input" placeholder="Örn: Hesabınız Onaylandı!"/>
+              <label class="admin-form-label">Bildirim Başlığı</label>
+              <input type="text" id="admin-dm-title" class="admin-input" placeholder="Örn: Tebrikler! Profiliniz Öne Çıkarıldı ⭐"/>
             </div>
 
             <div class="admin-form-group">
-              <label class="admin-form-label">DM Mesaj İçeriği</label>
-              <textarea id="admin-dm-content" class="admin-textarea" placeholder="Kullanıcıya iletilecek mesajı yazın..."></textarea>
+              <label class="admin-form-label">Mesaj İçeriği</label>
+              <textarea id="admin-dm-message" class="admin-textarea" placeholder="Mesajınızı buraya yazın..."></textarea>
             </div>
 
             <div class="admin-form-actions">
-              <button type="button" id="admin-send-dm-btn" class="dash-btn-primary">DM Bildirimini Gönder</button>
+              <button type="button" id="admin-send-dm-btn" class="dash-btn-primary">Discord DM Gönder</button>
             </div>
           </div>
         </div>
 
-        <!-- TAB: Davet Kodları (Invite Codes) -->
+        <!-- TAB: Özel Davet Kodu / Gizli Kayıt Sistemi -->
         <div class="admin-tab-content" id="admin-tab-invite-codes" style="display:none;">
           <div class="admin-section-card">
-            <h3 class="admin-card-heading">VIP Davet Kodu Üretici</h3>
-            <p class="admin-card-desc">Özel kayıtlar veya VIP rozet hakkı tanıyan tek kullanımlık davet kodları oluşturun.</p>
-            
-            <div style="display:flex; gap:10px; margin-bottom:16px;">
-              <input type="text" id="admin-new-invite-code-input" class="admin-input" placeholder="Örn: VIP-MOMUS-2026"/>
-              <button type="button" id="admin-gen-random-code-btn" class="dash-btn-outline" style="white-space:nowrap;">Rastgele Kod</button>
-              <button type="button" id="admin-add-invite-code-btn" class="dash-btn-primary" style="white-space:nowrap;">Kodu Kaydet</button>
+            <h3 class="admin-card-heading">Özel Davet Kodu & Kapalı Kayıt Sistemi</h3>
+            <p class="admin-card-desc">Yeni kayıtlar için davet kodunu zorunlu kılabilir ve tek kullanımlık VIP kodlar üretebilirsiniz.</p>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Davet Kodu Zorunluluğu</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="admin-invite-required-toggle">
+                <span class="toggle-slider"></span>
+              </label>
             </div>
 
-            <div id="admin-invite-codes-list" class="admin-tags-container">
-              <!-- JS ile doldurulur -->
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+              <input type="text" id="admin-new-invite-code" class="admin-input" style="max-width:280px;" placeholder="Özel Kod (örn: MOMUS-VIP)"/>
+              <button type="button" id="admin-generate-invite-btn" class="dash-btn-primary">+ Davet Kodu Üret</button>
             </div>
+
+            <h4 style="font-size:0.9rem; color:#fff; margin-bottom:12px;">Aktif Davet Kodları</h4>
+            <div class="admin-tags-list" id="admin-invite-codes-list"></div>
           </div>
         </div>
 
-        <!-- TAB: İşlem Günlüğü (Audit Logs) -->
+        <!-- TAB: Sistem İşlem & Güvenlik Günlüğü (Audit Logs) -->
         <div class="admin-tab-content" id="admin-tab-audit-logs" style="display:none;">
           <div class="admin-section-card">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
               <div>
-                <h3 class="admin-card-heading">Yönetici İşlem Günlüğü (Audit Logs)</h3>
-                <p class="admin-card-desc">Panelde gerçekleştirilen son 50 eylemin tarih ve saat bazlı kayıtları.</p>
+                <h3 class="admin-card-heading">Sistem İşlem & Güvenlik Günlüğü</h3>
+                <p class="admin-card-desc">Gerçekleştirilen tüm profil kayıtları, banlamalar, rozet atamaları ve admin işlemlerinin anlık akışı.</p>
               </div>
-              <button type="button" id="admin-clear-audit-logs-btn" class="dash-btn-outline" style="font-size:0.75rem; padding:6px 12px; color:#ef4444; border-color:rgba(239,68,68,0.3);">Günlüğü Temizle</button>
+              <button type="button" id="admin-clear-audit-logs-btn" class="dash-btn-outline" style="padding:6px 12px; font-size:0.75rem; color:#ef4444; border-color:rgba(239,68,68,0.3);">Günlüğü Temizle</button>
             </div>
 
-            <div id="admin-audit-logs-list" style="display:flex; flex-direction:column; gap:8px; max-height:400px; overflow-y:auto;">
-              <!-- JS ile doldurulur -->
+            <div id="admin-audit-logs-list" style="display:flex; flex-direction:column; gap:10px; max-height:450px; overflow-y:auto; padding-right:6px;">
+              <!-- JS fills dynamically -->
             </div>
           </div>
         </div>
 
-        <!-- TAB: İstatistikler & Analitik -->
+        <!-- TAB 5: Detaylı İstatistikler & Grafikler -->
         <div class="admin-tab-content" id="admin-tab-analytics" style="display:none;">
           <div class="admin-section-card">
-            <h3 class="admin-card-heading">Gelişmiş Platform İstatistikleri</h3>
-            <p class="admin-card-desc">Platformun kullanım, ziyaret ve profil dağılımı analizleri.</p>
+            <h3 class="admin-card-heading">Platform Analitiği & Popüler Profiller</h3>
+            <p class="admin-card-desc">En çok görüntülenen profiller ve platformun kullanım istatistikleri.</p>
 
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:24px;">
-              <div class="admin-stat-box" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08);">
-                <span class="admin-stat-num" id="admin-stat-custom-bg-count" style="color:#06b6d4;">0</span>
-                <span class="admin-stat-name">Özel Medya Yükleyen</span>
+            <div class="admin-stats-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+              <div class="admin-stat-box">
+                <span class="admin-stat-num" id="admin-stat-spotlight-count">0</span>
+                <span class="admin-stat-name">Öne Çıkan Profil</span>
               </div>
-              <div class="admin-stat-box" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08);">
-                <span class="admin-stat-num" id="admin-stat-music-count" style="color:#ec4899;">0</span>
-                <span class="admin-stat-name">Arka Plan Müziği Olan</span>
-              </div>
-              <div class="admin-stat-box" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08);">
-                <span class="admin-stat-num" id="admin-stat-total-links" style="color:#10b981;">0</span>
-                <span class="admin-stat-name">Toplam Sosyal Link</span>
+              <div class="admin-stat-box">
+                <span class="admin-stat-num" id="admin-stat-active-badges">0</span>
+                <span class="admin-stat-name">Dağıtılan Rozet Sayısı</span>
               </div>
             </div>
 
@@ -1175,7 +1170,7 @@
   </div>
   <div id="dash-qr-modal" class="link-modal-overlay" style="display:none;">
     <div class="link-modal" style="max-width:380px; text-align:center;">
-      <div class="link-modal-header">
+      <div class="link-modal-header" style="border:none; padding-bottom:0;">
         <div class="link-modal-title-row">
           <span class="link-modal-platform-icon" style="color:#a855f7; background:rgba(168,85,247,0.12);">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -1192,11 +1187,6 @@
           <span style="font-family:var(--font-mono); font-size:0.65rem; color:#a855f7; letter-spacing:0.05em;">MOMUS BIO</span>
         </div>
       </div>
-      <div class="link-modal-footer" style="justify-content:center; gap:10px;">
-        <button type="button" id="qr-download-btn" class="dash-btn-primary" style="padding:10px 18px; font-size:0.8rem; display:inline-flex; align-items:center; gap:6px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          PNG İndir
-        </button>
         <button type="button" id="qr-copy-btn" class="dash-btn-outline" style="padding:10px 18px; font-size:0.8rem; display:inline-flex; align-items:center; gap:6px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           Linki Kopyala
@@ -1225,47 +1215,64 @@
     </div>
   </div>
 
-  <!-- Cookie Consent Banner (KVKK / GDPR Uyumlu) -->
-  <div id="cookie-banner" class="cookie-banner" style="display:none;">
+  <div id="cookie-consent-banner" class="cookie-banner-wrap" style="display:none;">
     <div class="cookie-banner-inner">
       <div class="cookie-banner-text">
-        Bu web sitesi, profil tercihlerinizi ve oturumunuzu güvenli bir şekilde hatırlamak için çerezleri (cookies) ve yerel depolamayı kullanır. Devam ederek çerez kullanımını kabul etmiş olursunuz.
+        <span>🍪 Sitemizde oturum güvenliği ve deneyiminizi geliştirmek amacıyla temel çerezler kullanılmaktadır. Detaylar için <a href="#privacy" id="cookie-privacy-link" style="color:#a855f7; text-decoration:underline;">Gizlilik Politikamızı</a> inceleyebilirsiniz.</span>
       </div>
       <div class="cookie-banner-actions">
-        <button id="cookie-accept-btn" class="dash-btn-primary" style="padding:8px 18px; font-size:0.8rem;">Kabul Et</button>
+        <button type="button" id="cookie-accept-btn" class="dash-btn-primary" style="padding:8px 18px; font-size:0.8rem;">Kabul Et</button>
       </div>
     </div>
   </div>
 
-  <!-- Gizlilik Politikası Modalı -->
-  <div id="privacy-modal" class="link-modal-overlay" style="display:none;">
-    <div class="link-modal" style="max-width:560px;">
-      <div class="link-modal-header">
-        <h3 style="color:#fff;">Gizlilik Politikası</h3>
+  <div id="privacy-modal" class="link-modal-overlay" style="display:none; z-index:99999;">
+    <div class="link-modal" style="max-width:540px; max-height:80vh; display:flex; flex-direction:column;">
+      <div class="link-modal-header" style="justify-content:space-between;">
+        <h3 style="color:#fff; font-size:1.1rem; display:flex; align-items:center; gap:8px;">🔒 Gizlilik Politikası</h3>
         <button id="privacy-modal-close" class="link-modal-close">&times;</button>
       </div>
-      <div class="link-modal-body" style="max-height:400px; overflow-y:auto; line-height:1.6; font-size:0.85rem; color:rgba(255,255,255,0.7);">
-        <p><strong>1. Toplanan Veriler:</strong> momus, yalnızca kullanıcıların kendi istekleriyle oluşturduğu biyografi bilgilerini, yükledikleri medya bağlantılarını ve Discord OAuth aracılığıyla alınan temel kullanıcı kimliklerini (ID, kullanıcı adı, avatar) saklar.</p>
-        <p style="margin-top:10px;"><strong>2. Veri Güvenliği:</strong> Profil verileriniz güvenli bulut veritabanlarında şifrelenmiş olarak saklanır ve üçüncü şahıslarla asla paylaşılmaz.</p>
-        <p style="margin-top:10px;"><strong>3. Haklarınız:</strong> İstediğiniz zaman paneliniz üzerinden tüm hesap ve profil verilerinizi tek tıkla kalıcı olarak silebilirsiniz.</p>
+      <div class="link-modal-body" style="overflow-y:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); line-height:1.6; padding:16px 20px;">
+        <h4 style="color:#fff; margin-bottom:6px;">1. Toplanan Veriler</h4>
+        <p style="margin-bottom:12px;">Momus, profil oluşturma ve giriş işlemleri için yalnızca Discord kullanıcı kimliğinizi (ID), kullanıcı adınızı ve isteğe bağlı olarak yüklediğiniz profil bio/medya verilerini saklar.</p>
+        
+        <h4 style="color:#fff; margin-bottom:6px;">2. Verilerin Kullanımı</h4>
+        <p style="margin-bottom:12px;">Toplanan veriler sadece profilinizi yayınlamak, bağlantılarınızı yönlendirmek ve platform içi güvenliği sağlamak amacıyla kullanılır. Verileriniz 3. taraflarla satılmaz veya paylaşılmaz.</p>
+        
+        <h4 style="color:#fff; margin-bottom:6px;">3. Çerezler ve Depolama</h4>
+        <p style="margin-bottom:12px;">Tarayıcınızın LocalStorage ve IndexedDB alanları oturum kontrolü, tema tercihleri ve hızlı medya yüklemesi için kullanılır.</p>
+        
+        <h4 style="color:#fff; margin-bottom:6px;">4. Güvenlik</h4>
+        <p>Verileriniz Supabase bulut altyapısında şifreli bağlantılar (HTTPS/SSL) üzerinden korunmaktadır.</p>
+      </div>
+      <div class="link-modal-footer">
+        <button type="button" id="privacy-modal-ok" class="dash-btn-primary" style="padding:8px 20px; font-size:0.8rem;">Anladım</button>
       </div>
     </div>
   </div>
 
-  <!-- Kullanım Koşulları Modalı -->
-  <div id="terms-modal" class="link-modal-overlay" style="display:none;">
-    <div class="link-modal" style="max-width:560px;">
-      <div class="link-modal-header">
-        <h3 style="color:#fff;">Kullanım Koşulları</h3>
+  <div id="terms-modal" class="link-modal-overlay" style="display:none; z-index:99999;">
+    <div class="link-modal" style="max-width:540px; max-height:80vh; display:flex; flex-direction:column;">
+      <div class="link-modal-header" style="justify-content:space-between;">
+        <h3 style="color:#fff; font-size:1.1rem; display:flex; align-items:center; gap:8px;">📜 Kullanım Koşulları</h3>
         <button id="terms-modal-close" class="link-modal-close">&times;</button>
       </div>
-      <div class="link-modal-body" style="max-height:400px; overflow-y:auto; line-height:1.6; font-size:0.85rem; color:rgba(255,255,255,0.7);">
-        <p><strong>1. Hizmet Şartları:</strong> momus platformunu kullanarak yasa dışı, telif hakkı ihlali barındıran veya nefret söylemi içeren profiller oluşturmayacağınızı kabul etmiş sayılırsınız.</p>
-        <p style="margin-top:10px;"><strong>2. Hesap Güvenliği:</strong> Kurallara aykırı tespit edilen profiller yönetici tarafından önceden bildirim yapılmaksızın askıya alınabilir veya silinebilir.</p>
+      <div class="link-modal-body" style="overflow-y:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); line-height:1.6; padding:16px 20px;">
+        <h4 style="color:#fff; margin-bottom:6px;">1. Kabul Edilebilir Kullanım</h4>
+        <p style="margin-bottom:12px;">Momus platformunda yasa dışı, zararlı yazılım içeren (phishing, malware, virüs vb.), telif hakkı ihlali oluşturan veya taciz/nefret söylemi barındıran içerikler paylaşmak kesinlikle yasaktır.</p>
+        
+        <h4 style="color:#fff; margin-bottom:6px;">2. Hesap Güvenliği ve İsim Hakkı</h4>
+        <p style="margin-bottom:12px;">Yetkili/yönetici isimleri ve genel marka adları sistem tarafından rezerve edilebilir. Kuralları ihlal eden profiller yöneticiler tarafından uyarı yapılmaksızın silinebilir veya yasaklanabilir.</p>
+        
+        <h4 style="color:#fff; margin-bottom:6px;">3. Hizmet Garantisi</h4>
+        <p>Momus hizmetleri "olduğu gibi" sunulmaktadır. Platform kesintisiz erişim veya veri kaybı yaşanmayacağına dair garanti vermez, ancak güvenliği en üst seviyede tutmayı taahhüt eder.</p>
+      </div>
+      <div class="link-modal-footer">
+        <button type="button" id="terms-modal-ok" class="dash-btn-primary" style="padding:8px 20px; font-size:0.8rem;">Kabul Ediyorum</button>
       </div>
     </div>
   </div>
 
-  <script src="assets/main.js?v=32"></script>
+  <script src="assets/main.js?v=30"></script>
 </body>
 </html>
