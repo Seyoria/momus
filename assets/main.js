@@ -43,11 +43,6 @@ async function refreshProfilesCache() {
     }
   } catch(e){}
 
-  const grid = document.getElementById('members-grid');
-  if (grid && (!window.location.hash || window.location.hash === '#home')) {
-    renderLandingMembers();
-  }
-
   return profilesCache;
 }
 
@@ -124,7 +119,7 @@ async function uploadMediaToStorage(file, mediaKey) {
   }
 }
 
-// Guns.lol Custom Toast Notification Function (No native browser alerts, emoji-free)
+// Custom Toast Notification Function (No native browser alerts, emoji-free)
 function showToast(message, type = 'success') {
   const container = document.getElementById('toast-container');
   if (!container) return;
@@ -1673,7 +1668,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentLinksState = [];
     }
 
-    // Setup Guns.lol Custom Dropdown UI
+    // Setup Custom Dropdown UI
     setupCustomDropdown();
     syncDropdownUI('b-effect-dropdown', selectedEffect || 'none');
     syncDropdownUI('b-name-effect-dropdown', selectedNameEffect || 'none');
@@ -2161,7 +2156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // LIVE PREVIEW UPDATE (GUNS.LOL STYLE)
+  // LIVE PREVIEW UPDATE
   function updateLivePreview() {
     const un = (bUsername && bUsername.value.trim()) || 'seyoria_o';
     const color = (bColor && bColor.value) || '#ffffff';
@@ -2174,8 +2169,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (prevBio) prevBio.textContent = bio;
 
-    // Avatar Priority: Uploaded File > Custom Avatar URL > Fetched Discord Avatar > DiceBear
-    const displayAvatar = avatarDataUrl || customUrl || fetchedDiscordAvatar || `https://api.dicebear.com/9.x/pixel-art/svg?seed=${un}&backgroundColor=111111`;
+    // Avatar Priority: Uploaded File > Custom Avatar URL > Fetched Discord Avatar > Unsplash Portrait
+    const defaultAv = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
+    const displayAvatar = avatarDataUrl || customUrl || fetchedDiscordAvatar || defaultAv;
     if (prevAvatar) {
       prevAvatar.src = displayAvatar;
     }
@@ -2189,7 +2185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Guns.lol Style Glowing Icon Row Rendering
+    // Glowing Icon Row Rendering
     if (prevLinks) {
       prevLinks.innerHTML = '';
       currentLinksState.forEach(l => {
@@ -3185,7 +3181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       muteBtn.onclick = () => { audioEl.muted = !audioEl.muted; };
     }
 
-    // GUNS.LOL STYLE GLOWING ICON ROW RENDERING (WITH VIRUSTOTAL SAFE SCANNER)
+    // GLOWING ICON ROW RENDERING (WITH VIRUSTOTAL SAFE SCANNER)
     if (viewLinks) {
       viewLinks.innerHTML = '';
       if (profile.links && profile.links.length > 0) {
