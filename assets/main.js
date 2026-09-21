@@ -24,6 +24,11 @@ async function refreshProfilesCache() {
       const next = {};
       data.forEach(row => {
         const p = row.data || {};
+        if (p.isBot) {
+          // Otomatik bot temizleme: veritabanından arka planda sil
+          supabaseClient.from('profiles').delete().eq('username', row.username).then(() => {});
+          return;
+        }
         p.username = p.username || row.username;
         p.discordId = p.discordId || row.discord_id || '';
         next[row.username.toLowerCase()] = p;
@@ -39,7 +44,11 @@ async function refreshProfilesCache() {
     const backup = localStorage.getItem('momus_profiles_backup');
     if (backup) {
       const parsed = JSON.parse(backup);
-      profilesCache = { ...parsed, ...profilesCache };
+      const cleanBackup = {};
+      Object.keys(parsed).forEach(k => {
+        if (!parsed[k]?.isBot) cleanBackup[k] = parsed[k];
+      });
+      profilesCache = { ...cleanBackup, ...profilesCache };
     }
   } catch(e){}
 
@@ -934,7 +943,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!grid) return;
 
     const profiles = getProfiles();
-    const keys = Object.keys(profiles);
+    const keys = Object.keys(profiles).filter(k => !profiles[k]?.isBot);
 
     if (userCount) userCount.textContent = keys.length;
     if (keys.length === 0) {
@@ -949,16 +958,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     keys.forEach((k) => {
       try {
         const p = profiles[k];
-        if (!p) return;
+        if (!p || p.isBot) return;
         const uname = p.username || k;
         const card = document.createElement('a');
         card.className = 'member-card';
         card.href = `#${uname}`;
 
+        const defaultDiscordAv = 'https://cdn.discordapp.com/embed/avatars/0.png';
         let av = p.avatar || p.customAvatarUrl || p.discordAvatar || '';
-        const defaultPinterestAv = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
-        if (!av || av.includes('dicebear')) {
-          av = defaultPinterestAv;
+        if (!av) {
+          av = defaultDiscordAv;
         }
 
         let badgesHtml = '';
@@ -976,7 +985,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         card.innerHTML = `
           <div class="mc-bg"></div>
           <div class="mc-avatar-wrap">
-            <img class="mc-avatar" src="${av}" onerror="this.src='${defaultPinterestAv}'" alt="${uname}"/>
+            <img class="mc-avatar" src="${av}" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';" alt="${uname}"/>
           </div>
           <div class="mc-info">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -2169,11 +2178,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (prevBio) prevBio.textContent = bio;
 
-    // Avatar Priority: Uploaded File > Custom Avatar URL > Fetched Discord Avatar > Unsplash Portrait
-    const defaultAv = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
+    // Avatar Priority: Uploaded File > Custom Avatar URL > Fetched Discord Avatar > Discord Default Avatar
+    const defaultAv = 'https://cdn.discordapp.com/embed/avatars/0.png';
     const displayAvatar = avatarDataUrl || customUrl || fetchedDiscordAvatar || defaultAv;
     if (prevAvatar) {
       prevAvatar.src = displayAvatar;
+      prevAvatar.onerror = () => {
+        prevAvatar.onerror = null;
+        prevAvatar.src = defaultAv;
+      };
     }
 
     if (prevBanner && prevBannerImg) {
@@ -3092,24 +3105,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Retrieve Custom Avatar from IndexedDB if stored, or profile
     const storedAvatar = await getMediaItem(`avatar_${unKey}`);
-    let displayAvatar = storedAvatar;
-    if (!displayAvatar && profile.avatar && !profile.avatar.includes('dicebear')) {
-      displayAvatar = profile.avatar;
-    }
-    if (!displayAvatar && profile.discordAvatar) {
-      displayAvatar = profile.discordAvatar;
-    }
-    if (!displayAvatar && profile.customAvatarUrl) {
-      displayAvatar = profile.customAvatarUrl;
-    }
-    const defaultPinterestAv = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
+    let displayAvatar = storedAvatar || profile.avatar || profile.discordAvatar || profile.customAvatarUrl || '';
+    const defaultDiscordAv = 'https://cdn.discordapp.com/embed/avatars/0.png';
     if (!displayAvatar || displayAvatar.includes('dicebear')) {
-      displayAvatar = defaultPinterestAv;
+      displayAvatar = defaultDiscordAv;
     }
     if (viewAvatar) {
       viewAvatar.src = displayAvatar;
       viewAvatar.onerror = () => {
-        viewAvatar.src = defaultPinterestAv;
+        viewAvatar.onerror = null;
+        viewAvatar.src = defaultDiscordAv;
       };
     }
 
@@ -3824,178 +3829,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.setItem('momus_audit_logs', JSON.stringify([]));
         renderAuditLogs();
         showToast('İşlem günlüğü temizlendi.', 'info');
-      });
-    }
-
-    // 12. Bot Hesap Üretici (Bot Generator)
-    const genBotsBtn = document.getElementById('admin-generate-bots-btn');
-    const purgeBotsBtn = document.getElementById('admin-purge-bots-btn');
-    const botStatusEl = document.getElementById('admin-bot-gen-status');
-
-    if (genBotsBtn && !genBotsBtn.dataset.bound) {
-      genBotsBtn.dataset.bound = '1';
-      genBotsBtn.addEventListener('click', async () => {
-        const count = parseInt(document.getElementById('admin-bot-count-select')?.value || '15', 10);
-        const effectsMode = document.getElementById('admin-bot-effects-select')?.value || 'clean';
-
-        if (botStatusEl) {
-          botStatusEl.style.display = 'block';
-          botStatusEl.textContent = `${count} adet gercekci bot profil olusturuluyor...`;
-        }
-        genBotsBtn.disabled = true;
-
-        // Gerçek ve temiz isim havuzu (sayı eki olmadan)
-        const realNames = [
-          'emir', 'berk', 'kaan', 'deniz', 'arda', 'eren', 'bora', 'alper', 'doruk', 'yigit',
-          'selin', 'derin', 'melis', 'arya', 'lara', 'ezgi', 'damla', 'alara', 'lucas', 'alex',
-          'leo', 'felix', 'noah', 'mia', 'chloe', 'oliver', 'elena', 'kai', 'zane', 'maya',
-          'clara', 'liam', 'sofia', 'can', 'mert', 'efe', 'alp', 'baris', 'cem', 'defne',
-          'ege', 'ilayda', 'irem', 'onur', 'ozan', 'serkan', 'tolga', 'utku', 'yagmur', 'zeynep',
-          'batu', 'kerem', 'tuna', 'atlas', 'kuzey', 'guney', 'poyraz', 'rüzgar', 'sarp', 'yaman',
-          'asli', 'beril', 'ceren', 'duru', 'ece', 'gaye', 'hazal', 'irmak', 'merve', 'nehir'
-        ];
-
-        // Emojisiz, temiz ve estetik biyografiler
-        const cleanBios = [
-          'living in the moment',
-          'digital creator & designer',
-          'stay humble, hustle hard',
-          'do not disturb',
-          'silent moves, loud results',
-          'coffee, code & design',
-          'aesthetic vibes only',
-          'drifting through reality',
-          'visual artist & music lover',
-          'somewhere between dreams and reality',
-          'minimalist lifestyle',
-          'always creating something new',
-          'vibing with good music',
-          'graphic design & photography',
-          'chasing aesthetic moments'
-        ];
-
-        // Pinterest & Unsplash Doğrudan HD Portre ve Estetik Profil Fotoğrafları
-        const pinterestAvatars = [
-          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=500&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1514315384763-ba401779410f?w=500&auto=format&fit=crop&q=80'
-        ];
-
-        const effectsPool = ['none', 'neon', 'glitch', 'rainbow', 'fire', 'frost'];
-        const framesPool = ['none', 'radiant', 'immortal', 'global', 'cyber', 'flame'];
-        const cardAnimPool = ['none', 'flip3d', 'zoom', 'slideup', 'blurfocus'];
-        const platformsPool = ['spotify', 'soundcloud', 'instagram', 'twitter', 'github', 'twitch', 'kick', 'steam'];
-
-        let createdCount = 0;
-        const currentProfiles = getProfiles();
-        const shuffledNames = [...realNames].sort(() => 0.5 - Math.random());
-
-        for (let i = 0; i < count; i++) {
-          let uname = shuffledNames[i % shuffledNames.length];
-          if (currentProfiles[uname]) {
-            uname = `${uname}${Math.floor(Math.random() * 89) + 10}`;
-          }
-          if (currentProfiles[uname]) continue;
-
-          const avatarUrl = pinterestAvatars[i % pinterestAvatars.length];
-
-          const randomLinks = [];
-          const numLinks = Math.floor(Math.random() * 2) + 1;
-          for (let l = 0; l < numLinks; l++) {
-            const p = platformsPool[Math.floor(Math.random() * platformsPool.length)];
-            randomLinks.push({
-              platform: p,
-              label: p.toUpperCase(),
-              url: `https://${p}.com/${uname}`
-            });
-          }
-
-          const botProfile = {
-            username: uname,
-            bio: cleanBios[Math.floor(Math.random() * cleanBios.length)],
-            avatar: avatarUrl,
-            customAvatarUrl: avatarUrl,
-            hasCustomAvatar: true,
-            color: '#ffffff',
-            textColor: '#ffffff',
-            bgColor: '#080808',
-            iconColor: '#ffffff',
-            opacity: 80,
-            blur: 0,
-            nameEffect: effectsMode === 'random' ? effectsPool[Math.floor(Math.random() * effectsPool.length)] : 'none',
-            cardAnimation: effectsMode === 'random' ? cardAnimPool[Math.floor(Math.random() * cardAnimPool.length)] : 'none',
-            avatarFrame: effectsMode === 'random' ? framesPool[Math.floor(Math.random() * framesPool.length)] : 'none',
-            brandingBadgeColor: 'purple',
-            toggleAudio: true,
-            toggleDiscordAvatar: false,
-            toggleAnimatedTitle: false,
-            toggleViewsCount: true,
-            toggleBadgesDisplay: true,
-            toggleSocialGlow: true,
-            toggleAudioSpectrum: true,
-            toggleTypewriter: false,
-            toggleTransparentCard: false,
-            toggleCustomFavicon: true,
-            toggleNsfwGate: false,
-            toggleHideHistory: false,
-            badges: Math.random() > 0.7 ? ['verified'] : [],
-            customBadges: [],
-            links: randomLinks,
-            views: Math.floor(Math.random() * 30) + 5,
-            isBot: true
-          };
-
-          await saveProfileData(botProfile);
-          createdCount++;
-        }
-
-        genBotsBtn.disabled = false;
-        if (botStatusEl) {
-          botStatusEl.textContent = `${createdCount} adet Pinterest profil olusturuldu ve yayina alindi.`;
-        }
-        addAuditLog(`${createdCount} adet gercekci bot hesap olusturuldu.`, 'info');
-        showToast(`${createdCount} bot profil olusturuldu!`, 'success');
-        renderAdminProfiles();
-        renderAdminAnalytics();
-        updateNavButton();
-      });
-    }
-
-    // 13. Tum Bot Hesaplari Silme (Purge Bots)
-    if (purgeBotsBtn && !purgeBotsBtn.dataset.bound) {
-      purgeBotsBtn.dataset.bound = '1';
-      purgeBotsBtn.addEventListener('click', async () => {
-        if (!confirm('Tum uretilmis bot profilleri silmek istediginizden emin misiniz?')) return;
-        const profiles = getProfiles();
-        let deleted = 0;
-        for (const k of Object.keys(profiles)) {
-          if (profiles[k].isBot) {
-            await deleteProfileFromDB(k);
-            deleted++;
-          }
-        }
-        addAuditLog(`${deleted} adet bot hesap temizlendi.`, 'warning');
-        showToast(`${deleted} bot hesap basariyla silindi.`, 'success');
-        renderAdminProfiles();
-        renderAdminAnalytics();
-        updateNavButton();
       });
     }
 
