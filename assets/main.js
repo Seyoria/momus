@@ -1,18 +1,13 @@
-// ------------------------
-const MAINTENANCE_MODE = false; // Bakım modunu açmak için true, kapatmak için false yapın
+
+const MAINTENANCE_MODE = false; 
 const MOMUS_BOT_API = 'https://momus-bot.onrender.com';
 
-// ── SUPABASE (ORTAK VERİTABANI — profiller artık tarayıcıda değil,
-// herkesin görebildiği tek bir yerde saklanıyor) ──
 const SUPABASE_URL = 'https://qmzryknxlfebmopfgeuz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_bu0d1wyTaKGScvHuIqI3rg_zVcEkiC8';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const SAVE_PROFILE_FN_URL = `${SUPABASE_URL}/functions/v1/save-profile`;
 const DELETE_PROFILE_FN_URL = `${SUPABASE_URL}/functions/v1/delete-profile`;
 
-// Senkron kod (renderLandingMembers, isProfileOwner vb.) hâlâ eskisi gibi
-// çalışabilsin diye profiller bellekte de tutuluyor; refreshProfilesCache()
-// her route değişiminde bu önbelleği veritabanından tazeliyor.
 let profilesCache = {};
 
 async function refreshProfilesCache() {
@@ -24,7 +19,7 @@ async function refreshProfilesCache() {
       const next = {};
       data.forEach(row => {
         const p = row.data || {};
-        if (p.isBot || row.username.toLowerCase() === 'zera') {
+        if (p.isBot) {
           return;
         }
         p.username = p.username || row.username;
@@ -37,7 +32,6 @@ async function refreshProfilesCache() {
     console.warn('momus: Supabase profiles fetch error:', e);
   }
 
-  // LocalStorage fallback sync
   try {
     const backup = localStorage.getItem('momus_profiles_backup');
     if (backup) {
@@ -64,7 +58,7 @@ function getIDB() {
     };
     req.onsuccess = (e) => resolve(e.target.result);
     req.onerror = () => resolve(null);
-    req.onblocked = () => resolve(null); // başka sekme DB'yi tutuyorsa sonsuza kadar bekleme
+    req.onblocked = () => resolve(null); 
   });
 }
 
@@ -95,10 +89,9 @@ async function getMediaItem(key) {
   }
 }
 
-// Bucket: momus-media (public), Supabase Dashboard'dan oluşturulmalı
 async function uploadMediaToStorage(file, mediaKey) {
   try {
-    // Dosya adı: username_mediatype_timestamp.ext (çakışma önleme)
+    
     const ext = file.name.split('.').pop() || 'bin';
     const filePath = `${mediaKey}_${Date.now()}.${ext}`;
 
@@ -114,7 +107,6 @@ async function uploadMediaToStorage(file, mediaKey) {
       return null;
     }
 
-    // Public URL al
     const { data: urlData } = supabaseClient.storage
       .from('momus-media')
       .getPublicUrl(data.path);
@@ -126,7 +118,6 @@ async function uploadMediaToStorage(file, mediaKey) {
   }
 }
 
-// Custom Toast Notification Function (No native browser alerts, emoji-free)
 function showToast(message, type = 'success') {
   const container = document.getElementById('toast-container');
   if (!container) return;
@@ -146,13 +137,10 @@ function showToast(message, type = 'success') {
 const INITIAL_PROFILES = {};
 
 function getProfiles() {
-  // Artık senkron kaynak Supabase'den taze çekilen önbellek (profilesCache).
-  // route()/initBuilder() öncesi refreshProfilesCache() ile güncellenir.
+  
   return profilesCache;
 }
 
-// Supabase client çağrıları için sert timeout — cold start veya kopuk
-// bağlantıda fetch tarayıcıda süresiz asılı kalabiliyor, bu onu keser.
 function withTimeout(promise, ms, label) {
   let timer;
   const timeout = new Promise((_, reject) => {
@@ -164,9 +152,6 @@ function withTimeout(promise, ms, label) {
 async function saveProfileData(profile) {
   const key = profile.username.toLowerCase();
 
-  // base64 DataURL verileri (dosya yükleyiciden gelen dev blob'lar) Supabase JSON sütununa sığmaz
-  // ve zaman aşımı hatasına neden olur. Bu yüzden sadece http/https URL'leri Supabase'e yazıyoruz.
-  // Dosya yükleyiciden gelen büyük veriler IndexedDB'de tutulur (saveMediaItem).
   const safeBgVideo = (profile.bgVideo && !profile.bgVideo.startsWith('data:')) ? profile.bgVideo : '';
   const safeMusic  = (profile.music   && !profile.music.startsWith('data:'))   ? profile.music   : '';
   const safeAvatar = (profile.avatar  && !profile.avatar.startsWith('data:'))  ? profile.avatar  : '';
@@ -175,13 +160,11 @@ async function saveProfileData(profile) {
   const session = getDiscordSession();
   const discordId = session ? session.user.id : (profile.discordId || '');
 
-  // 1. Update local cache & localStorage backup immediately
   profilesCache[key] = { ...profile, discordId };
   try {
     localStorage.setItem('momus_profiles_backup', JSON.stringify(profilesCache));
   } catch(e){}
 
-  // 2. Direct Supabase Table Upsert (no edge function needed), 8s hard timeout
   try {
     const { error } = await withTimeout(
       supabaseClient
@@ -199,7 +182,7 @@ async function saveProfileData(profile) {
       console.warn('Supabase upsert warning:', error);
       showToast('Kaydedildi (yerel), sunucu senkronu başarısız oldu.', 'error');
     } else {
-      // 3. Bot Log Kanalına Bildirim Gönder (Kanal ID: 1541416678498246726)
+      
       try {
         fetch(`${MOMUS_BOT_API}/api/discord/log-profile`, {
           method: 'POST',
@@ -273,13 +256,11 @@ let bgMusicDataUrl = "";
 let lanyardInterval = null;
 let discordDebounceTimer = null;
 
-// Discord Developer Portal > OAuth2 > Client ID buraya. Redirect URI'yi de
-// aynı portalda tam bu sayfanın adresine (query/hash olmadan) ekle.
 const DISCORD_CLIENT_ID = '1534645433031331870';
 const DISCORD_REDIRECT_URI = window.location.origin + window.location.pathname;
 const DISCORD_OAUTH_SCOPE = 'identify guilds.join';
 const DISCORD_SESSION_KEY = 'momus_discord_session';
-// Zorunlu sunucu — https://discord.gg/Mrw293bayE
+
 const DISCORD_GUILD_INVITE_CODE = 'Mrw293bayE';
 
 function getDiscordSession() {
@@ -302,10 +283,6 @@ function isDiscordAuthenticated() {
   return !!getDiscordSession();
 }
 
-// Kayıt anında session'daki avatarı Discord'un kendi /users/@me endpoint'i
-// ile taze doğrular. Session login sırasında cache'lenmiş olabilir (7 güne
-// kadar); kullanıcı o süre içinde avatarını değiştirmiş olabilir. Bot API'ye
-// hiç bağımlı değil — doğrudan Discord'dan, guild üyeliğinden bağımsız.
 async function refreshDiscordSessionAvatar() {
   const session = getDiscordSession();
   if (!session || !session.access_token) return null;
@@ -335,6 +312,8 @@ async function refreshDiscordSessionAvatar() {
 
 function discordLogout() {
   localStorage.removeItem(DISCORD_SESSION_KEY);
+  localStorage.removeItem('momus_profiles_backup');
+  localStorage.removeItem('momus_my_username');
 }
 
 function startDiscordLogin(returnHash) {
@@ -343,6 +322,7 @@ function startDiscordLogin(returnHash) {
     redirect_uri: DISCORD_REDIRECT_URI,
     response_type: 'token',
     scope: DISCORD_OAUTH_SCOPE,
+    prompt: 'consent',
     state: returnHash || window.location.hash || '#builder'
   });
   window.location.href = `https://discord.com/oauth2/authorize?${params.toString()}`;
@@ -353,9 +333,6 @@ function defaultDiscordAvatarUrl(userId) {
   return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
 }
 
-// Invite kodundan guild id'yi çözer — public endpoint, auth gerekmiyor.
-// forceJoinDiscordGuild ve assignMomusRole ikisi de aynı guild'e ihtiyaç
-// duyduğu için tek yerden çözülüyor.
 async function resolveGuildId() {
   const inviteRes = await fetch(`https://discord.com/api/v10/invites/${DISCORD_GUILD_INVITE_CODE}`);
   if (!inviteRes.ok) throw new Error(`invite lookup failed: ${inviteRes.status}`);
@@ -365,10 +342,6 @@ async function resolveGuildId() {
   return guildId;
 }
 
-// Hesabı eşleyen herkesi zorunlu sunucuya sokar. Guild ID invite koddan
-// çözülüyor (public endpoint, auth gerekmiyor); asıl ekleme işlemi bot
-// tokenı gerektirdiği için MOMUS_BOT_API'deki bota devrediliyor — bot
-// tokenı hiçbir zaman bu dosyada, tarayıcıda olmayacak.
 async function forceJoinDiscordGuild(session) {
   try {
     const guildId = await resolveGuildId();
@@ -388,9 +361,6 @@ async function forceJoinDiscordGuild(session) {
   }
 }
 
-// "Momus Kullanıcısı" rolü — profilini oluşturmuş/kaydetmiş herkese
-// otomatik verilir. Rol eklemek bot token'ı gerektirir (Discord kullanıcı
-// OAuth token'ıyla rol veremez), o yüzden bu da bot API'ye devrediliyor.
 const MOMUS_VERIFIED_ROLE_ID = '1539388514028748810';
 
 async function assignMomusRole(session) {
@@ -417,9 +387,6 @@ async function assignMomusRole(session) {
   }
 }
 
-// Discord'un OAuth redirect'i implicit grant token'ı URL hash'ine koyar
-// (#access_token=...&expires_in=...&state=...). SPA router hash kullandığı
-// için bunu route() çalışmadan önce yakalayıp gerçek session'a çeviriyoruz.
 async function handleDiscordAuthCallback() {
   const rawHash = window.location.hash;
   if (!rawHash.includes('access_token=')) return false;
@@ -533,7 +500,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const bBio = document.getElementById('b-bio');
   const bDiscordId = document.getElementById('b-discord-id');
 
-  // File upload inputs & delete buttons
   const bAvatarFile = document.getElementById('b-avatar-file');
   const bAvatarFileName = document.getElementById('b-avatar-file-name');
   const bAvatarDeleteBtn = document.getElementById('b-avatar-delete-btn');
@@ -557,7 +523,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const bLinkAddBtn = document.getElementById('b-link-add-btn');
   const bLinksList = document.getElementById('b-links-list');
 
-  // Preview elements
   const prevAvatar = document.getElementById('prev-avatar-img');
   const prevBanner = document.getElementById('prev-banner');
   const prevBannerImg = document.getElementById('prev-banner-img');
@@ -567,9 +532,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (bBackBtn) bBackBtn.addEventListener('click', () => { window.location.hash = '#home'; });
 
-  // ── SAHİPLİK KONTROLÜ — artık cihaz bazlı rastgele token yerine
-  // Discord hesabına bağlı (profil.discordId === giriş yapan kullanıcının id'si).
-  // Bu sayede aynı hesapla hangi cihazdan girersen gir "senin" profilin tanınır.
   function isProfileOwner(unKey) {
     if (!unKey) return true;
     const profiles = getProfiles();
@@ -584,8 +546,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     const session = getDiscordSession();
     if (!session) return null;
     const profiles = getProfiles();
+    
+    const savedMyUsername = localStorage.getItem('momus_my_username');
+    if (savedMyUsername && profiles[savedMyUsername.toLowerCase()]) {
+      const p = profiles[savedMyUsername.toLowerCase()];
+      if (!p.discordId || p.discordId === session.user.id) {
+        return p;
+      }
+    }
+
+    const ownUsernameKey = (session.user.username || '').toLowerCase();
+    if (profiles[ownUsernameKey] && profiles[ownUsernameKey].discordId === session.user.id) {
+      return profiles[ownUsernameKey];
+    }
+
     for (const key in profiles) {
-      if (profiles[key].discordId && profiles[key].discordId === session.user.id) {
+      if (profiles[key].discordId && profiles[key].discordId === session.user.id && !profiles[key].isBot) {
         return profiles[key];
       }
     }
@@ -822,7 +798,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!viewLanding || !viewBuilder || !viewProfile) return;
 
     function applyRoute() {
-      // Ensure builder modals (Hesabı Sil) never display over profile pages
+      
       const dashDeleteModal = document.getElementById('dash-delete-modal');
       if (dashDeleteModal && hash !== '#builder') {
         dashDeleteModal.style.display = 'none';
@@ -885,7 +861,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderDiscordGate(false);
         const username = hash.replace('#', '').toLowerCase();
         
-        // Ban kontrolü
         const bannedList = getBannedUsers();
         if (bannedList.includes(username)) {
           showToast(`"${username}" hesabı kurallara uymadığı için askıya alınmıştır!`, 'error');
@@ -902,7 +877,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
           }
 
-          // Profil sayfasına girildiğinde global fare efektini (nokta/halka) kapat ve normal imlece izin ver
           if (dot) dot.style.display = 'none';
           if (ring) ring.style.display = 'none';
           document.body.style.cursor = 'default';
@@ -910,7 +884,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           viewProfile.classList.remove('hidden');
           renderProfilePage(profile);
         } else {
-          // Özel 404 Ekranı
+          
           stopProfileAudioImmediately();
           if (dot) dot.style.display = 'block';
           if (ring) ring.style.display = 'block';
@@ -925,7 +899,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Skip transition on initial page load, animate on subsequent navigations
     if (isFirstRoute) {
       isFirstRoute = false;
       applyRoute();
@@ -996,7 +969,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
         grid.appendChild(card);
 
-        // Async try load from IndexedDB or Discord if available
         getMediaItem(`avatar_${k.toLowerCase()}`).then(storedAvatar => {
           if (storedAvatar) {
             const imgEl = card.querySelector('.mc-avatar');
@@ -1023,8 +995,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (navCreateBtn) navCreateBtn.addEventListener('click', () => { window.location.hash = '#builder'; });
   if (triggerEmpty) triggerEmpty.addEventListener('click', () => { window.location.hash = '#builder'; });
   
-  async function goToProfilePage(un) {
-    await saveCurrentBuilder();
+  function goToProfilePage(un) {
     const targetHash = `#${un.toLowerCase()}`;
     if (window.location.hash === targetHash) {
       route();
@@ -1100,7 +1071,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Close modal — X button
   const linkModalClose = document.getElementById('dash-link-modal-close');
   if (linkModalClose) {
     linkModalClose.addEventListener('click', () => {
@@ -1108,7 +1078,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (modal) modal.style.display = 'none';
     });
   }
-  // Close modal — click overlay background
+  
   const linkModalOverlay = document.getElementById('dash-link-modal');
   if (linkModalOverlay) {
     linkModalOverlay.addEventListener('click', (e) => {
@@ -1116,8 +1086,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // "Sayfam" button in sidebar — gerçek https linkini yeni sekmede açar,
-  // mevcut builder sekmesindeki hash yönlendirmesiyle karışmaz.
   const dashViewProfBtn = document.getElementById('dash-view-profile-btn');
   if (dashViewProfBtn) {
     dashViewProfBtn.addEventListener('click', (e) => {
@@ -1145,7 +1113,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const ctx = canvas.getContext('2d');
     const size = canvas.width;
     
-    // Draw modern styled QR Code
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}&margin=2&color=000000&bgcolor=ffffff`;
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -1154,7 +1121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ctx.drawImage(img, 0, 0, size, size);
     };
     img.onerror = () => {
-      // Fallback simple grid if offline
+      
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, size, size);
       ctx.fillStyle = '#000000';
@@ -1215,14 +1182,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // "Hesabı Sil" modal popup logic
   const dashDeleteAccountBtn = document.getElementById('dash-delete-account-btn');
   const dashDeleteModal = document.getElementById('dash-delete-modal');
   const dashDeleteModalClose = document.getElementById('dash-delete-modal-close');
   const bConfirmDeleteBtn = document.getElementById('b-confirm-delete-btn');
   const bCancelDeleteBtn = document.getElementById('b-cancel-delete-btn');
 
-  // Helper: get the target username to delete (saved account OR typed username)
   function getDeleteTargetUser() {
     const myAcc = getMyAccount();
     if (myAcc) return myAcc.username;
@@ -1276,14 +1241,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const ok = await deleteProfileFromDB(unKey);
         if (!ok) return;
 
-        // Clean IndexedDB stored media items
         saveMediaItem(`video_${unKey}`, null);
         saveMediaItem(`music_${unKey}`, null);
         saveMediaItem(`avatar_${unKey}`, null);
         saveMediaItem(`cursor_${unKey}`, null);
       }
 
-      // Clear all builder inputs
       if (bUsername) bUsername.value = '';
       if (bBio) bBio.value = '';
       if (bDiscordId) bDiscordId.value = '';
@@ -1301,8 +1264,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-
-  // Badge Selection State & Handlers
   let selectedBadges = [];
   document.addEventListener('click', (e) => {
     const badgeBtn = e.target.closest('.badge-toggle-btn');
@@ -1318,8 +1279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Custom Badges State & Handlers
-  let customBadges = []; // Array of { text: string, color: string }
+  let customBadges = []; 
 
   const bCustomBadgeText = document.getElementById('b-custom-badge-text');
   const bCustomBadgeColor = document.getElementById('b-custom-badge-color');
@@ -1370,7 +1330,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Range Slider Value Label Sync
   if (bOpacity) {
     bOpacity.addEventListener('input', () => {
       const valEl = document.getElementById('b-opacity-val');
@@ -1384,7 +1343,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Color Pickers Sync
   function bindColorPicker(picker, hex) {
     if (picker && hex) {
       picker.addEventListener('input', () => { hex.value = picker.value; });
@@ -1396,7 +1354,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindColorPicker(bBgColor, bBgColorHex);
   bindColorPicker(bIconColor, bIconColorHex);
 
-  // All save buttons (there are 3 - one per tab)
   document.querySelectorAll('#b-save-btn, #b-save-btn-2, #b-save-btn-3').forEach(btn => {
     if (btn) {
       btn.addEventListener('click', async (e) => {
@@ -1428,40 +1385,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  let autoSaveTimer = null;
-  function triggerAutoSave() {
-    clearTimeout(autoSaveTimer);
-    autoSaveTimer = setTimeout(async () => {
-      const un = bUsername ? bUsername.value.trim() : '';
-      if (!un) return;
-      try {
-        await saveCurrentBuilder();
-      } catch (err) {
-        console.warn('momus: otomatik kaydetme hatası:', err);
-      }
-    }, 600);
-  }
-
-  // Attach auto-save to builder view inputs
-  const builderViewEl = document.getElementById('view-builder');
-  if (builderViewEl) {
-    builderViewEl.addEventListener('input', triggerAutoSave);
-    builderViewEl.addEventListener('change', triggerAutoSave);
-  }
-
   let customDropdownBound = false;
   function setupCustomDropdown() {
     if (customDropdownBound) return;
     customDropdownBound = true;
 
-    // Delegate click for all dropdown triggers
     document.addEventListener('click', (e) => {
       const trigger = e.target.closest('.dash-dropdown-trigger');
       if (trigger) {
         e.stopPropagation();
         const dropdown = trigger.closest('.dash-custom-dropdown');
         if (dropdown) {
-          // Close other open dropdowns first
+          
           document.querySelectorAll('.dash-custom-dropdown.open').forEach(d => {
             if (d !== dropdown) d.classList.remove('open');
           });
@@ -1470,7 +1405,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      // If clicked inside dropdown menu item
       const item = e.target.closest('.dash-dropdown-item');
       if (item) {
         e.stopPropagation();
@@ -1495,12 +1429,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           } else if (dropdown.id === 'b-branding-color-dropdown') {
             selectedBrandingColor = val || 'purple';
           }
-          triggerAutoSave();
         }
         return;
       }
 
-      // Close all dropdowns when clicking outside
       document.querySelectorAll('.dash-custom-dropdown.open').forEach(d => d.classList.remove('open'));
     });
   }
@@ -1532,8 +1464,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <svg class="dg-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
       `;
     }
-    // Kullanıcı adına/avatara tıklayınca "Hesabı Sil" ve "Discord'dan Çık" menüsü
-    // sekme gibi aşağı açılıyor — chevron da yönünü değiştiriyor.
+    
     if (dgBadge && dgMenu && !dgBadge.dataset.bound) {
       dgBadge.dataset.bound = '1';
       dgBadge.addEventListener('click', () => {
@@ -1554,6 +1485,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       bDiscordId.classList.add('dg-linked-input');
       fetchDiscordForBuilder(dSession.user.id);
     }
+    const switchAccBtn = document.getElementById('dash-switch-account-btn');
+    if (switchAccBtn && !switchAccBtn.dataset.bound) {
+      switchAccBtn.dataset.bound = '1';
+      switchAccBtn.addEventListener('click', () => {
+        discordLogout();
+        startDiscordLogin('#builder');
+      });
+    }
+
     if (dgLogoutBtn && !dgLogoutBtn.dataset.bound) {
       dgLogoutBtn.dataset.bound = '1';
       dgLogoutBtn.addEventListener('click', () => {
@@ -1675,7 +1615,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentLinksState = [];
     }
 
-    // Setup Custom Dropdown UI
     setupCustomDropdown();
     syncDropdownUI('b-effect-dropdown', selectedEffect || 'none');
     syncDropdownUI('b-name-effect-dropdown', selectedNameEffect || 'none');
@@ -1683,7 +1622,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     syncDropdownUI('b-avatar-frame-dropdown', selectedAvatarFrame || 'none');
     syncDropdownUI('b-branding-color-dropdown', selectedBrandingColor || 'purple');
 
-    // Sync badge buttons UI & render custom badges list
     document.querySelectorAll('.badge-toggle-btn').forEach(btn => {
       const badge = btn.getAttribute('data-badge');
       if (selectedBadges.includes(badge)) btn.classList.add('active');
@@ -1701,7 +1639,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (myAcc && myAcc.username) {
       const unKey = myAcc.username.toLowerCase();
       
-      // 1. Cloud URL veya IndexedDB'den medya durumunu eşitle
       if (myAcc.bgVideo || myAcc.bgUrl) {
         bgVideoDataUrl = myAcc.bgVideo || myAcc.bgUrl;
         if (bBgVideoFileName) bBgVideoFileName.textContent = 'Arka plan yüklü (Bulut)';
@@ -1775,10 +1712,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (bCursorDeleteBtn) bCursorDeleteBtn.style.display = 'none';
     }
 
+    const dashViewBtn = document.getElementById('dash-view-profile-btn');
+    if (dashViewBtn) {
+      if (myAcc && myAcc.username) {
+        dashViewBtn.href = `#${myAcc.username.toLowerCase()}`;
+        dashViewBtn.style.display = 'inline-flex';
+      } else {
+        dashViewBtn.href = '#';
+        dashViewBtn.style.display = 'none';
+      }
+    }
+
     renderAddedLinks();
   }
 
-  // PLATFORM CHIPS SELECTION
   function setupPlatformChips() {
     const chips = document.querySelectorAll('.p-chip');
     chips.forEach(chip => {
@@ -1798,7 +1745,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function getUnifiedDiscordPresence(id) {
     if (!id) return null;
 
-    // 1. Doğrudan kendi momus-bot API'mizden çek (Lanyard'a ihtiyaç yok, 404 hatası vermez)
     try {
       const res = await fetch(`${MOMUS_BOT_API}/presence/${id}`);
       if (res.ok) {
@@ -1812,7 +1758,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return null;
   }
 
-  // DISCORD BOT FETCH FOR BUILDER PREVIEW
   async function fetchDiscordForBuilder(id) {
     if (!id) {
       fetchedDiscordAvatar = '';
@@ -1846,7 +1791,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         prevStatusLabel.className = `inline-status-label ${st}`;
       }
 
-      // Builder Preview Spotify widget
       const prevSpWidget = document.getElementById('prev-spotify-widget');
       const prevSpSong   = document.getElementById('prev-sp-song');
       const prevSpArtist = document.getElementById('prev-sp-artist');
@@ -1874,7 +1818,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // FILE UPLOAD & DELETE HANDLERS
   let cursorDataUrl = '';
   let avatarFileObj = null;
   let bgVideoFileObj = null;
@@ -1882,185 +1825,98 @@ document.addEventListener('DOMContentLoaded', async () => {
   let cursorFileObj = null;
 
   if (bAvatarFile) {
-    bAvatarFile.addEventListener('change', async (e) => {
+    bAvatarFile.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
         avatarFileObj = file;
-        bAvatarFileName.textContent = 'Yükleniyor...';
+        bAvatarFileName.textContent = file.name;
         if (bAvatarDeleteBtn) bAvatarDeleteBtn.style.display = 'inline-flex';
         
-        // Yerel önizleme
         const reader = new FileReader();
         reader.onload = (evt) => {
           avatarDataUrl = evt.target.result;
           updateLivePreview();
         };
         reader.readAsDataURL(file);
-
-        // Supabase Storage'a doğrudan yükle
-        const myAcc = getMyAccount();
-        const unKey = (myAcc && myAcc.username ? myAcc.username : (bUsername ? bUsername.value.trim() : 'temp')).toLowerCase();
-        showToast('Avatar buluta yükleniyor...', 'info');
-        const cloudUrl = await uploadMediaToStorage(file, `avatar_${unKey}`);
-        if (cloudUrl) {
-          bAvatarFileName.textContent = file.name;
-          showToast('Avatar buluta yüklendi!', 'success');
-          const p = getProfiles()[unKey];
-          if (p) {
-            p.avatar = cloudUrl;
-            p.customAvatarUrl = cloudUrl;
-            p.hasCustomAvatar = true;
-            await saveProfileData(p);
-          }
-        } else {
-          bAvatarFileName.textContent = file.name;
-        }
       }
     });
   }
   if (bAvatarDeleteBtn) {
-    bAvatarDeleteBtn.addEventListener('click', async (e) => {
+    bAvatarDeleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       avatarDataUrl = '';
       avatarFileObj = null;
       if (bAvatarFile) bAvatarFile.value = '';
       if (bAvatarFileName) bAvatarFileName.textContent = 'PNG, JPG, GIF';
       bAvatarDeleteBtn.style.display = 'none';
-      const myAcc = getMyAccount();
-      if (myAcc && myAcc.username) {
-        const unKey = myAcc.username.toLowerCase();
-        saveMediaItem(`avatar_${unKey}`, null);
-        myAcc.avatar = '';
-        myAcc.customAvatarUrl = '';
-        myAcc.hasCustomAvatar = false;
-        await saveProfileData(myAcc);
-      }
       updateLivePreview();
-      showToast('Profil avatarı silindi.', 'success');
+      showToast('Avatar seçimi kaldırıldı (Kaydetmek için Profili Kaydet butonuna tıklayın).', 'info');
     });
   }
 
   if (bBgVideoFile) {
-    bBgVideoFile.addEventListener('change', async (e) => {
+    bBgVideoFile.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
         if (file.size > 20 * 1024 * 1024) {
-          showToast('⚠️ Arka plan dosyası en fazla 20MB olabilir!', 'error');
+          showToast('Arka plan dosyası en fazla 20MB olabilir!', 'error');
           bBgVideoFile.value = '';
           return;
         }
         bgVideoFileObj = file;
-        bBgVideoFileName.textContent = 'Buluta yükleniyor...';
+        bBgVideoFileName.textContent = file.name;
         if (bBgVideoDeleteBtn) bBgVideoDeleteBtn.style.display = 'inline-flex';
 
-        // Yerel önizleme
         const reader = new FileReader();
         reader.onload = (evt) => {
           bgVideoDataUrl = evt.target.result;
         };
         reader.readAsDataURL(file);
-
-        // Supabase Storage'a doğrudan yükle
-        const myAcc = getMyAccount();
-        const unKey = (myAcc && myAcc.username ? myAcc.username : (bUsername ? bUsername.value.trim() : 'temp')).toLowerCase();
-        showToast('Arka plan medyası buluta yükleniyor...', 'info');
-        const cloudUrl = await uploadMediaToStorage(file, `video_${unKey}`);
-        if (cloudUrl) {
-          bBgVideoFileName.textContent = file.name;
-          showToast('Arka plan medyası buluta yüklendi!', 'success');
-          const p = getProfiles()[unKey];
-          if (p) {
-            p.bgVideo = cloudUrl;
-            p.bgUrl = cloudUrl;
-            p.hasBgVideo = true;
-            await saveProfileData(p);
-          }
-        } else {
-          bBgVideoFileName.textContent = file.name;
-        }
       }
     });
   }
   if (bBgVideoDeleteBtn) {
-    bBgVideoDeleteBtn.addEventListener('click', async (e) => {
+    bBgVideoDeleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       bgVideoDataUrl = '';
       bgVideoFileObj = null;
       if (bBgVideoFile) bBgVideoFile.value = '';
       if (bBgVideoFileName) bBgVideoFileName.textContent = 'Dosya yüklemek için tıkla';
       bBgVideoDeleteBtn.style.display = 'none';
-      const myAcc = getMyAccount();
-      if (myAcc && myAcc.username) {
-        const unKey = myAcc.username.toLowerCase();
-        saveMediaItem(`video_${unKey}`, null);
-        myAcc.bgVideo = '';
-        myAcc.bgUrl = '';
-        myAcc.hasBgVideo = false;
-        await saveProfileData(myAcc);
-      }
-      showToast('Arka plan medyası silindi.', 'success');
+      showToast('Arka plan seçimi kaldırıldı.', 'info');
     });
   }
 
   if (bBgMusicFile) {
-    bBgMusicFile.addEventListener('change', async (e) => {
+    bBgMusicFile.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
         if (file.size > 20 * 1024 * 1024) {
-          showToast('⚠️ Ses dosyası en fazla 20MB olabilir!', 'error');
+          showToast('Ses dosyası en fazla 20MB olabilir!', 'error');
           bBgMusicFile.value = '';
           return;
         }
         bgMusicFileObj = file;
-        bBgMusicFileName.textContent = 'Buluta yükleniyor...';
+        bBgMusicFileName.textContent = file.name;
         if (bBgMusicDeleteBtn) bBgMusicDeleteBtn.style.display = 'inline-flex';
 
-        // Yerel önizleme
         const reader = new FileReader();
         reader.onload = (evt) => {
           bgMusicDataUrl = evt.target.result;
         };
         reader.readAsDataURL(file);
-
-        // Supabase Storage'a doğrudan yükle
-        const myAcc = getMyAccount();
-        const unKey = (myAcc && myAcc.username ? myAcc.username : (bUsername ? bUsername.value.trim() : 'temp')).toLowerCase();
-        showToast('Ses dosyası buluta yükleniyor...', 'info');
-        const cloudUrl = await uploadMediaToStorage(file, `music_${unKey}`);
-        if (cloudUrl) {
-          bBgMusicFileName.textContent = file.name;
-          showToast('Ses dosyası buluta yüklendi!', 'success');
-          const p = getProfiles()[unKey];
-          if (p) {
-            p.music = cloudUrl;
-            p.musicUrl = cloudUrl;
-            p.hasBgMusic = true;
-            await saveProfileData(p);
-          }
-        } else {
-          bBgMusicFileName.textContent = file.name;
-        }
       }
     });
   }
   if (bBgMusicDeleteBtn) {
-    bBgMusicDeleteBtn.addEventListener('click', async (e) => {
+    bBgMusicDeleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       bgMusicDataUrl = '';
       bgMusicFileObj = null;
       if (bBgMusicFile) bBgMusicFile.value = '';
       if (bBgMusicFileName) bBgMusicFileName.textContent = 'Ses dosyası yükle';
       bBgMusicDeleteBtn.style.display = 'none';
-      const myAcc = getMyAccount();
-      if (myAcc && myAcc.username) {
-        const unKey = myAcc.username.toLowerCase();
-        saveMediaItem(`music_${unKey}`, null);
-        myAcc.music = '';
-        myAcc.musicUrl = '';
-        myAcc.hasBgMusic = false;
-        await saveProfileData(myAcc);
-      }
-      showToast('Ses dosyası silindi.', 'success');
+      showToast('Ses dosyası seçimi kaldırıldı.', 'info');
     });
   }
 
@@ -2093,7 +1949,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Color picker sync
   if (bColor && bColorHex) {
     bColor.addEventListener('input', () => {
       bColorHex.value = bColor.value;
@@ -2112,7 +1967,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (bBio) bBio.addEventListener(evt, updateLivePreview);
   });
 
-  // Add Link
   if (bLinkAddBtn) {
     bLinkAddBtn.addEventListener('click', () => {
       const platform = currentSelectedPlatform || 'youtube';
@@ -2131,7 +1985,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateLivePreview();
       showToast(`Link eklendi (${currentLinksState.length}/50)`, 'success');
 
-      // Close modal after adding
       const modal = document.getElementById('dash-link-modal');
       if (modal) modal.style.display = 'none';
     });
@@ -2163,7 +2016,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // LIVE PREVIEW UPDATE
   function updateLivePreview() {
     const un = (bUsername && bUsername.value.trim()) || 'seyoria_o';
     const color = (bColor && bColor.value) || '#ffffff';
@@ -2176,7 +2028,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (prevBio) prevBio.textContent = bio;
 
-    // Avatar Priority: Uploaded File > Custom Avatar URL > Fetched Discord Avatar > Discord Default Avatar
     const defaultAv = 'https://cdn.discordapp.com/embed/avatars/0.png';
     const displayAvatar = avatarDataUrl || customUrl || fetchedDiscordAvatar || defaultAv;
     if (prevAvatar) {
@@ -2196,7 +2047,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Glowing Icon Row Rendering
     if (prevLinks) {
       prevLinks.innerHTML = '';
       currentLinksState.forEach(l => {
@@ -2230,7 +2080,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   let lastSaveTimestamp = 0;
-  const SAVE_RATE_LIMIT_MS = 1500; // 1.5 saniyeden sık profil kaydetme spamını engelle
+  const SAVE_RATE_LIMIT_MS = 1500; 
 
   async function saveCurrentBuilder() {
     const now = Date.now();
@@ -2272,7 +2122,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const existingProfiles = getProfiles();
     
-    // 1. Check if the target profile already exists and belongs to someone else
     if (existingProfiles[unKey]) {
       const existingOwnerDiscordId = existingProfiles[unKey].discordId;
       if (existingOwnerDiscordId && existingOwnerDiscordId !== currentDiscordId) {
@@ -2281,17 +2130,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // 2. Check if the logged in Discord user already has a DIFFERENT profile username
     for (const key in existingProfiles) {
       const p = existingProfiles[key];
       if (p.discordId && p.discordId === currentDiscordId && key !== unKey) {
-        // User is renaming their profile or creating a 2nd account
-        // Delete old profile key from database so they only have 1 profile
+        
         await deleteProfileFromDB(key);
       }
     }
 
-    // 1. Upload media files to Supabase Storage if user selected new files (Buluta yükleme)
     let uploadedBgVideoUrl = '';
     let uploadedBgMusicUrl = '';
     let uploadedAvatarUrl = '';
@@ -2313,31 +2159,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (cloudUrl) uploadedAvatarUrl = cloudUrl;
     }
 
-    // 2. Save heavy media to IndexedDB (yerel hızlı önbellek)
     if (bgVideoDataUrl) await saveMediaItem(`video_${unKey}`, bgVideoDataUrl);
     if (bgMusicDataUrl) await saveMediaItem(`music_${unKey}`, bgMusicDataUrl);
     if (avatarDataUrl)  await saveMediaItem(`avatar_${unKey}`, avatarDataUrl);
     if (cursorDataUrl)  await saveMediaItem(`cursor_${unKey}`, cursorDataUrl);
 
-    // Discord'un kendi API'sinden taze avatar doğrulaması — bot presence
-    // fetch'ine güvenmiyoruz, guild üyeliğinden veya bot uptime'ından bağımsız.
     const verifiedDiscordAvatar = await refreshDiscordSessionAvatar();
 
-    // Profilini kaydeden herkese "Momus Kullanıcısı" rolü otomatik verilir.
-    // dSession sayfa ilk açıldığında donmuş olabilir, kayıt anında taze
-    // session çekiyoruz. Kaydetme akışını bloklamasın diye await'lenmiyor.
     const freshSession = getDiscordSession();
     if (freshSession) assignMomusRole(freshSession);
 
-    // Preserve existing views count
     const existingProfile = existingProfiles[unKey];
 
-    // Determine public cloud URLs (fallback to existing public URLs)
     const finalBgVideo = uploadedBgVideoUrl || (existingProfile && existingProfile.bgVideo && !existingProfile.bgVideo.startsWith('data:') ? existingProfile.bgVideo : '') || '';
     const finalMusic = uploadedBgMusicUrl || (existingProfile && existingProfile.music && !existingProfile.music.startsWith('data:') ? existingProfile.music : '') || '';
     const finalAvatar = uploadedAvatarUrl || verifiedDiscordAvatar || fetchedDiscordAvatar || (existingProfile && existingProfile.avatar && !existingProfile.avatar.startsWith('data:') ? existingProfile.avatar : '') || '';
 
-    // Save active selected effect
     const profile = {
       username: un,
       color: (bColor && bColor.value) || '#ffffff',
@@ -2384,6 +2221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     const ok = await saveProfileData(profile);
     if (!ok) return false;
+    localStorage.setItem('momus_my_username', unKey);
     updateNavButton();
     return true;
   }
@@ -2791,10 +2629,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const handleClick = () => {
         clickOverlay.classList.add('fade-out');
-        // Start video after user interaction
+        
         if (bgVidEl && bgVidEl.src) bgVidEl.play().catch(() => {});
         
-        // Smooth audio volume fade-in (yavaş yavaş açılma)
         if (audioEl && audioEl.src) {
           audioEl.volume = 0;
           audioEl.play().then(() => {
@@ -2824,19 +2661,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       pCard.style.backdropFilter = `blur(${profile.blur || 0}px)`;
       pCard.style.webkitBackdropFilter = `blur(${profile.blur || 0}px)`;
 
-      // Apply Border Glow Effect (Admin Special)
       ['glow-purple', 'glow-gold', 'glow-fire', 'glow-cyan', 'glow-rainbow'].forEach(c => pCard.classList.remove(c));
       if (profile.borderGlow && profile.borderGlow !== 'none') {
         pCard.classList.add(profile.borderGlow);
       }
 
-      // Card Opening Animations
       ['card-anim-flip3d', 'card-anim-zoom', 'card-anim-slideup', 'card-anim-blurfocus'].forEach(c => pCard.classList.remove(c));
       if (profile.cardAnimation && profile.cardAnimation !== 'none') {
         pCard.classList.add(`card-anim-${profile.cardAnimation}`);
       }
 
-      // Transparent Card
       if (profile.toggleTransparentCard) {
         pCard.classList.add('profile-card-transparent');
       } else {
@@ -2844,14 +2678,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // CRT Scanlines Effect (Admin / Seyoria Special)
     if (profile.borderGlow === 'crt-retro' || profile.crtEffect || profile.username === 'seyoria') {
       document.body.classList.add('crt-scanlines-active');
     } else {
       document.body.classList.remove('crt-scanlines-active');
     }
 
-    // NSFW / +18 Gate Overlay
     const nsfwOverlay = document.getElementById('nsfw-gate-overlay');
     if (profile.toggleNsfwGate && nsfwOverlay && !sessionStorage.getItem(`momus_nsfw_${unKey}`)) {
       nsfwOverlay.style.display = 'flex';
@@ -2872,7 +2704,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       nsfwOverlay.style.display = 'none';
     }
 
-    // Render Preset & Custom Badges (with expiration time check + Discord Account Age)
     const viewBadges = document.getElementById('view-badges');
     if (viewBadges) {
       viewBadges.innerHTML = '';
@@ -2885,7 +2716,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
       }
 
-      // Otomatik Discord Hesap Yaşı Rozeti (Snowflake)
       if (profile.discordId && profile.discordId.length >= 15) {
         try {
           const snowflake = BigInt(profile.discordId);
@@ -2905,7 +2735,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch(e){}
       }
 
-      // Doğrulanmış Mavi Tik Rozeti (Admin / Seyoria Özel)
       if (profile.username === 'seyoria' || profile.isVerified) {
         const verifiedBadge = document.createElement('span');
         verifiedBadge.className = 'p-badge custom-badge';
@@ -2919,7 +2748,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (profile.customBadges && profile.customBadges.length > 0) {
         const now = Date.now();
-        // Filter out expired temporary badges
+        
         profile.customBadges = profile.customBadges.filter(b => !b.expiresAt || b.expiresAt > now);
 
         profile.customBadges.forEach(b => {
@@ -2940,7 +2769,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Render Location
     const viewLoc = document.getElementById('view-location');
     const viewLocText = document.getElementById('view-location-text');
     if (viewLoc && viewLocText) {
@@ -2952,13 +2780,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Apply Audio Toggle & Start Seconds
     const pAudioSec = document.querySelector('.p-audio-section');
     if (pAudioSec) {
       pAudioSec.style.display = (profile.toggleAudio !== false) ? 'flex' : 'none';
     }
 
-    // Mute/Unmute Shortcut (M Tuşu)
     if (!window._muteShortcutBound) {
       window._muteShortcutBound = true;
       window.addEventListener('keydown', (e) => {
@@ -2978,7 +2804,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // Apply Animated Title
     if (window.titleAnimInterval) clearInterval(window.titleAnimInterval);
     if (profile.toggleAnimatedTitle) {
       let titleText = `${profile.username} | momus `;
@@ -2989,7 +2814,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }, 300);
     }
 
-    // Apply Canvas Background Effect Engine (Scrollable Selector)
     const activeEffect = profile.effect || (profile.toggleSnowfall ? 'snowfall' : (profile.toggleParticles ? 'particles' : 'none'));
     startBackgroundEffect(activeEffect);
 
@@ -3002,14 +2826,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (viewName) {
       viewName.textContent = profile.username;
-      // Kullanıcı Adı Efekti
+      
       ['name-effect-neon', 'name-effect-glitch', 'name-effect-rainbow', 'name-effect-fire', 'name-effect-frost'].forEach(c => viewName.classList.remove(c));
       if (profile.nameEffect && profile.nameEffect !== 'none') {
         viewName.classList.add(`name-effect-${profile.nameEffect}`);
       }
     }
 
-    // Daktilo (Typewriter) Bio Efekti
     if (viewBio) {
       if (window._typewriterInterval) clearInterval(window._typewriterInterval);
       if (profile.toggleTypewriter && profile.bio && profile.bio.includes('\n')) {
@@ -3058,7 +2881,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Rank / Avatar Çerçevesi
     const avatarParent = viewAvatar ? viewAvatar.closest('.p-avatar-wrap') : null;
     if (avatarParent) {
       ['rank-frame-radiant', 'rank-frame-immortal', 'rank-frame-global', 'rank-frame-cyber', 'rank-frame-flame'].forEach(c => avatarParent.classList.remove(c));
@@ -3067,7 +2889,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Özel Favicon
     if (profile.toggleCustomFavicon !== false) {
       const iconLink = document.querySelector("link[rel*='icon']");
       if (iconLink && profile.avatar) {
@@ -3075,7 +2896,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Branding Badge Stili
     const brandingBadge = document.querySelector('.p-branding');
     if (brandingBadge) {
       if (profile.brandingBadgeColor === 'hidden') {
@@ -3092,7 +2912,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Retrieve Custom Cursor from IndexedDB if stored
     const storedCursor = await getMediaItem(`cursor_${unKey}`);
     const viewProfContainer = document.getElementById('view-profile');
     if (storedCursor && viewProfContainer) {
@@ -3101,7 +2920,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       viewProfContainer.style.cursor = 'default';
     }
 
-    // Retrieve Custom Avatar from IndexedDB if stored, or profile
     const storedAvatar = await getMediaItem(`avatar_${unKey}`);
     let displayAvatar = storedAvatar || profile.avatar || profile.discordAvatar || profile.customAvatarUrl || '';
     const defaultDiscordAv = 'https://cdn.discordapp.com/embed/avatars/0.png';
@@ -3123,7 +2941,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       viewBanner.style.display = 'none';
     }
 
-    // Media — Load Background Video or Image from IndexedDB or profile data / URL
     const bgVid = document.getElementById('p-bg-video');
     const bgImg = document.getElementById('p-bg-img');
 
@@ -3150,10 +2967,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (bgImg) bgImg.style.display = 'none';
     }
 
-    // Audio — Load MP3 Music from IndexedDB or profile data / URL
     const storedMusic = await getMediaItem(`music_${unKey}`);
     const musicSource = storedMusic || profile.musicUrl || profile.music || '';
-    // audioEl is already declared at the top of renderProfilePage
+    
     const slider  = document.getElementById('p-volume-slider');
     const muteBtn = document.getElementById('p-mute-btn');
 
@@ -3184,7 +3000,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       muteBtn.onclick = () => { audioEl.muted = !audioEl.muted; };
     }
 
-    // GLOWING ICON ROW RENDERING (WITH VIRUSTOTAL SAFE SCANNER)
     if (viewLinks) {
       viewLinks.innerHTML = '';
       if (profile.links && profile.links.length > 0) {
@@ -3195,7 +3010,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           a.title = link.label;
           a.innerHTML = getPlatformIconSVG(link.platform);
 
-          // Safe Link Scanner Interceptor
           a.addEventListener('click', (e) => {
             const targetUrl = link.url;
             if (!targetUrl || targetUrl === '#' || targetUrl.startsWith('javascript:')) return;
@@ -3232,7 +3046,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // DISCORD LANYARD REAL-TIME INTEGRATION
     const discordBox  = document.getElementById('view-discord-box');
     const statusDot   = document.getElementById('view-status-dot');
     const statusLabel = document.getElementById('view-status-label');
@@ -3260,18 +3073,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      // Avatar — Eğer kullanıcının özel yüklediği avatar yoksa, Discord avatarını daima göster
       if (!storedAvatar && (!profile.avatar || profile.avatar.includes('dicebear') || profile.avatar.includes('discordapp')) && d.avatar) {
         if (viewAvatar) viewAvatar.src = d.avatar;
       }
 
-      // Banner
       if (d.banner && viewBanner && viewBannerImg) {
         viewBannerImg.src = d.banner;
         viewBanner.style.display = 'block';
       }
 
-      // Status dot + label (username yanında)
       const st = d.status || 'offline';
       if (statusDot) statusDot.className = `inline-status-dot ${st}`;
 
@@ -3286,7 +3096,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         statusLabel.className = `inline-status-label ${st}`;
       }
 
-      // Discord Activity Box — sadece bir şey varsa göster
       if (discordBox) {
         if (d.spotify || d.activity || d.customStatus) {
           discordBox.style.display = 'flex';
@@ -3295,13 +3104,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
 
-          // Spotify
           if (d.spotify && spCard) {
             spCard.style.display = 'flex';
             if (spSong)   spSong.textContent   = d.spotify.song   || '—';
             if (spArtist) spArtist.textContent = d.spotify.artist || '—';
 
-            // Albüm kapağı varsa göster
             if (d.spotify.albumArt) {
               let albumImg = spCard.querySelector('.sp-album-art');
               if (!albumImg) {
@@ -3315,7 +3122,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             spCard.style.display = 'none';
           }
 
-      // Game / Activity & Live Elapsed Time Counter
       const actTimer = document.getElementById('view-act-timer');
       if (window.gameTimerInterval) clearInterval(window.gameTimerInterval);
 
@@ -3349,9 +3155,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // ═══════════════════════════════════════════════════════════
-  // Güvenlik: PIN kodu güvenli SHA-256 hash ile doğrulanır
   const ADMIN_PIN_HASH = 'ad0f982a6d2ac3cc6d38f713f03e672ebf677f582665a62f173aa1c52431e2dd';
   let isAdminAuthenticated = false;
 
@@ -3410,7 +3213,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Admin Tab Geçişleri (Kullanıcı Yönetimi vs Changelog Gönderici)
     const tabBtns = document.querySelectorAll('.admin-tab-btn');
     tabBtns.forEach(btn => {
       if (!btn.dataset.bound) {
@@ -3426,7 +3228,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    // Changelog Gönder Butonu Dinleyicisi
     const sendClBtn = document.getElementById('admin-send-changelog-btn');
     if (sendClBtn && !sendClBtn.dataset.bound) {
       sendClBtn.dataset.bound = '1';
@@ -3444,7 +3245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         sendClBtn.textContent = 'Gönderiliyor...';
 
         try {
-          // Önce Render adresine dene, başarısız olursa yerel bota (localhost:3001) otomatik dene
+          
           let res;
           try {
             res = await fetch(`${MOMUS_BOT_API}/api/discord/send-changelog`, {
@@ -3457,7 +3258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               })
             });
           } catch(err) {
-            // Localhost fallback
+            
             res = await fetch(`http://localhost:3001/api/discord/send-changelog`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -3516,7 +3317,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const reservedList = getReservedUsernames();
     const bannedList = getBannedUsers();
 
-    // 1. Kilitli İsimler Sekmesi Dinleyicileri
     const reserveInput = document.getElementById('admin-reserve-input');
     const addReserveBtn = document.getElementById('admin-add-reserve-btn');
     if (addReserveBtn && !addReserveBtn.dataset.bound) {
@@ -3535,7 +3335,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // 2. Yasaklılar Sekmesi Dinleyicileri
     const banInput = document.getElementById('admin-ban-input');
     const addBanBtn = document.getElementById('admin-add-ban-btn');
     if (addBanBtn && !addBanBtn.dataset.bound) {
@@ -3554,13 +3353,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // 3. Canlı Global Site Duyurusu Dinleyicileri
     const annToggle = document.getElementById('admin-ann-toggle');
     const annText = document.getElementById('admin-ann-text');
     const annUntil = document.getElementById('admin-ann-until');
     const saveAnnBtn = document.getElementById('admin-save-ann-btn');
 
-    // Mevcut duyuru verisini doldur
     const curAnn = getGlobalAnnouncement();
     if (annToggle) annToggle.checked = !!curAnn.active;
     if (annText) annText.value = curAnn.text || '';
@@ -3580,7 +3377,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // 4. Rozet İkon Galerisi & Süreli Rozet Yönetimi
     let selectedGalleryIcon = '👑';
     const galleryIcons = [
       '👑', '💎', '🔥', '⚡', '⭐', '🛡️', '⚔️', '🏆', 
@@ -3655,7 +3451,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // 5. Çerçeve Efekti (Border Glow) Yönetimi
     const saveGlowBtn = document.getElementById('admin-save-glow-btn');
     if (saveGlowBtn && !saveGlowBtn.dataset.bound) {
       saveGlowBtn.dataset.bound = '1';
@@ -3681,7 +3476,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // 6. Discord DM Bildirimi Gönderici
     const sendDmBtn = document.getElementById('admin-send-dm-btn');
     if (sendDmBtn && !sendDmBtn.dataset.bound) {
       sendDmBtn.dataset.bound = '1';
@@ -3727,7 +3521,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // 7. Özel Davet Kodu / Gizli Kayıt Sistemi
     const inviteToggle = document.getElementById('admin-invite-required-toggle');
     const newInviteInput = document.getElementById('admin-new-invite-code');
     const genInviteBtn = document.getElementById('admin-generate-invite-btn');
@@ -3758,7 +3551,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // 8. Quick Actions: Backup JSON Exporter
     const exportBtn = document.getElementById('admin-btn-export-backup');
     if (exportBtn && !exportBtn.dataset.bound) {
       exportBtn.dataset.bound = '1';
@@ -3783,7 +3575,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // 9. Quick Actions: Ghost / Empty Profile Cleaner
     const cleanGhostsBtn = document.getElementById('admin-btn-clean-ghosts');
     if (cleanGhostsBtn && !cleanGhostsBtn.dataset.bound) {
       cleanGhostsBtn.dataset.bound = '1';
@@ -3804,7 +3595,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // 10. Quick Actions: Broadcast Alert
     const broadcastBtn = document.getElementById('admin-btn-broadcast-alert');
     if (broadcastBtn && !broadcastBtn.dataset.bound) {
       broadcastBtn.dataset.bound = '1';
@@ -3819,7 +3609,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // 11. Audit Logs Clear
     const clearLogsBtn = document.getElementById('admin-clear-audit-logs-btn');
     if (clearLogsBtn && !clearLogsBtn.dataset.bound) {
       clearLogsBtn.dataset.bound = '1';
@@ -4123,7 +3912,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       list.appendChild(card);
     });
 
-    // Rozet Ekleme / Kaldırma Tıklama Dinleyicileri
     list.querySelectorAll('.admin-badge-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const targetUser = btn.dataset.user;
@@ -4151,7 +3939,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    // Özel Rozet Tanımlama (Prompt ile Hızlı Özel Rozet)
     list.querySelectorAll('.admin-add-custom-badge-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const targetUser = btn.dataset.user;
@@ -4176,7 +3963,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    // Özel Rozeti Silme
     list.querySelectorAll('.admin-del-custom-badge').forEach(btn => {
       btn.addEventListener('click', async () => {
         const targetUser = btn.dataset.user;
@@ -4192,7 +3978,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    // Öne Çıkar (Spotlight) Butonu Dinleyicisi
     list.querySelectorAll('.admin-spotlight-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const targetUser = btn.dataset.user;
@@ -4207,7 +3992,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    // Profil Silme Dinleyicisi
     list.querySelectorAll('.admin-del-user-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const targetUser = btn.dataset.user;
@@ -4291,7 +4075,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // Privacy Modal
     const privacyModal = document.getElementById('privacy-modal');
     const privacyClose = document.getElementById('privacy-modal-close');
     const privacyOk = document.getElementById('privacy-modal-ok');
@@ -4324,7 +4107,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    // Terms Modal
     const termsModal = document.getElementById('terms-modal');
     const termsClose = document.getElementById('terms-modal-close');
     const termsOk = document.getElementById('terms-modal-ok');
@@ -4346,7 +4128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (e.target === termsModal) closeTerms();
       });
     }
-    // Leaderboard Modal
+    
     const lbBtn = document.getElementById('nav-leaderboard-btn');
     const lbModal = document.getElementById('leaderboard-modal');
     const lbClose = document.getElementById('leaderboard-modal-close');
@@ -4406,9 +4188,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Her hash değişiminde (profil linkine tıklama, geri/ileri gitme vb.)
-  // önce Supabase'den taze veri çekiyoruz, sonra route() çalışıyor —
-  // böylece başka birinin oluşturduğu profil de görünür oluyor.
   async function routeWithFreshData() {
     await refreshProfilesCache();
     applyGlobalAnnouncement();
