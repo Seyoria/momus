@@ -475,7 +475,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const bBlur = document.getElementById('b-blur');
   const bToggleAudio = document.getElementById('b-toggle-audio');
   const bToggleDiscordAvatar = document.getElementById('b-toggle-discord-avatar');
-  const bToggleAnimatedTitle = document.getElementById('b-toggle-animated-title');
   const bToggleViewsCount = document.getElementById('b-toggle-views-count');
   const bToggleBadgesDisplay = document.getElementById('b-toggle-badges-display');
   const bToggleSocialGlow = document.getElementById('b-toggle-social-glow');
@@ -1512,7 +1511,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       if (bToggleAudio) bToggleAudio.checked = myAcc.toggleAudio !== false;
       if (bToggleDiscordAvatar) bToggleDiscordAvatar.checked = !!myAcc.toggleDiscordAvatar;
-      if (bToggleAnimatedTitle) bToggleAnimatedTitle.checked = !!myAcc.toggleAnimatedTitle;
       if (bToggleViewsCount) bToggleViewsCount.checked = myAcc.toggleViewsCount !== false;
       if (bToggleBadgesDisplay) bToggleBadgesDisplay.checked = myAcc.toggleBadgesDisplay !== false;
       if (bToggleSocialGlow) bToggleSocialGlow.checked = myAcc.toggleSocialGlow !== false;
@@ -1570,7 +1568,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (bBlur) { bBlur.value = 0; const valEl = document.getElementById('b-blur-val'); if (valEl) valEl.textContent = '0px'; }
       if (bToggleAudio) bToggleAudio.checked = true;
       if (bToggleDiscordAvatar) bToggleDiscordAvatar.checked = false;
-      if (bToggleAnimatedTitle) bToggleAnimatedTitle.checked = false;
       if (bToggleViewsCount) bToggleViewsCount.checked = true;
       if (bToggleBadgesDisplay) bToggleBadgesDisplay.checked = true;
       if (bToggleSocialGlow) bToggleSocialGlow.checked = true;
@@ -2172,7 +2169,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       borderGlow: (existingProfile && existingProfile.borderGlow) || 'none',
       toggleAudio: bToggleAudio ? bToggleAudio.checked : true,
       toggleDiscordAvatar: bToggleDiscordAvatar ? bToggleDiscordAvatar.checked : false,
-      toggleAnimatedTitle: bToggleAnimatedTitle ? bToggleAnimatedTitle.checked : false,
       toggleViewsCount: bToggleViewsCount ? bToggleViewsCount.checked : true,
       toggleBadgesDisplay: bToggleBadgesDisplay ? bToggleBadgesDisplay.checked : true,
       toggleSocialGlow: bToggleSocialGlow ? bToggleSocialGlow.checked : true,
@@ -2765,16 +2761,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         }
       });
-    }
-
-    if (window.titleAnimInterval) clearInterval(window.titleAnimInterval);
-    if (profile.toggleAnimatedTitle) {
-      let titleText = `${profile.username} | momus `;
-      let titleIdx = 0;
-      window.titleAnimInterval = setInterval(() => {
-        document.title = titleText.substring(titleIdx) + titleText.substring(0, titleIdx);
-        titleIdx = (titleIdx + 1) % titleText.length;
-      }, 300);
     }
 
     const activeEffect = profile.effect || (profile.toggleSnowfall ? 'snowfall' : (profile.toggleParticles ? 'particles' : 'none'));
