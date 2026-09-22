@@ -1,4 +1,3 @@
-
 const MAINTENANCE_MODE = false; 
 const MOMUS_BOT_API = 'https://momus-bot.onrender.com';
 
@@ -2699,25 +2698,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
       }
 
-      if (profile.discordId && profile.discordId.length >= 15) {
-        try {
-          const snowflake = BigInt(profile.discordId);
-          const timestamp = Number((snowflake >> 22n) + 1420070400000n);
-          const years = Math.floor((Date.now() - timestamp) / (1000 * 60 * 60 * 24 * 365.25));
-          if (years >= 1) {
-            const ageBadge = document.createElement('span');
-            ageBadge.className = 'p-badge custom-badge';
-            ageBadge.style.borderColor = '#38bdf8';
-            ageBadge.style.color = '#38bdf8';
-            ageBadge.style.background = '#38bdf81a';
-            ageBadge.style.boxShadow = '0 0 10px #38bdf844';
-            ageBadge.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;">⏳ ${years} YIL</span>`;
-            ageBadge.title = `Discord hesabı ${years} yıldır aktif.`;
-            viewBadges.appendChild(ageBadge);
-          }
-        } catch(e){}
-      }
-
       if (profile.username === 'seyoria' || profile.isVerified) {
         const verifiedBadge = document.createElement('span');
         verifiedBadge.className = 'p-badge custom-badge';
@@ -3575,20 +3555,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast(`${ghostCount} adet boş profil temizlendi!`, 'success');
         renderAdminProfiles();
         renderAdminAnalytics();
-      });
-    }
-
-    const broadcastBtn = document.getElementById('admin-btn-broadcast-alert');
-    if (broadcastBtn && !broadcastBtn.dataset.bound) {
-      broadcastBtn.dataset.bound = '1';
-      broadcastBtn.addEventListener('click', () => {
-        const msg = prompt('Site genelinde anında yayınlanacak acil duyuru metnini girin:');
-        if (!msg || !msg.trim()) return;
-        const ann = { active: true, text: msg.trim(), until: '' };
-        localStorage.setItem('momus_global_announcement', JSON.stringify(ann));
-        applyGlobalAnnouncement();
-        addAuditLog(`Canlı site duyurusu yayınlandı: "${msg.trim()}"`, 'announcement');
-        showToast('Canlı duyuru tüm siteye fırlatıldı!', 'success');
       });
     }
 
