@@ -32,18 +32,7 @@ async function refreshProfilesCache() {
     console.warn('momus: Supabase profiles fetch error:', e);
   }
 
-  try {
-    const backup = localStorage.getItem('momus_profiles_backup');
-    if (backup) {
-      const parsed = JSON.parse(backup);
-      const cleanBackup = {};
-      Object.keys(parsed).forEach(k => {
-        if (!parsed[k]?.isBot) cleanBackup[k] = parsed[k];
-      });
-      profilesCache = { ...cleanBackup, ...profilesCache };
-    }
-  } catch(e){}
-
+  localStorage.removeItem('momus_profiles_backup');
   return profilesCache;
 }
 
@@ -161,9 +150,6 @@ async function saveProfileData(profile) {
   const discordId = session ? session.user.id : (profile.discordId || '');
 
   profilesCache[key] = { ...profile, discordId };
-  try {
-    localStorage.setItem('momus_profiles_backup', JSON.stringify(profilesCache));
-  } catch(e){}
 
   try {
     const { error } = await withTimeout(
@@ -206,9 +192,6 @@ async function saveProfileData(profile) {
 async function deleteProfileFromDB(unKey) {
   const key = unKey.toLowerCase();
   delete profilesCache[key];
-  try {
-    localStorage.setItem('momus_profiles_backup', JSON.stringify(profilesCache));
-  } catch(e){}
 
   try {
     const { error } = await supabaseClient
