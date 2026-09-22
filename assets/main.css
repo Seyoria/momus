@@ -1,6 +1,4 @@
-/* ============================================================
-   main.css — momus SPA (Landing, Builder, Profile) Dark Theme
-   ============================================================ */
+
 
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap');
 
@@ -125,7 +123,7 @@ a, button, input, textarea, select, label { cursor: none; }
   color: #ef4444;
 }
 
-/* BELİRGİN VE ŞIK PROFİL OLUŞTUR BUTONU */
+
 .hero-cta-btn {
   display: flex;
   align-items: center;
@@ -226,7 +224,7 @@ a, button, input, textarea, select, label { cursor: none; }
   justify-content: center;
 }
 
-/* HARF HOVER EFEKTİ (DİREKT HARF KARARMASI / GÖLGE, YUVARLAK KUTU YOK!) */
+
 .title-char {
   display: inline-block;
   transition: color 0.25s var(--ease), transform 0.25s var(--ease), text-shadow 0.25s var(--ease);
@@ -534,7 +532,7 @@ a, button, input, textarea, select, label { cursor: none; }
   margin-top: 2px;
 }
 
-/* Discord Lanyard Highlight Box */
+
 .highlight-box {
   background: rgba(88, 101, 242, 0.06);
   border: 1px solid rgba(88, 101, 242, 0.22);
@@ -551,7 +549,7 @@ a, button, input, textarea, select, label { cursor: none; }
   letter-spacing: 0.04em;
 }
 
-/* File Upload Button Styling */
+
 .file-input-hidden { display: none; }
 .file-upload-box { width: 100%; }
 .file-upload-btn {
@@ -589,7 +587,7 @@ a, button, input, textarea, select, label { cursor: none; }
 .hex-text-input { width: 120px !important; }
 
 
-/* ANIMASYONLU PLATFORM SEÇİCİ */
+
 .platform-picker-section {
   display: flex;
   flex-direction: column;
@@ -727,7 +725,7 @@ a, button, input, textarea, select, label { cursor: none; }
   transform: translateY(-1px);
 }
 
-/* Builder Right Preview Pane */
+
 .preview-pane {
   background: #050505;
   display: flex;
@@ -794,7 +792,7 @@ a, button, input, textarea, select, label { cursor: none; }
   z-index: 1;
 }
 
-/* Click To Enter Overlay */
+
 .click-overlay {
   position: fixed;
   inset: 0;
@@ -828,7 +826,7 @@ a, button, input, textarea, select, label { cursor: none; }
   pointer-events: none;
 }
 
-/* Top-Right Settings Gear Button */
+
 .p-settings-gear-btn {
   position: fixed;
   top: 24px; right: 24px;
@@ -917,7 +915,7 @@ a, button, input, textarea, select, label { cursor: none; }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Discord Banner Image */
+
 .p-banner-wrap {
   width: calc(100% + 56px);
   margin: -32px -28px 20px -28px;
@@ -930,7 +928,7 @@ a, button, input, textarea, select, label { cursor: none; }
   object-fit: cover;
 }
 
-/* BADGE CONTAINER */
+
 .guns-header-badge {
   display: flex;
   align-items: center;
@@ -965,7 +963,7 @@ a, button, input, textarea, select, label { cursor: none; }
   background: #141414;
 }
 
-/* Discord Inline Status (next to username) */
+
 .p-username-row {
   display: flex;
   align-items: center;
@@ -1017,7 +1015,7 @@ a, button, input, textarea, select, label { cursor: none; }
   font-weight: 400;
 }
 
-/* GLOWING SOCIAL ICON ROW */
+
 .p-icon-row {
   display: flex;
   align-items: center;
@@ -1054,7 +1052,7 @@ a, button, input, textarea, select, label { cursor: none; }
   filter: drop-shadow(0 0 4px rgba(255,255,255,0.4));
 }
 
-/* DISCORD LANYARD SPOTIFY & ACTIVITY WIDGET STYLES */
+
 .discord-activity-box {
   width: 100%;
   display: flex;
@@ -1221,7 +1219,7 @@ a, button, input, textarea, select, label { cursor: none; }
 }
 .p-footer a:hover { color: rgba(255, 255, 255, 0.7); }
 
-/* View Counter Badge */
+
 .p-views-badge {
   display: inline-flex;
   align-items: center;
@@ -1259,7 +1257,7 @@ a, button, input, textarea, select, label { cursor: none; }
   background: #0a0a0a;
 }
 
-/* Sidebar */
+
 .dash-sidebar {
   width: 220px;
   min-height: 100vh;
@@ -1338,7 +1336,7 @@ a, button, input, textarea, select, label { cursor: none; }
   margin-top: auto;
 }
 
-/* Content */
+
 .dash-content {
   flex: 1;
   padding: 40px 48px;
@@ -1370,7 +1368,7 @@ a, button, input, textarea, select, label { cursor: none; }
   margin-bottom: 20px;
 }
 
-/* Stat Cards */
+
 .dash-stat-row {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -1419,7 +1417,7 @@ a, button, input, textarea, select, label { cursor: none; }
   font-size: 0.85rem;
 }
 
-/* Section Card */
+
 .dash-section-card {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.06);
@@ -1439,7 +1437,7 @@ a, button, input, textarea, select, label { cursor: none; }
   margin-bottom: 16px;
 }
 
-/* Buttons */
+
 .dash-btn-primary {
   background: #a855f7;
   color: #fff;
@@ -1527,7 +1525,7 @@ a, button, input, textarea, select, label { cursor: none; }
   box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
 }
 
-/* Custom Animated Dropdown */
+
 .dash-custom-dropdown {
   position: relative;
   width: 100%;
@@ -1582,7 +1580,7 @@ a, button, input, textarea, select, label { cursor: none; }
   z-index: 100;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8), 0 0 24px rgba(168, 85, 247, 0.15);
 
-  /* Animation */
+  
   opacity: 0;
   transform: translateY(-8px) scale(0.98);
   pointer-events: none;
@@ -1621,7 +1619,7 @@ a, button, input, textarea, select, label { cursor: none; }
   border-left-color: #a855f7;
 }
 
-/* Custom Social Link Card */
+
 .dash-social-custom-card {
   grid-column: span 3;
   min-width: 240px;
@@ -1662,7 +1660,7 @@ a, button, input, textarea, select, label { cursor: none; }
   color: rgba(255, 255, 255, 0.4);
 }
 
-/* Upload Grid */
+
 .dash-upload-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1731,7 +1729,7 @@ a, button, input, textarea, select, label { cursor: none; }
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
 }
 
-/* Color Picker */
+
 .dash-color-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -1776,7 +1774,7 @@ a, button, input, textarea, select, label { cursor: none; }
   outline: none;
 }
 
-/* Social Icons Grid */
+
 .dash-social-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
@@ -1806,7 +1804,7 @@ a, button, input, textarea, select, label { cursor: none; }
   height: 26px;
 }
 
-/* Link Form */
+
 .dash-link-form {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(168, 85, 247, 0.2);
@@ -1847,7 +1845,7 @@ a, button, input, textarea, select, label { cursor: none; }
   gap: 8px;
 }
 
-/* Responsive */
+
 @media (max-width: 768px) {
   .dash { flex-direction: column; }
   .dash-sidebar {
@@ -2014,14 +2012,14 @@ a, button, input, textarea, select, label { cursor: none; }
   color: rgba(255, 255, 255, 0.3);
 }
 
-/* Settings Grid */
+
 .dash-settings-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
 }
 
-/* Toggle Switches */
+
 .dash-toggle-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -2082,7 +2080,7 @@ a, button, input, textarea, select, label { cursor: none; }
   background: #ffffff;
 }
 
-/* Badge Buttons */
+
 .dash-badge-row {
   display: flex;
   gap: 10px;
@@ -2106,7 +2104,7 @@ a, button, input, textarea, select, label { cursor: none; }
 .badge-toggle-btn.premium:hover, .badge-toggle-btn.premium.active { border-color: #a855f7; color: #a855f7; background: rgba(168, 85, 247, 0.12); box-shadow: 0 0 16px rgba(168, 85, 247, 0.25); }
 .badge-toggle-btn.dev:hover, .badge-toggle-btn.dev.active { border-color: #22c55e; color: #22c55e; background: rgba(34, 197, 94, 0.12); box-shadow: 0 0 16px rgba(34, 197, 94, 0.25); }
 
-/* Range Sliders */
+
 .dash-slider-group {
   display: flex;
   flex-direction: column;
@@ -2141,7 +2139,7 @@ a, button, input, textarea, select, label { cursor: none; }
   color: rgba(255, 255, 255, 0.3);
 }
 
-/* Profile Badges Display */
+
 .p-badges-row {
   display: flex;
   align-items: center;
@@ -2165,7 +2163,7 @@ a, button, input, textarea, select, label { cursor: none; }
 .p-badge.premium { border-color: #a855f7; color: #a855f7; background: rgba(168, 85, 247, 0.12); box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
 .p-badge.dev { border-color: #22c55e; color: #22c55e; background: rgba(34, 197, 94, 0.12); box-shadow: 0 0 10px rgba(34, 197, 94, 0.3); }
 
-/* Profile Location Display */
+
 .p-location {
   display: flex;
   align-items: center;
@@ -2570,7 +2568,7 @@ a, button, input, textarea, select, label { cursor: none; }
   box-shadow: 0 8px 30px rgba(88, 101, 242, 0.5);
 }
 
-/* Divider */
+
 .dg-divider {
   display: flex;
   align-items: center;
@@ -2591,7 +2589,7 @@ a, button, input, textarea, select, label { cursor: none; }
   letter-spacing: 0.15em;
 }
 
-/* Warning Box */
+
 .dg-warning-box {
   width: 100%;
   display: flex;
@@ -2625,7 +2623,7 @@ a, button, input, textarea, select, label { cursor: none; }
   margin: 0;
 }
 
-/* Join Button */
+
 .dg-join-btn {
   width: 100%;
   display: flex;
@@ -2660,7 +2658,7 @@ a, button, input, textarea, select, label { cursor: none; }
 }
 .dg-back:hover { color: rgba(255, 255, 255, 0.7); }
 
-/* Mobile */
+
 @media (max-width: 480px) {
   .dg-content { margin: 16px; }
   .dg-logo { width: 90px; height: 90px; border-radius: 22px; }
@@ -2668,7 +2666,7 @@ a, button, input, textarea, select, label { cursor: none; }
   .dg-warning-box { padding: 14px 16px; }
 }
 
-/* Sidebar session badge */
+
 .dg-session-wrap {
   position: relative;
 }
@@ -3076,7 +3074,7 @@ a, button, input, textarea, select, label { cursor: none; }
   color: #fff;
 }
 
-/* Admin Dashboard Main */
+
 .admin-main-wrap {
   min-height: 100vh;
   background: #09090c;
@@ -3119,7 +3117,7 @@ a, button, input, textarea, select, label { cursor: none; }
   padding: 0 24px;
 }
 
-/* Admin Stats Bar */
+
 .admin-stats-bar {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -3149,7 +3147,7 @@ a, button, input, textarea, select, label { cursor: none; }
   letter-spacing: 0.06em;
 }
 
-/* Admin Search Box */
+
 .admin-search-wrap {
   margin-bottom: 24px;
 }
@@ -3171,7 +3169,7 @@ a, button, input, textarea, select, label { cursor: none; }
   box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
 }
 
-/* Admin Profiles List */
+
 .admin-users-list {
   display: flex;
   flex-direction: column;
@@ -3259,7 +3257,7 @@ a, button, input, textarea, select, label { cursor: none; }
   max-width: 380px;
 }
 
-/* Badge Management in Admin Card */
+
 .admin-user-actions-col {
   display: flex;
   flex-direction: column;
@@ -3363,7 +3361,7 @@ a, button, input, textarea, select, label { cursor: none; }
   }
 }
 
-/* Admin Tabs & Changelog Form Styles */
+
 .admin-tab-nav {
   display: flex;
   gap: 10px;
@@ -3456,7 +3454,7 @@ a, button, input, textarea, select, label { cursor: none; }
   margin-top: 10px;
 }
 
-/* Global Announcement Banner */
+
 .global-announcement-banner {
   background: linear-gradient(90deg, #7e22ce 0%, #a855f7 50%, #6b21a8 100%);
   color: #fff;
@@ -3513,7 +3511,7 @@ a, button, input, textarea, select, label { cursor: none; }
   opacity: 1;
 }
 
-/* Spotlight & Tags in Admin */
+
 .admin-user-card.spotlight-active {
   border-color: rgba(255, 215, 0, 0.4);
   background: rgba(255, 215, 0, 0.03);
@@ -3579,7 +3577,7 @@ a, button, input, textarea, select, label { cursor: none; }
   opacity: 1;
 }
 
-/* Tags List (Reserved & Banned) */
+
 .admin-tags-list {
   display: flex;
   flex-wrap: wrap;
@@ -3616,7 +3614,7 @@ a, button, input, textarea, select, label { cursor: none; }
   opacity: 1;
 }
 
-/* Analytics Top List */
+
 .admin-top-list {
   display: flex;
   flex-direction: column;
@@ -3649,7 +3647,7 @@ a, button, input, textarea, select, label { cursor: none; }
   margin-left: 6px;
 }
 
-/* Profile Border Glow Effects */
+
 .glow-purple {
   box-shadow: 0 0 35px rgba(168, 85, 247, 0.45), inset 0 0 15px rgba(168, 85, 247, 0.2) !important;
   border-color: rgba(168, 85, 247, 0.6) !important;
@@ -3689,7 +3687,7 @@ a, button, input, textarea, select, label { cursor: none; }
   100% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.5), inset 0 0 10px rgba(168, 85, 247, 0.2); }
 }
 
-/* Badge Icon Gallery Grid */
+
 .admin-icon-gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
