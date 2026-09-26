@@ -985,6 +985,69 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  function animateCounter(el, target) {
+    if (!el) return;
+    const duration = 900;
+    const start = 0;
+    const startTime = performance.now();
+    function tick(now) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(start + (target - start) * eased).toLocaleString('tr-TR');
+      if (progress < 1) requestAnimationFrame(tick);
+      else el.textContent = target.toLocaleString('tr-TR');
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function renderStatsPanel(profile) {
+    const totalViewsEl = document.getElementById('stats-total-views');
+    const totalClicksEl = document.getElementById('stats-total-clicks');
+    const ctrEl = document.getElementById('stats-ctr');
+    const barsWrap = document.getElementById('stats-links-bars');
+    const emptyMsg = document.getElementById('stats-links-empty');
+    if (!totalViewsEl || !barsWrap) return;
+
+    const views = profile.views || 0;
+    const links = profile.links || [];
+    const totalClicks = links.reduce((sum, l) => sum + (l.clicks || 0), 0);
+    const ctr = views > 0 ? Math.round((totalClicks / views) * 100) : 0;
+
+    animateCounter(totalViewsEl, views);
+    animateCounter(totalClicksEl, totalClicks);
+    if (ctrEl) ctrEl.textContent = `%${ctr}`;
+
+    barsWrap.querySelectorAll('.stats-bar-row').forEach(r => r.remove());
+
+    const sortedLinks = [...links].filter(l => (l.clicks || 0) > 0).sort((a, b) => (b.clicks || 0) - (a.clicks || 0));
+
+    if (sortedLinks.length === 0) {
+      if (emptyMsg) emptyMsg.style.display = '';
+      return;
+    }
+    if (emptyMsg) emptyMsg.style.display = 'none';
+
+    const maxClicks = sortedLinks[0].clicks || 1;
+    sortedLinks.slice(0, 8).forEach((link, idx) => {
+      const row = document.createElement('div');
+      row.className = 'stats-bar-row';
+      row.style.animationDelay = `${idx * 0.06}s`;
+      const pct = Math.max(4, Math.round(((link.clicks || 0) / maxClicks) * 100));
+      row.innerHTML = `
+        <div class="stats-bar-top">
+          <span>${link.label || link.platform || 'Link'}</span>
+          <strong>${link.clicks || 0} tıklama</strong>
+        </div>
+        <div class="stats-bar-track"><div class="stats-bar-fill" style="width:0%;" data-pct="${pct}"></div></div>
+      `;
+      barsWrap.appendChild(row);
+      const fillEl = row.querySelector('.stats-bar-fill');
+      requestAnimationFrame(() => {
+        setTimeout(() => { if (fillEl) fillEl.style.width = pct + '%'; }, idx * 60);
+      });
+    });
+  }
+
   function setupDashboardTabs() {
     const navItems = document.querySelectorAll('.dash-nav-item');
     navItems.forEach(item => {
@@ -1543,6 +1606,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       customBadges = myAcc.customBadges ? [...myAcc.customBadges] : [];
       if (bViewsCount) bViewsCount.textContent = `${myAcc.views || 0} görüntüleme`;
       currentLinksState = myAcc.links ? [...myAcc.links] : [];
+      renderStatsPanel(myAcc);
     } else {
       selectedEffect = 'none';
       selectedNameEffect = 'none';
@@ -2582,6 +2646,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       sessionStorage.setItem(viewedKey, '1');
       profile.views = (profile.views || 0) + 1;
       await saveProfileData(profile);
+
+      try {
+        fetch(`${MOMUS_BOT_API}/api/discord/log-visit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: profile.username,
+            totalViews: profile.views
+          })
+        }).catch(() => {});
+      } catch (e) {}
     }
     const viewViewsCount = document.getElementById('view-views-count');
     if (viewViewsCount) viewViewsCount.textContent = profile.views || 0;
@@ -2964,6 +3039,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!targetUrl || targetUrl === '#' || targetUrl.startsWith('javascript:')) return;
 
             e.preventDefault();
+
+            if (!isOwner) {
+              link.clicks = (link.clicks || 0) + 1;
+              saveProfileData(profile).catch(() => {});
+            }
+
             const vtModal = document.getElementById('virus-scan-modal');
             const vtUrlEl = document.getElementById('virus-scan-target-url');
             const vtBtn = document.getElementById('virus-scan-vt-btn');
