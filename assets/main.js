@@ -137,12 +137,12 @@ function withTimeout(promise, ms, label) {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
-async function saveProfileData(profile) {
+async function saveProfileData(profile, changes = []) {
   const key = profile.username.toLowerCase();
-
+  const isNewProfile = !profilesCache[key];
   const safeBgVideo = (profile.bgVideo && !profile.bgVideo.startsWith('data:')) ? profile.bgVideo : '';
-  const safeMusic  = (profile.music   && !profile.music.startsWith('data:'))   ? profile.music   : '';
-  const safeAvatar = (profile.avatar  && !profile.avatar.startsWith('data:'))  ? profile.avatar  : '';
+  const safeMusic   = (profile.music   && !profile.music.startsWith('data:'))   ? profile.music   : '';
+  const safeAvatar  = (profile.avatar  && !profile.avatar.startsWith('data:'))  ? profile.avatar  : '';
   const dbProfile = { ...profile, bgVideo: safeBgVideo, music: safeMusic, avatar: safeAvatar };
 
   const session = getDiscordSession();
@@ -167,7 +167,6 @@ async function saveProfileData(profile) {
       console.warn('Supabase upsert warning:', error);
       showToast('Kaydedildi (yerel), sunucu senkronu başarısız oldu.', 'error');
     } else {
-      
       try {
         fetch(`${MOMUS_BOT_API}/api/discord/log-profile`, {
           method: 'POST',
@@ -176,7 +175,11 @@ async function saveProfileData(profile) {
             username: profile.username,
             discordId: discordId,
             bio: profile.bio,
-            isNew: !profilesCache[key]
+            isNew: isNewProfile,
+            changes: changes,
+            links: profile.links || [],
+            color: profile.color,
+            effect: profile.effect
           })
         }).catch(() => {});
       } catch(e){}
@@ -1017,6 +1020,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const barsWrap = document.getElementById('stats-links-bars');
     const emptyMsg = document.getElementById('stats-links-empty');
     const chartContainer = document.getElementById('stats-chart-container');
+    const hourlyChart = document.getElementById('stats-hourly-chart');
+    const deviceChart = document.getElementById('stats-device-chart');
     if (!totalViewsEl || !barsWrap) return;
 
     const views = profile.views || 0;
@@ -1031,15 +1036,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (chartContainer) {
       const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-      const todayIdx = (new Date().getDay() + 6) % 7; // Monday = 0
+      const todayIdx = (new Date().getDay() + 6) % 7;
       const orderedDays = [];
       for (let i = 6; i >= 0; i--) {
         const dIdx = (todayIdx - i + 7) % 7;
         orderedDays.push(days[dIdx]);
       }
 
-
-      const multipliers = [0.08, 0.12, 0.18, 0.25, 0.45, 0.70, 1.0];
+      const multipliers = [0.10, 0.18, 0.22, 0.35, 0.55, 0.78, 1.0];
       const dataPoints = orderedDays.map((day, idx) => {
         const dayVal = Math.max(0, Math.round(views * multipliers[idx]));
         return { day, val: dayVal };
@@ -1047,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const maxVal = Math.max(...dataPoints.map(d => d.val), 5);
       const svgW = 600;
-      const svgH = 170;
+      const svgH = 180;
       const padX = 40;
       const padY = 25;
       const graphW = svgW - (padX * 2);
@@ -1075,7 +1079,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <svg class="stats-svg-chart" viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="none">
           <defs>
             <linearGradient id="stats-gradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#a855f7" stop-opacity="0.35"/>
+              <stop offset="0%" stop-color="#a855f7" stop-opacity="0.4"/>
               <stop offset="100%" stop-color="#a855f7" stop-opacity="0.0"/>
             </linearGradient>
           </defs>
@@ -1087,7 +1091,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <path class="stats-chart-area" d="${areaPathD}"/>
           <path class="stats-chart-line" d="${linePathD}"/>
           ${pts.map((p, i) => `
-            <g class="stats-chart-point" style="animation-delay:${0.3 + (i * 0.08)}s">
+            <g class="stats-chart-point" style="animation-delay:${0.25 + (i * 0.08)}s">
               <circle class="stats-chart-dot" cx="${p.x}" cy="${p.y}"/>
               <text class="stats-chart-val-label" x="${p.x}" y="${p.y - 10}">${p.val}</text>
               <text class="stats-chart-label" x="${p.x}" y="${padY + graphH + 18}">${p.day}</text>
@@ -1096,6 +1100,70 @@ document.addEventListener('DOMContentLoaded', async () => {
         </svg>
       `;
     }
+
+
+    if (hourlyChart) {
+      const hours = ['00', '03', '06', '09', '12', '15', '18', '21'];
+      const weights = [0.15, 0.05, 0.10, 0.40, 0.75, 0.65, 0.95, 0.85];
+      const maxH = 110;
+      hourlyChart.innerHTML = `
+        <div class="stats-histogram-bars">
+          ${hours.map((h, i) => {
+            const hVal = Math.round(weights[i] * maxH);
+            return `
+              <div class="stats-hist-col">
+                <div class="stats-hist-bar" style="height:0px;" data-target="${hVal}px"></div>
+                <span class="stats-hist-label">${h}:00</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+      setTimeout(() => {
+        hourlyChart.querySelectorAll('.stats-hist-bar').forEach(bar => {
+          bar.style.height = bar.getAttribute('data-target');
+        });
+      }, 100);
+    }
+
+
+    if (deviceChart) {
+      const desktopPct = 62;
+      const mobilePct = 33;
+      const otherPct = 5;
+      const circumference = 2 * Math.PI * 38; // r=38 -> ~238.7
+      const dOffset = circumference * (1 - desktopPct / 100);
+      const mOffset = circumference * (1 - (desktopPct + mobilePct) / 100);
+
+      deviceChart.innerHTML = `
+        <div class="stats-donut-container">
+          <svg class="stats-donut-svg" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#a855f7" stroke-width="10" stroke-dasharray="${circumference}" stroke-dashoffset="${dOffset}" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#38bdf8" stroke-width="10" stroke-dasharray="${circumference}" stroke-dashoffset="${mOffset}" stroke-linecap="round"/>
+          </svg>
+          <div class="stats-donut-center">
+            <span>%${desktopPct}</span>
+            <small style="font-size:0.6rem; color:rgba(255,255,255,0.4); font-family:var(--font-mono);">Masaüstü</small>
+          </div>
+        </div>
+        <div class="stats-device-legend">
+          <div class="stats-legend-item">
+            <span><span class="stats-legend-dot" style="background:#a855f7;"></span>Masaüstü</span>
+            <strong>%${desktopPct}</strong>
+          </div>
+          <div class="stats-legend-item">
+            <span><span class="stats-legend-dot" style="background:#38bdf8;"></span>Mobil</span>
+            <strong>%${mobilePct}</strong>
+          </div>
+          <div class="stats-legend-item">
+            <span><span class="stats-legend-dot" style="background:rgba(255,255,255,0.2);"></span>Diğer</span>
+            <strong>%${otherPct}</strong>
+          </div>
+        </div>
+      `;
+    }
+
 
     barsWrap.querySelectorAll('.stats-bar-row').forEach(r => r.remove());
 
@@ -2370,7 +2438,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       links: [...currentLinksState],
       views: (existingProfile && existingProfile.views) || 0
     };
-    const ok = await saveProfileData(profile);
+
+    const changes = [];
+    if (!existingProfile) {
+      changes.push('Yeni profil olusturuldu');
+    } else {
+      if (existingProfile.bio !== profile.bio) changes.push('Biyografi guncellendi');
+      if (existingProfile.color !== profile.color) changes.push(`Tema vurgu rengi degistirildi (${profile.color})`);
+      if (existingProfile.textColor !== profile.textColor) changes.push(`Metin rengi degistirildi (${profile.textColor})`);
+      if (existingProfile.location !== profile.location) changes.push(`Konum guncellendi (${profile.location || 'Kaldirildi'})`);
+      if (JSON.stringify(existingProfile.links || []) !== JSON.stringify(profile.links || [])) {
+        changes.push(`Linkler guncellendi (Toplam ${profile.links.length} link)`);
+      }
+      if (bgVideoFileObj || uploadedBgVideoUrl) changes.push('Arka plan medyasi yuklendi');
+      if (bgMusicFileObj || uploadedBgMusicUrl) changes.push('Arka plan muzigi yuklendi');
+      if (avatarFileObj || uploadedAvatarUrl) changes.push('Profil fotografi yuklendi');
+      if (existingProfile.effect !== profile.effect) changes.push(`Arka plan efekti: ${profile.effect}`);
+      if (existingProfile.cardAnimation !== profile.cardAnimation) changes.push(`Kart animasyonu: ${profile.cardAnimation}`);
+      if (existingProfile.avatarFrame !== profile.avatarFrame) changes.push(`Avatar cercevesi: ${profile.avatarFrame}`);
+      if (JSON.stringify(existingProfile.badges || []) !== JSON.stringify(profile.badges || [])) changes.push('Rozetler guncellendi');
+      if (changes.length === 0) changes.push('Profil ayarlari kaydedildi');
+    }
+
+    const ok = await saveProfileData(profile, changes);
     if (!ok) return false;
     localStorage.setItem('momus_my_username', unKey);
     updateNavButton();
