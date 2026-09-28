@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=38"/>
+  <link rel="stylesheet" href="assets/main.css?v=39"/>
 
   
   <script>
@@ -631,42 +631,72 @@
 
         <div class="dash-panel" id="dash-tab-stats">
           <div class="dash-panel-header" style="margin-bottom:24px;">
-            <h2 class="dash-title" style="margin-bottom:4px;">İstatistikler</h2>
-            <p class="dash-muted" style="margin-bottom:0;">Profilinin performansını ve ziyaretçi grafiğini takip et.</p>
+            <h2 class="dash-title" style="margin-bottom:4px;">İstatistikler & Performans</h2>
+            <p class="dash-muted" style="margin-bottom:0;">Profilinin ziyaretçi analitiğini, saatlik yoğunluğunu ve etkileşim grafiklerini aşağı kaydırarak incele.</p>
           </div>
 
-          <div class="dash-stat-row">
-            <div class="dash-stat-card stats-anim-card">
+          <div class="stats-depth-grid">
+            <div class="dash-stat-card stats-anim-card" style="animation-delay: 0.04s;">
               <div class="dash-stat-header"><span>Toplam Görüntülenme</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="3"/><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/></svg></div>
               <div id="stats-total-views" class="dash-stat-value-text stats-counter" data-target="0">0</div>
+              <div class="stats-sub-trend" style="font-size:0.72rem; color:#22c55e; margin-top:4px;">+14% bu hafta</div>
             </div>
-            <div class="dash-stat-card stats-anim-card">
+            <div class="dash-stat-card stats-anim-card" style="animation-delay: 0.08s;">
               <div class="dash-stat-header"><span>Toplam Tıklanma</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
               <div id="stats-total-clicks" class="dash-stat-value-text stats-counter" data-target="0">0</div>
+              <div class="stats-sub-trend" style="font-size:0.72rem; color:#38bdf8; margin-top:4px;">Sosyal & link etkileşimi</div>
             </div>
-            <div class="dash-stat-card stats-anim-card">
-              <div class="dash-stat-header"><span>Tıklanma Oranı</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+            <div class="dash-stat-card stats-anim-card" style="animation-delay: 0.12s;">
+              <div class="dash-stat-header"><span>Tıklanma Oranı (CTR)</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
               <div id="stats-ctr" class="dash-stat-value-text">%0</div>
+              <div class="stats-sub-trend" style="font-size:0.72rem; color:#a855f7; margin-top:4px;">Ziyaretçi başına dönüşüm</div>
+            </div>
+            <div class="dash-stat-card stats-anim-card" style="animation-delay: 0.16s;">
+              <div class="dash-stat-header"><span>Ortalama Kalma Süresi</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+              <div id="stats-avg-time" class="dash-stat-value-text">42s</div>
+              <div class="stats-sub-trend" style="font-size:0.72rem; color:#ec4899; margin-top:4px;">Yüksek etkileşim</div>
             </div>
           </div>
 
-          <div class="dash-section-card stats-chart-card" style="margin-top:20px; padding:24px;">
+          <div class="dash-section-card stats-chart-card" style="margin-top:24px; padding:24px; animation-delay: 0.20s;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
               <div>
-                <h3 style="font-family:var(--font-display); font-size:1rem; font-weight:700; color:#fff; margin-bottom:4px;">Görüntülenme Grafiği</h3>
-                <p class="dash-muted" style="margin-bottom:0; font-size:0.78rem;">Son 7 günlük ziyaretçi eğrisi</p>
+                <h3 style="font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:#fff; margin-bottom:4px;">Görüntülenme & Ziyaretçi Trendi</h3>
+                <p class="dash-muted" style="margin-bottom:0; font-size:0.78rem;">Son 7 günlük tekil ve toplam profil görüntülenme eğrisi</p>
               </div>
-              <div class="stats-chart-period" style="font-family:var(--font-mono); font-size:0.72rem; color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-                Son 7 Gün
+              <div class="stats-chart-period" style="font-family:var(--font-mono); font-size:0.72rem; color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
+                Haftalık Trend
               </div>
             </div>
-            <div id="stats-chart-container" class="stats-chart-wrap" style="height:200px; width:100%; position:relative;">
+            <div id="stats-chart-container" class="stats-chart-wrap" style="height:210px; width:100%; position:relative;">
             </div>
           </div>
 
-          <div class="dash-section-card" style="margin-top:20px;">
-            <h3>En Çok Tıklanan Linkler</h3>
-            <p class="dash-muted">Ziyaretçilerinin en çok hangi linke tıkladığını gör.</p>
+          <div class="stats-dual-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-top:24px;">
+            <div class="dash-section-card stats-chart-card" style="padding:24px; animation-delay: 0.24s;">
+              <div style="margin-bottom:16px;">
+                <h3 style="font-family:var(--font-display); font-size:1rem; font-weight:700; color:#fff; margin-bottom:4px;">Saatlik Trafik Yoğunluğu</h3>
+                <p class="dash-muted" style="margin-bottom:0; font-size:0.78rem;">Ziyaretçilerin gün içerisindeki zirve saatleri</p>
+              </div>
+              <div id="stats-hourly-chart" class="stats-hourly-wrap" style="height:150px; width:100%;">
+              </div>
+            </div>
+
+            <div class="dash-section-card stats-chart-card" style="padding:24px; animation-delay: 0.28s;">
+              <div style="margin-bottom:16px;">
+                <h3 style="font-family:var(--font-display); font-size:1rem; font-weight:700; color:#fff; margin-bottom:4px;">Cihaz & Tarayıcı Dağılımı</h3>
+                <p class="dash-muted" style="margin-bottom:0; font-size:0.78rem;">Ziyaretçilerin bağlandığı cihaz türleri</p>
+              </div>
+              <div id="stats-device-chart" class="stats-device-wrap" style="display:flex; align-items:center; gap:20px; height:150px;">
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-section-card stats-chart-card" style="margin-top:24px; padding:24px; animation-delay: 0.32s;">
+            <div style="margin-bottom:16px;">
+              <h3 style="font-family:var(--font-display); font-size:1rem; font-weight:700; color:#fff; margin-bottom:4px;">En Çok Tıklanan Linkler & Sosyal Medya</h3>
+              <p class="dash-muted" style="margin-bottom:0; font-size:0.78rem;">Profilindeki linklerin ziyaretçi etkileşim performans sıralaması</p>
+            </div>
             <div id="stats-links-bars" class="stats-bars-wrap">
               <div class="stats-empty-msg" id="stats-links-empty">Henüz link tıklaması yok.</div>
             </div>
@@ -1277,6 +1307,6 @@
     </div>
   </div>
 
-  <script src="assets/main.js?v=38"></script>
+  <script src="assets/main.js?v=39"></script>
 </body>
 </html>
