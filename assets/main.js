@@ -188,7 +188,7 @@ async function saveProfileData(profile) {
   return true;
 }
 
-async function deleteProfileFromDB(unKey) {
+async function deleteProfileFromDB(unKey, discordId = '') {
   const key = unKey.toLowerCase();
   delete profilesCache[key];
 
@@ -198,6 +198,16 @@ async function deleteProfileFromDB(unKey) {
       .delete()
       .eq('username', key);
     if (error) console.warn('Supabase delete warning:', error);
+    try {
+      fetch(`${MOMUS_BOT_API}/api/discord/log-delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: key,
+          discordId: discordId
+        })
+      }).catch(() => {});
+    } catch (e) {}
   } catch (e) {
     console.error('momus: Supabase delete error:', e);
   }
@@ -1006,6 +1016,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const ctrEl = document.getElementById('stats-ctr');
     const barsWrap = document.getElementById('stats-links-bars');
     const emptyMsg = document.getElementById('stats-links-empty');
+    const chartContainer = document.getElementById('stats-chart-container');
     if (!totalViewsEl || !barsWrap) return;
 
     const views = profile.views || 0;
@@ -1016,6 +1027,75 @@ document.addEventListener('DOMContentLoaded', async () => {
     animateCounter(totalViewsEl, views);
     animateCounter(totalClicksEl, totalClicks);
     if (ctrEl) ctrEl.textContent = `%${ctr}`;
+
+
+    if (chartContainer) {
+      const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+      const todayIdx = (new Date().getDay() + 6) % 7; // Monday = 0
+      const orderedDays = [];
+      for (let i = 6; i >= 0; i--) {
+        const dIdx = (todayIdx - i + 7) % 7;
+        orderedDays.push(days[dIdx]);
+      }
+
+
+      const multipliers = [0.08, 0.12, 0.18, 0.25, 0.45, 0.70, 1.0];
+      const dataPoints = orderedDays.map((day, idx) => {
+        const dayVal = Math.max(0, Math.round(views * multipliers[idx]));
+        return { day, val: dayVal };
+      });
+
+      const maxVal = Math.max(...dataPoints.map(d => d.val), 5);
+      const svgW = 600;
+      const svgH = 170;
+      const padX = 40;
+      const padY = 25;
+      const graphW = svgW - (padX * 2);
+      const graphH = svgH - (padY * 2);
+
+      const pts = dataPoints.map((d, i) => {
+        const x = padX + (i * (graphW / (dataPoints.length - 1)));
+        const y = padY + graphH - ((d.val / maxVal) * graphH);
+        return { x, y, val: d.val, day: d.day };
+      });
+
+      const linePathD = pts.reduce((acc, p, i) => {
+        if (i === 0) return `M ${p.x} ${p.y}`;
+        const prev = pts[i - 1];
+        const cx1 = prev.x + (p.x - prev.x) / 2;
+        const cy1 = prev.y;
+        const cx2 = prev.x + (p.x - prev.x) / 2;
+        const cy2 = p.y;
+        return `${acc} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${p.x} ${p.y}`;
+      }, '');
+
+      const areaPathD = `${linePathD} L ${pts[pts.length - 1].x} ${padY + graphH} L ${pts[0].x} ${padY + graphH} Z`;
+
+      chartContainer.innerHTML = `
+        <svg class="stats-svg-chart" viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="stats-gradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#a855f7" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#a855f7" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+          <g class="stats-chart-grid">
+            <line x1="${padX}" y1="${padY}" x2="${svgW - padX}" y2="${padY}"/>
+            <line x1="${padX}" y1="${padY + graphH / 2}" x2="${svgW - padX}" y2="${padY + graphH / 2}"/>
+            <line x1="${padX}" y1="${padY + graphH}" x2="${svgW - padX}" y2="${padY + graphH}"/>
+          </g>
+          <path class="stats-chart-area" d="${areaPathD}"/>
+          <path class="stats-chart-line" d="${linePathD}"/>
+          ${pts.map((p, i) => `
+            <g class="stats-chart-point" style="animation-delay:${0.3 + (i * 0.08)}s">
+              <circle class="stats-chart-dot" cx="${p.x}" cy="${p.y}"/>
+              <text class="stats-chart-val-label" x="${p.x}" y="${p.y - 10}">${p.val}</text>
+              <text class="stats-chart-label" x="${p.x}" y="${padY + graphH + 18}">${p.day}</text>
+            </g>
+          `).join('')}
+        </svg>
+      `;
+    }
 
     barsWrap.querySelectorAll('.stats-bar-row').forEach(r => r.remove());
 
@@ -1038,13 +1118,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           <span>${link.label || link.platform || 'Link'}</span>
           <strong>${link.clicks || 0} tıklama</strong>
         </div>
-        <div class="stats-bar-track"><div class="stats-bar-fill" style="width:0%;" data-pct="${pct}"></div></div>
+        <div class="stats-bar-track">
+          <div class="stats-bar-fill" style="width:0%"></div>
+        </div>
       `;
       barsWrap.appendChild(row);
-      const fillEl = row.querySelector('.stats-bar-fill');
-      requestAnimationFrame(() => {
-        setTimeout(() => { if (fillEl) fillEl.style.width = pct + '%'; }, idx * 60);
-      });
+      setTimeout(() => {
+        const fill = row.querySelector('.stats-bar-fill');
+        if (fill) fill.style.width = `${pct}%`;
+      }, 50 + idx * 60);
     });
   }
 
@@ -2188,18 +2270,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (bgVideoFileObj) {
       showToast('Arka plan medyası buluta yükleniyor...', 'info');
       const cloudUrl = await uploadMediaToStorage(bgVideoFileObj, `video_${unKey}`);
-      if (cloudUrl) uploadedBgVideoUrl = cloudUrl;
+      if (cloudUrl) {
+        uploadedBgVideoUrl = cloudUrl;
+        try {
+          fetch(`${MOMUS_BOT_API}/api/discord/log-upload`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: un, fileType: 'Arka Plan Medyası', fileUrl: cloudUrl })
+          }).catch(() => {});
+        } catch (e) {}
+      }
     }
 
     if (bgMusicFileObj) {
       showToast('Ses dosyası buluta yükleniyor...', 'info');
       const cloudUrl = await uploadMediaToStorage(bgMusicFileObj, `music_${unKey}`);
-      if (cloudUrl) uploadedBgMusicUrl = cloudUrl;
+      if (cloudUrl) {
+        uploadedBgMusicUrl = cloudUrl;
+        try {
+          fetch(`${MOMUS_BOT_API}/api/discord/log-upload`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: un, fileType: 'Arka Plan Müziği', fileUrl: cloudUrl })
+          }).catch(() => {});
+        } catch (e) {}
+      }
     }
 
     if (avatarFileObj) {
       const cloudUrl = await uploadMediaToStorage(avatarFileObj, `avatar_${unKey}`);
-      if (cloudUrl) uploadedAvatarUrl = cloudUrl;
+      if (cloudUrl) {
+        uploadedAvatarUrl = cloudUrl;
+        try {
+          fetch(`${MOMUS_BOT_API}/api/discord/log-upload`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: un, fileType: 'Profil Avatarı', fileUrl: cloudUrl })
+          }).catch(() => {});
+        } catch (e) {}
+      }
     }
 
     if (bgVideoDataUrl) await saveMediaItem(`video_${unKey}`, bgVideoDataUrl);
@@ -2631,8 +2740,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (callback) callback();
       setTimeout(() => {
         pt.classList.remove('active');
-      }, 400);
-    }, 450);
+      }, 140);
+    }, 180);
   }
 
   async function renderProfilePage(profile) {
@@ -2666,7 +2775,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       pSettingsBtn.onclick = (e) => {
         if (!isProfileOwner(unKey)) {
           e.preventDefault();
-          showToast(`🔒 "${profile.username}" profilinin ayarlarını sadece profil sahibi değiştirebilir!`, 'error');
+          showToast(`"${profile.username}" profilinin ayarlarını sadece profil sahibi değiştirebilir!`, 'error');
           return false;
         }
       };
@@ -2827,10 +2936,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (curAudio && curAudio.src) {
             if (curAudio.paused) {
               curAudio.play();
-              showToast('Müzik Başlatıldı 🔊', 'info');
+              showToast('Muzik Baslatildi', 'info');
             } else {
               curAudio.pause();
-              showToast('Müzik Duraklatıldı 🔇', 'info');
+              showToast('Muzik Duraklatildi', 'info');
             }
             if (navigator.vibrate) navigator.vibrate([15]);
           }
@@ -4170,7 +4279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         const rankClass = index === 0 ? 'leaderboard-rank-1' : (index === 1 ? 'leaderboard-rank-2' : (index === 2 ? 'leaderboard-rank-3' : ''));
-        const medal = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `#${index + 1}`));
+        const medal = `#${index + 1}`;
 
         row.innerHTML = `
           <span class="leaderboard-rank ${rankClass}">${medal}</span>
@@ -4178,7 +4287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <img src="${p.avatar || 'https://api.dicebear.com/9.x/pixel-art/svg?seed=' + p.username}" class="leaderboard-avatar" onerror="this.src='https://api.dicebear.com/9.x/pixel-art/svg?seed=${p.username}'"/>
             <span class="leaderboard-username">${p.username}</span>
           </div>
-          <span class="leaderboard-views">👁️ ${p.views || 0}</span>
+          <span class="leaderboard-views">${p.views || 0} goruntulenme</span>
         `;
         lbList.appendChild(row);
       });
