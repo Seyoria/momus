@@ -2428,15 +2428,13 @@ a, button, input, textarea, select, label { cursor: none; }
   position: fixed;
   inset: 0;
   z-index: 9999999;
-  background: rgba(8, 8, 8, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.16s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .page-transition-overlay.active {
   opacity: 1;
@@ -2445,28 +2443,31 @@ a, button, input, textarea, select, label { cursor: none; }
 .page-transition-brand {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
+  position: relative;
 }
 .pt-letter {
   font-family: var(--font-display);
-  font-size: 3.8rem;
+  font-size: 3.2rem;
   font-weight: 900;
   color: #ffffff;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
   display: inline-block;
   opacity: 0;
-  transform: translateY(18px) scale(0.85);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  text-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+  transform: translateY(10px) scale(0.94);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  text-shadow: 0 0 25px rgba(255, 255, 255, 0.35);
 }
 .page-transition-overlay.active .pt-letter {
   opacity: 1;
   transform: translateY(0) scale(1);
 }
-.page-transition-overlay.active .pt-letter:nth-child(1) { transition-delay: 0.04s; color: #a855f7; text-shadow: 0 0 35px rgba(168,85,247,0.9), 0 0 70px rgba(168,85,247,0.4); }
-.page-transition-overlay.active .pt-letter:nth-child(2) { transition-delay: 0.08s; color: #ffffff; }
-.page-transition-overlay.active .pt-letter:nth-child(3) { transition-delay: 0.12s; color: #a855f7; text-shadow: 0 0 35px rgba(168,85,247,0.9), 0 0 70px rgba(168,85,247,0.4); }
-.page-transition-overlay.active .pt-letter:nth-child(4) { transition-delay: 0.16s; color: #ffffff; }
+.page-transition-overlay.active .pt-letter:nth-child(1) { transition-delay: 0.02s; }
+.page-transition-overlay.active .pt-letter:nth-child(2) { transition-delay: 0.04s; }
+.page-transition-overlay.active .pt-letter:nth-child(3) { transition-delay: 0.06s; }
+.page-transition-overlay.active .pt-letter:nth-child(4) { transition-delay: 0.08s; }
+.page-transition-overlay.active .pt-letter:nth-child(5) { transition-delay: 0.10s; }
+
 .dash-effects-scroll {
   display: flex;
   gap: 14px;
@@ -4042,4 +4043,85 @@ a, button, input, textarea, select, label { cursor: none; }
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.5);
+}
+
+
+
+.stats-chart-wrap {
+  width: 100%;
+  height: 200px;
+  position: relative;
+}
+.stats-svg-chart {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.stats-chart-grid line {
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-dasharray: 4 4;
+}
+.stats-chart-area {
+  fill: url(#stats-gradient);
+  opacity: 0;
+  animation: chartAreaIn 0.8s ease forwards 0.2s;
+}
+.stats-chart-line {
+  fill: none;
+  stroke: #a855f7;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: chartLineDraw 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));
+}
+.stats-chart-dot {
+  fill: #000000;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+  r: 4;
+  opacity: 0;
+  transition: all 0.2s ease;
+  animation: chartDotPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.stats-chart-dot:hover {
+  r: 6;
+  fill: #a855f7;
+  stroke: #ffffff;
+  cursor: pointer;
+}
+.stats-chart-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: rgba(255, 255, 255, 0.4);
+  text-anchor: middle;
+}
+.stats-chart-val-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: rgba(255, 255, 255, 0.7);
+  text-anchor: middle;
+  font-weight: 600;
+}
+@keyframes chartLineDraw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes chartAreaIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes chartDotPop {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.qr-modal-card {
+  background: rgba(12, 12, 16, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(168, 85, 247, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
 }
