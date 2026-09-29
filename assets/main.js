@@ -1,4 +1,4 @@
-const MAINTENANCE_MODE = true; 
+const MAINTENANCE_MODE = false; 
 const MOMUS_BOT_API = 'https://momus-bot.onrender.com';
 
 const SUPABASE_URL = 'https://qmzryknxlfebmopfgeuz.supabase.co';
