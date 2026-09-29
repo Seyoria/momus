@@ -2830,8 +2830,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (callback) callback();
       setTimeout(() => {
         pt.classList.remove('active');
-      }, 140);
-    }, 180);
+      }, 320);
+    }, 650);
   }
 
   async function renderProfilePage(profile) {
