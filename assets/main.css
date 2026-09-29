@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap');
 
 :root {
   --bg:          #080808;
@@ -10,7 +10,8 @@
   --border:      rgba(255, 255, 255, 0.09);
   --border-light:rgba(255, 255, 255, 0.18);
   --font:        'Inter', sans-serif;
-  --font-display:'Space Grotesk', sans-serif;
+  --font-display:'Syne', sans-serif;
+  --font-stats:'Space Grotesk', sans-serif;
   --font-mono:   'DM Mono', monospace;
   --ease:        cubic-bezier(0.16, 1, 0.3, 1);
   --user-color:  #ffffff;
@@ -4253,4 +4254,16 @@ a, button, input, textarea, select, label { cursor: none; }
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 24px;
+}
+
+
+/* İstatistikler sekmesi sadece: Space Grotesk */
+#dash-tab-stats,
+#dash-tab-stats * {
+  font-family: var(--font-stats) !important;
+}
+#dash-tab-stats .stats-hist-label,
+#dash-tab-stats .stats-axis-text,
+#dash-tab-stats [style*="font-family:var(--font-mono)"] {
+  font-family: var(--font-mono) !important;
 }
