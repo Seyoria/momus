@@ -1,5 +1,6 @@
-const MAINTENANCE_MODE = false; 
-const MOMUS_BOT_API = 'https://momus-bot.onrender.com';
+let MAINTENANCE_MODE = false;
+let MAINTENANCE_DATA = { active: false, message: '', estimatedEnd: '' }; 
+const MOMUS_BOT_API = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) ? 'http://localhost:3001' : 'https://momus-bot.onrender.com';
 
 const SUPABASE_URL = 'https://qmzryknxlfebmopfgeuz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_bu0d1wyTaKGScvHuIqI3rg_zVcEkiC8';
@@ -8,6 +9,133 @@ const SAVE_PROFILE_FN_URL = `${SUPABASE_URL}/functions/v1/save-profile`;
 const DELETE_PROFILE_FN_URL = `${SUPABASE_URL}/functions/v1/delete-profile`;
 
 let profilesCache = {};
+
+let _siteSettingsCache = null;
+
+async function checkSiteSettings() {
+  try {
+    let settingsData = null;
+    const { data, error } = await supabaseClient
+      .from('site_settings')
+      .select('*')
+      .eq('key', 'maintenance')
+      .maybeSingle();
+
+    if (data && !error) {
+      settingsData = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
+    } else {
+      const { data: pData, error: pErr } = await supabaseClient
+        .from('profiles')
+        .select('data')
+        .eq('username', '__site_settings__')
+        .maybeSingle();
+      if (pData && pData.data && pData.data.maintenance) {
+        settingsData = pData.data.maintenance;
+      }
+    }
+
+    if (settingsData) {
+      MAINTENANCE_MODE = !!settingsData.active;
+      MAINTENANCE_DATA = {
+        active: !!settingsData.active,
+        message: settingsData.message || '',
+        estimatedEnd: settingsData.estimatedEnd || ''
+      };
+      _siteSettingsCache = settingsData;
+    }
+  } catch (e) {
+    console.warn('site_settings kontrol hatasi:', e);
+  }
+}
+
+async function getAnnouncementFromSupabase() {
+  try {
+    let annData = null;
+    const { data, error } = await supabaseClient
+      .from('site_settings')
+      .select('*')
+      .eq('key', 'announcement')
+      .maybeSingle();
+
+    if (data && !error) {
+      annData = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
+    } else {
+      const { data: pData } = await supabaseClient
+        .from('profiles')
+        .select('data')
+        .eq('username', '__site_settings__')
+        .maybeSingle();
+      if (pData && pData.data && pData.data.announcement) {
+        annData = pData.data.announcement;
+      }
+    }
+
+    if (annData) return annData;
+  } catch (e) {}
+  return { active: false, text: '', until: '' };
+}
+
+async function saveSettingToSupabase(key, value) {
+  let saved = false;
+  try {
+    const { error } = await supabaseClient
+      .from('site_settings')
+      .upsert({ key: key, value: JSON.stringify(value) }, { onConflict: 'key' });
+    if (!error) saved = true;
+  } catch (e) {}
+
+  try {
+    const { data: cur } = await supabaseClient
+      .from('profiles')
+      .select('data')
+      .eq('username', '__site_settings__')
+      .maybeSingle();
+    const existing = (cur && cur.data) ? cur.data : {};
+    existing[key] = value;
+    const { error: pErr } = await supabaseClient
+      .from('profiles')
+      .upsert({
+        username: '__site_settings__',
+        discord_id: 'SYSTEM',
+        data: existing
+      }, { onConflict: 'username' });
+    if (!pErr) saved = true;
+  } catch (e) {}
+
+  return saved;
+}
+
+let _realtimeSubscribed = false;
+function initRealtimeSettings() {
+  if (_realtimeSubscribed) return;
+  _realtimeSubscribed = true;
+  try {
+    supabaseClient
+      .channel('public:site_settings_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: 'username=eq.__site_settings__' }, async (payload) => {
+        if (payload && payload.new && payload.new.data) {
+          const d = payload.new.data;
+          if (d.maintenance !== undefined) {
+            MAINTENANCE_MODE = !!d.maintenance.active;
+            MAINTENANCE_DATA = d.maintenance || { active: false, message: '', estimatedEnd: '' };
+            route();
+          }
+          if (d.announcement !== undefined) {
+            localStorage.setItem('momus_global_announcement', JSON.stringify(d.announcement));
+            applyGlobalAnnouncement();
+          }
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, async () => {
+        await checkSiteSettings();
+        await applyGlobalAnnouncement();
+        route();
+      })
+      .subscribe();
+  } catch (e) {
+    console.warn('Realtime subscription hatasi:', e);
+  }
+}
 
 async function refreshProfilesCache() {
   try {
@@ -18,7 +146,7 @@ async function refreshProfilesCache() {
       const next = {};
       data.forEach(row => {
         const p = row.data || {};
-        if (p.isBot) {
+        if (p.isBot || row.username.startsWith('__')) {
           return;
         }
         p.username = p.username || row.username;
@@ -775,9 +903,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (dot) dot.style.display = 'none';
         if (ring) ring.style.display = 'none';
         document.body.style.cursor = 'default';
+
+        const maintMsg = document.getElementById('maint-message');
+        if (maintMsg && MAINTENANCE_DATA.message) {
+          maintMsg.innerHTML = MAINTENANCE_DATA.message;
+        }
+
+        const cdWrap = document.getElementById('maint-countdown');
+        const cdH = document.getElementById('maint-cd-hours');
+        const cdM = document.getElementById('maint-cd-mins');
+        const cdS = document.getElementById('maint-cd-secs');
+        if (MAINTENANCE_DATA.estimatedEnd && cdWrap) {
+          cdWrap.style.display = 'block';
+          const targetTime = new Date(MAINTENANCE_DATA.estimatedEnd).getTime();
+          if (window._maintCdInterval) clearInterval(window._maintCdInterval);
+          function updateMaintCountdown() {
+            const diff = targetTime - Date.now();
+            if (diff <= 0) {
+              if (cdH) cdH.textContent = '00';
+              if (cdM) cdM.textContent = '00';
+              if (cdS) cdS.textContent = '00';
+              clearInterval(window._maintCdInterval);
+              setTimeout(() => { checkSiteSettings().then(() => route()); }, 5000);
+              return;
+            }
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            if (cdH) cdH.textContent = String(h).padStart(2, '0');
+            if (cdM) cdM.textContent = String(m).padStart(2, '0');
+            if (cdS) cdS.textContent = String(s).padStart(2, '0');
+          }
+          updateMaintCountdown();
+          window._maintCdInterval = setInterval(updateMaintCountdown, 1000);
+        } else if (cdWrap) {
+          cdWrap.style.display = 'none';
+        }
+
         return;
       } else {
         maintOverlay.style.display = 'none';
+        if (window._maintCdInterval) clearInterval(window._maintCdInterval);
       }
     }
 
@@ -3594,15 +3760,102 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (saveAnnBtn && !saveAnnBtn.dataset.bound) {
       saveAnnBtn.dataset.bound = '1';
-      saveAnnBtn.addEventListener('click', () => {
+      saveAnnBtn.addEventListener('click', async () => {
         const annData = {
           active: annToggle ? annToggle.checked : false,
           text: annText ? annText.value.trim() : '',
           until: annUntil ? annUntil.value : ''
         };
         localStorage.setItem('momus_global_announcement', JSON.stringify(annData));
-        showToast('Site duyurusu güncellendi!', 'success');
+        const annSaved = await saveSettingToSupabase('announcement', annData);
+        if (annSaved) {
+          showToast('Duyuru tum ziyaretcilere yayinlandi!', 'success');
+        } else {
+          showToast('Duyuru kaydedildi (yerel), Supabase senkronu basarisiz.', 'error');
+        }
         applyGlobalAnnouncement();
+      });
+    }
+
+    
+
+    const maintToggle = document.getElementById('admin-maint-toggle');
+    const maintMessage = document.getElementById('admin-maint-message');
+    const maintUntil = document.getElementById('admin-maint-until');
+    const saveMaintBtn = document.getElementById('admin-save-maint-btn');
+    const maintStatusEl = document.getElementById('admin-maint-status');
+
+    if (MAINTENANCE_DATA) {
+      if (maintToggle) maintToggle.checked = !!MAINTENANCE_DATA.active;
+      if (maintMessage) maintMessage.value = MAINTENANCE_DATA.message || '';
+      if (maintUntil && MAINTENANCE_DATA.estimatedEnd) {
+        const d = new Date(MAINTENANCE_DATA.estimatedEnd);
+        const iso = d.toISOString().slice(0, 16);
+        maintUntil.value = iso;
+      }
+    }
+
+    if (maintStatusEl) {
+      if (MAINTENANCE_MODE) {
+        maintStatusEl.style.display = 'block';
+        maintStatusEl.style.background = 'rgba(239,68,68,0.12)';
+        maintStatusEl.style.border = '1px solid rgba(239,68,68,0.3)';
+        maintStatusEl.style.color = '#ef4444';
+        maintStatusEl.textContent = 'Bakim modu su anda AKTIF. Tum ziyaretciler bakim ekranini goruyor.';
+      } else {
+        maintStatusEl.style.display = 'block';
+        maintStatusEl.style.background = 'rgba(34,197,94,0.12)';
+        maintStatusEl.style.border = '1px solid rgba(34,197,94,0.3)';
+        maintStatusEl.style.color = '#22c55e';
+        maintStatusEl.textContent = 'Bakim modu KAPALI. Site normal calisiyor.';
+      }
+    }
+
+    if (saveMaintBtn && !saveMaintBtn.dataset.bound) {
+      saveMaintBtn.dataset.bound = '1';
+      saveMaintBtn.addEventListener('click', async () => {
+        const isActive = maintToggle ? maintToggle.checked : false;
+        const msg = maintMessage ? maintMessage.value.trim() : '';
+        const until = maintUntil ? maintUntil.value : '';
+
+        const maintData = {
+          active: isActive,
+          message: msg,
+          estimatedEnd: until ? new Date(until).toISOString() : ''
+        };
+
+        const ok = await saveSettingToSupabase('maintenance', maintData);
+        if (ok) {
+          MAINTENANCE_MODE = isActive;
+          MAINTENANCE_DATA = maintData;
+
+          try {
+            fetch(MOMUS_BOT_API + '/api/discord/log-maintenance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(maintData)
+            }).catch(() => {});
+          } catch(e) {}
+
+          showToast(isActive ? 'Bakim modu AKTIF edildi! Tum ziyaretciler bakim ekranini gorecek.' : 'Bakim modu KAPATILDI! Site tekrar aktif.', 'success');
+
+          if (maintStatusEl) {
+            if (isActive) {
+              maintStatusEl.style.display = 'block';
+              maintStatusEl.style.background = 'rgba(239,68,68,0.12)';
+              maintStatusEl.style.border = '1px solid rgba(239,68,68,0.3)';
+              maintStatusEl.style.color = '#ef4444';
+              maintStatusEl.textContent = 'Bakim modu su anda AKTIF. Tum ziyaretciler bakim ekranini goruyor.';
+            } else {
+              maintStatusEl.style.background = 'rgba(34,197,94,0.12)';
+              maintStatusEl.style.border = '1px solid rgba(34,197,94,0.3)';
+              maintStatusEl.style.color = '#22c55e';
+              maintStatusEl.textContent = 'Bakim modu KAPATILDI. Site normal calisiyor.';
+            }
+          }
+        } else {
+          showToast('Supabase baglantisi basarisiz! Bakim modu kaydedilemedi.', 'error');
+        }
       });
     }
 
@@ -3943,6 +4196,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  async function syncAnnouncementFromSupabase() {
+    const ann = await getAnnouncementFromSupabase();
+    if (ann) {
+      localStorage.setItem('momus_global_announcement', JSON.stringify(ann));
+    }
+    return ann;
+  }
+
   function renderReservedTags() {
     const listEl = document.getElementById('admin-reserved-tags-list');
     if (!listEl) return;
@@ -4221,7 +4482,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   let annTimerInterval = null;
-  function applyGlobalAnnouncement() {
+  async function applyGlobalAnnouncement() {
+    await syncAnnouncementFromSupabase();
     const banner = document.getElementById('global-announcement-banner');
     const textEl = document.getElementById('announcement-text');
     const timerEl = document.getElementById('announcement-timer');
@@ -4405,6 +4667,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function routeWithFreshData() {
     await refreshProfilesCache();
+    await checkSiteSettings();
     applyGlobalAnnouncement();
     route();
   }
@@ -4412,6 +4675,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCookieAndLegalModals();
   await handleDiscordAuthCallback();
   await refreshProfilesCache();
+  await checkSiteSettings();
+  initRealtimeSettings();
   applyGlobalAnnouncement();
   route();
 });
