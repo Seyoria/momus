@@ -4257,7 +4257,7 @@ a, button, input, textarea, select, label { cursor: none; }
 }
 
 
-/* İstatistikler sekmesi sadece: Space Grotesk */
+
 #dash-tab-stats,
 #dash-tab-stats * {
   font-family: var(--font-stats) !important;
@@ -4266,4 +4266,54 @@ a, button, input, textarea, select, label { cursor: none; }
 #dash-tab-stats .stats-axis-text,
 #dash-tab-stats [style*="font-family:var(--font-mono)"] {
   font-family: var(--font-mono) !important;
+}
+
+
+.maint-countdown {
+  margin: 20px 0 8px;
+}
+.maint-countdown-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.maint-cd-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.maint-cd-num {
+  font-family: var(--font-mono);
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 8px 16px;
+  min-width: 64px;
+  text-align: center;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+.maint-cd-label {
+  font-family: var(--font);
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.maint-cd-sep {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.25);
+  padding-bottom: 18px;
+  animation: cdSepPulse 1s ease-in-out infinite;
+}
+@keyframes cdSepPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
