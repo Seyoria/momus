@@ -4317,3 +4317,131 @@ a, button, input, textarea, select, label { cursor: none; }
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
 }
+
+
+.maint-card-clean {
+  background: rgba(10, 10, 14, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 24px !important;
+  padding: 40px 36px !important;
+  max-width: 440px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(168, 85, 247, 0.1) !important;
+  text-align: center;
+}
+.maint-logo-badge {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #a855f7;
+  margin-bottom: 8px;
+}
+.maint-approval-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-size: 0.78rem;
+  margin-top: 14px;
+}
+.maint-approval-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+  animation: approvalPulse 1.2s ease-in-out infinite;
+}
+@keyframes approvalPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.4; }
+}
+.maint-footer-clean {
+  margin-top: 24px;
+}
+.maint-discord-btn-clean {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.maint-discord-btn-clean:hover {
+  background: #5865F2;
+  border-color: #5865F2;
+  transform: translateY(-2px);
+}
+
+.global-announcement-banner {
+  background: rgba(14, 14, 18, 0.95) !important;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.3) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(168, 85, 247, 0.15) !important;
+  height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 16px !important;
+  gap: 14px !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 999999 !important;
+  backdrop-filter: blur(12px) !important;
+  overflow: hidden !important;
+}
+.announcement-badge-gaming {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  background: #a855f7;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+}
+.announcement-ticker-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+  flex: 1;
+  position: relative;
+}
+.announcement-ticker-track {
+  display: inline-block;
+  padding-left: 100%;
+  animation: mcMarquee 28s linear infinite;
+  cursor: default;
+}
+.global-announcement-banner:hover .announcement-ticker-track {
+  animation-play-state: paused !important;
+}
+@keyframes mcMarquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+.announcement-text {
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin-right: 20px;
+}
+.announcement-timer {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: #a855f7;
+  font-weight: 700;
+  background: rgba(168, 85, 247, 0.15);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
