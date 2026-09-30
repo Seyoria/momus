@@ -694,6 +694,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const navCreateBtn = document.getElementById('nav-create-btn');
     if (!navCreateBtn) return;
     const myAcc = getMyAccount();
+    const inviteCard = document.getElementById('b-invite-code-card');
+    if (inviteCard) {
+      if (myAcc) {
+        inviteCard.style.display = 'none';
+      } else {
+        inviteCard.style.display = 'block';
+      }
+    }
     if (myAcc) {
       navCreateBtn.innerHTML = `
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -924,7 +932,19 @@ document.addEventListener('DOMContentLoaded', async () => {
               if (cdM) cdM.textContent = '00';
               if (cdS) cdS.textContent = '00';
               clearInterval(window._maintCdInterval);
-              setTimeout(() => { checkSiteSettings().then(() => route()); }, 5000);
+
+              const approvalBox = document.getElementById('maint-approval-box');
+              if (approvalBox) approvalBox.style.display = 'inline-flex';
+
+
+              if (!window._maintExpiryNotified) {
+                window._maintExpiryNotified = true;
+                fetch(MOMUS_BOT_API + '/api/discord/maint-ended', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ message: MAINTENANCE_DATA.message })
+                }).catch(() => {});
+              }
               return;
             }
             const h = Math.floor(diff / 3600000);
@@ -2480,6 +2500,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const existingProfiles = getProfiles();
+    const existingProfile = existingProfiles[unKey];
+
+
+    if (!existingProfile) {
+      const inviteCodeInput = document.getElementById('b-invite-code');
+      const enteredCode = (inviteCodeInput && inviteCodeInput.value.trim().toUpperCase()) || '';
+      const validCodes = getInviteCodes();
+      if (!enteredCode) {
+        showToast('Profil olusturmak icin lutfen gecerli bir Davet Kodu giriniz!', 'error');
+        if (inviteCodeInput) inviteCodeInput.focus();
+        return false;
+      }
+      const isValidCode = validCodes.some(c => c.toUpperCase() === enteredCode);
+      if (!isValidCode) {
+        showToast('Girdiginiz davet kodu gecersiz veya suresi dolmus!', 'error');
+        if (inviteCodeInput) inviteCodeInput.focus();
+        return false;
+      }
+    }
     
     if (existingProfiles[unKey]) {
       const existingOwnerDiscordId = existingProfiles[unKey].discordId;
@@ -2554,8 +2593,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const freshSession = getDiscordSession();
     if (freshSession) assignMomusRole(freshSession);
-
-    const existingProfile = existingProfiles[unKey];
 
     const finalBgVideo = uploadedBgVideoUrl || (existingProfile && existingProfile.bgVideo && !existingProfile.bgVideo.startsWith('data:') ? existingProfile.bgVideo : '') || '';
     const finalMusic = uploadedBgMusicUrl || (existingProfile && existingProfile.music && !existingProfile.music.startsWith('data:') ? existingProfile.music : '') || '';
