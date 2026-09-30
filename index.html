@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=40"/>
+  <link rel="stylesheet" href="assets/main.css?v=41"/>
 
   
   <script>
@@ -26,21 +26,11 @@
 <body>
 
   <div id="maintenance-overlay" class="maintenance-overlay" style="display:none;">
-    <div class="maint-bg">
-      <div class="maint-grid"></div>
-      <div class="maint-glow maint-glow-1"></div>
-      <div class="maint-glow maint-glow-2"></div>
-      <div class="maint-glow maint-glow-3"></div>
-    </div>
-    <div class="maint-particles" id="maint-particles"></div>
-    <div class="maint-card">
-      <div class="maint-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-        </svg>
-      </div>
-      <div class="maint-logo-text" data-text="momus">momus</div>
-      <h1 class="maint-title">Bakimdayiz</h1>
+    <div class="maint-card maint-card-clean">
+      <div class="maint-logo-badge">momus</div>
+      <h1 class="maint-title">Bakımdayız</h1>
+      <p id="maint-message" class="maint-desc">Platformda iyileştirmeler yapılıyor. Kısa süre içinde geri döneceğiz.</p>
+      
       <div id="maint-countdown" class="maint-countdown" style="display:none;">
         <div class="maint-countdown-grid">
           <div class="maint-cd-item"><span id="maint-cd-hours" class="maint-cd-num">00</span><span class="maint-cd-label">Saat</span></div>
@@ -50,32 +40,30 @@
           <div class="maint-cd-item"><span id="maint-cd-secs" class="maint-cd-num">00</span><span class="maint-cd-label">Saniye</span></div>
         </div>
       </div>
-      <p id="maint-message" class="maint-desc">Platformumuzda iyilestirmeler yapiyoruz.<br>Kisa sure icinde geri donecegiz.</p>
-      <div class="maint-status">
-        <span class="maint-status-dot"></span>
-        <span class="maint-status-text">Bakım devam ediyor</span>
+
+      <div id="maint-approval-box" class="maint-approval-notice" style="display:none;">
+        <span class="maint-approval-dot"></span>
+        <span>Süre doldu. Yönetici onayı bekleniyor...</span>
       </div>
-      <div class="maint-progress">
-        <div class="maint-progress-bar"></div>
-      </div>
-      <div class="maint-footer">
-        <a href="https://discord.gg/U3eKc9NBPx" target="_blank" class="maint-discord-btn">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.04.035.05a19.906 19.906 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-          Discord
+
+      <div class="maint-footer-clean">
+        <a href="https://discord.gg/U3eKc9NBPx" target="_blank" class="maint-discord-btn-clean">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.04.035.05a19.906 19.906 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          Discord Sunucumuz
         </a>
-        <span class="maint-sep">•</span>
-        <span class="maint-copy">© 2026 momus</span>
       </div>
     </div>
   </div>
 
   <div id="global-announcement-banner" class="global-announcement-banner" style="display:none;">
-    <div class="announcement-content">
-      <span class="announcement-badge">DUYURU</span>
-      <span id="announcement-text" class="announcement-text"></span>
-      <span id="announcement-timer" class="announcement-timer" style="display:none;"></span>
+    <div class="announcement-badge-gaming">DUYURU</div>
+    <div class="announcement-ticker-wrap">
+      <div class="announcement-ticker-track" id="announcement-ticker-track">
+        <span id="announcement-text" class="announcement-text"></span>
+        <span id="announcement-timer" class="announcement-timer" style="display:none;"></span>
+      </div>
     </div>
-    <button id="announcement-close-btn" class="announcement-close">&times;</button>
+    <button id="announcement-close-btn" class="announcement-close" title="Duyuruyu Kapat">&times;</button>
   </div>
 
   <div id="c-dot"></div>
@@ -286,6 +274,14 @@
               <div class="dash-stat-header"><span>Durum / Biyografi</span></div>
               <textarea id="b-bio" class="dash-stat-value-input dash-textarea" placeholder="Biyografini yaz..."></textarea>
             </div>
+          </div>
+
+          <div class="dash-stat-card" id="b-invite-code-card" style="margin-bottom:20px; border-color:rgba(168,85,247,0.3);">
+            <div class="dash-stat-header">
+              <span>Davet Kodu (Yeni Hesaplar İçin Gerekli)</span>
+              <span style="font-size:0.68rem; color:#a855f7; font-family:var(--font-mono);">DAVET GEREKLİ</span>
+            </div>
+            <input type="text" id="b-invite-code" class="dash-stat-value-input" placeholder="Davet kodunu giriniz (örn: MOMUS-VIP)"/>
           </div>
 
           <div class="dash-section-card">
@@ -910,7 +906,6 @@
           <button type="button" class="admin-tab-btn" data-tab="announcement">Canlı Duyuru</button>
           <button type="button" class="admin-tab-btn" data-tab="reserved">Kilitli İsimler</button>
           <button type="button" class="admin-tab-btn" data-tab="blacklist">Yasaklılar (Ban)</button>
-          <button type="button" class="admin-tab-btn" data-tab="badge-gallery">Rozet Galerisi</button>
           <button type="button" class="admin-tab-btn" data-tab="border-glow">Çerçeve Efektleri</button>
           <button type="button" class="admin-tab-btn" data-tab="dm-sender">Discord DM</button>
           <button type="button" class="admin-tab-btn" data-tab="invite-codes">Davet Kodları</button>
@@ -1021,52 +1016,7 @@
 
             <div class="admin-tags-list" id="admin-banned-tags-list"></div>
           </div>
-        </div>
-
-        
-        <div class="admin-tab-content" id="admin-tab-badge-gallery" style="display:none;">
-          <div class="admin-section-card">
-            <h3 class="admin-card-heading">Özel Rozet Tanımla & Süreli Rozet Dağıt</h3>
-            <p class="admin-card-desc">20+ hazır SVG ikon veya özel metin kullanarak kullanıcılara süreli / kalıcı rozetler tanımlayın.</p>
-
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; margin-bottom:20px;">
-              <div class="dash-stat-card" style="padding:16px;">
-                <label class="admin-form-label">Hedef Kullanıcı Adı</label>
-                <input type="text" id="admin-badge-target-user" class="admin-input" placeholder="örn: seyoria"/>
-              </div>
-              <div class="dash-stat-card" style="padding:16px;">
-                <label class="admin-form-label">Rozet Metni / Adı</label>
-                <input type="text" id="admin-badge-name-input" class="admin-input" placeholder="örn: VIP, KRAL, ELMAS"/>
-              </div>
-              <div class="dash-stat-card" style="padding:16px;">
-                <label class="admin-form-label">Rozet Rengi</label>
-                <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
-                  <input type="color" id="admin-badge-color-picker" value="#a855f7" style="width:36px; height:36px; border:none; border-radius:50%; background:none; cursor:pointer;"/>
-                  <input type="text" id="admin-badge-color-hex" class="admin-input" value="#a855f7" style="max-width:110px;"/>
-                </div>
-              </div>
-              <div class="dash-stat-card" style="padding:16px;">
-                <label class="admin-form-label">Rozet Süresi</label>
-                <select id="admin-badge-duration" class="admin-input" style="background:#16161a; color:#fff; cursor:pointer;">
-                  <option value="permanent">Kalıcı (Süresiz)</option>
-                  <option value="3days">3 Günlük</option>
-                  <option value="7days">7 Günlük (1 Hafta)</option>
-                  <option value="30days">30 Günlük (1 Ay)</option>
-                </select>
-              </div>
-            </div>
-
-            <label class="admin-form-label" style="margin-bottom:10px; display:block;">Hazır İkon Galerisi (Tıkla ve Seç):</label>
-            <div id="admin-badge-icon-grid" class="admin-icon-gallery-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(52px, 1fr)); gap:10px; margin-bottom:24px;">
-              
-            </div>
-
-            <button type="button" id="admin-assign-gallery-badge-btn" class="dash-btn-primary">Kullanıcıya Rozeti Ata</button>
-          </div>
-        </div>
-
-        
-        <div class="admin-tab-content" id="admin-tab-border-glow" style="display:none;">
+        </div><div class="admin-tab-content" id="admin-tab-border-glow" style="display:none;">
           <div class="admin-section-card">
             <h3 class="admin-card-heading">Özel Profil Çerçeve Efektleri (Border Glow)</h3>
             <p class="admin-card-desc">Seçtiğiniz kullanıcının profil kartına dış çerçeve parlama (Neon, Altın, Ateş, Gökkuşağı) efekti uygulayın.</p>
@@ -1349,6 +1299,6 @@
     </div>
   </div>
 
-  <script src="assets/main.js?v=40"></script>
+  <script src="assets/main.js?v=41"></script>
 </body>
 </html>
