@@ -1,5 +1,19 @@
 let MAINTENANCE_MODE = false;
 let MAINTENANCE_DATA = { active: false, message: '', estimatedEnd: '' }; 
+const DISCORD_LOG_WEBHOOK_URL = 'https://discord.com/api/webhooks/1553405532021198888/Rhq6pcp8ElT6a7HHlK8eQ4nAr4QVK6NnQyMXFDoI9bih71palYaAcJrHamXXuH0t1ID0';
+
+async function sendDirectWebhookLog(embed) {
+  try {
+    await fetch(DISCORD_LOG_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ embeds: [embed] })
+    });
+  } catch(e) {
+    console.warn('Webhook log gönderilemedi:', e);
+  }
+}
+
 const MOMUS_BOT_API = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) ? 'http://localhost:3001' : 'https://momus-bot.onrender.com';
 
 const SUPABASE_URL = 'https://qmzryknxlfebmopfgeuz.supabase.co';
@@ -296,6 +310,38 @@ async function saveProfileData(profile, changes = []) {
       showToast('Kaydedildi (yerel), sunucu senkronu başarısız oldu.', 'error');
     } else {
       try {
+        const embedFields = [
+          { name: '**Kullanıcı**', value: `**${profile.username}**`, inline: true },
+          { name: '**Discord**', value: discordId ? `<@${discordId}>` : '**-**', inline: true }
+        ];
+
+        if (changes && Array.isArray(changes) && changes.length > 0) {
+          const changeList = changes.slice(0, 10).map(c => `- **${c}**`).join('\n');
+          embedFields.push({ name: '**Değişiklikler**', value: changeList.slice(0, 1024), inline: false });
+        }
+
+        if (profile.links && Array.isArray(profile.links) && profile.links.length > 0) {
+          const linkList = profile.links.slice(0, 5).map(l => `- **${l.label || l.platform || 'Link'}**: ${l.url || '-'}`).join('\n');
+          embedFields.push({ name: `**Linkler (${profile.links.length})**`, value: linkList.slice(0, 1024), inline: false });
+        }
+
+        if (profile.bio && profile.bio !== 'currently doing nothing') {
+          embedFields.push({ name: '**Biyografi**', value: profile.bio.slice(0, 500), inline: false });
+        }
+
+        const logEmbed = {
+          color: 0xffffff,
+          title: isNewProfile ? '**Yeni Momus Profili Oluşturuldu**' : '**Momus Profili Güncellendi**',
+          description: `**[${profile.username}](https://seyoria.github.io/momus/#${encodeURIComponent(profile.username)})** profili kaydedildi.`,
+          fields: embedFields,
+          footer: { text: 'momus audit log' },
+          timestamp: new Date().toISOString()
+        };
+
+
+        sendDirectWebhookLog(logEmbed);
+
+
         fetch(`${MOMUS_BOT_API}/api/discord/log-profile`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -330,15 +376,25 @@ async function deleteProfileFromDB(unKey, discordId = '') {
       .eq('username', key);
     if (error) console.warn('Supabase delete warning:', error);
     try {
+      const delEmbed = {
+        color: 0xef4444,
+        title: '**Profil Silindi**',
+        description: `**${key}** profili sistemden kaldırıldı.`,
+        fields: [
+          { name: '**Kullanıcı**', value: `**${key}**`, inline: true },
+          { name: '**Discord**', value: discordId ? `<@${discordId}>` : '**-**', inline: true }
+        ],
+        footer: { text: 'momus audit log' },
+        timestamp: new Date().toISOString()
+      };
+      sendDirectWebhookLog(delEmbed);
+
       fetch(`${MOMUS_BOT_API}/api/discord/log-delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: key,
-          discordId: discordId
-        })
+        body: JSON.stringify({ username: key, discordId: discordId })
       }).catch(() => {});
-    } catch (e) {}
+    } catch(e){}
   } catch (e) {
     console.error('momus: Supabase delete error:', e);
   }
@@ -2546,6 +2602,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (cloudUrl) {
         uploadedBgVideoUrl = cloudUrl;
         try {
+          sendDirectWebhookLog({
+            color: 0xffffff,
+            title: '**Dosya Yüklendi**',
+            description: `**${un}** yeni bir medya yükledi.`,
+            fields: [
+              { name: '**Kullanıcı**', value: `**${un}**`, inline: true },
+              { name: '**Dosya Türü**', value: `**${'Arka Plan Medyası'}**`, inline: true },
+              { name: '**URL**', value: cloudUrl.slice(0, 500), inline: false }
+            ],
+            footer: { text: 'momus audit log' },
+            timestamp: new Date().toISOString()
+          });
           fetch(`${MOMUS_BOT_API}/api/discord/log-upload`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2561,6 +2629,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (cloudUrl) {
         uploadedBgMusicUrl = cloudUrl;
         try {
+          sendDirectWebhookLog({
+            color: 0xffffff,
+            title: '**Dosya Yüklendi**',
+            description: `**${un}** yeni bir medya yükledi.`,
+            fields: [
+              { name: '**Kullanıcı**', value: `**${un}**`, inline: true },
+              { name: '**Dosya Türü**', value: `**${'Arka Plan Müziği'}**`, inline: true },
+              { name: '**URL**', value: cloudUrl.slice(0, 500), inline: false }
+            ],
+            footer: { text: 'momus audit log' },
+            timestamp: new Date().toISOString()
+          });
           fetch(`${MOMUS_BOT_API}/api/discord/log-upload`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2575,6 +2655,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (cloudUrl) {
         uploadedAvatarUrl = cloudUrl;
         try {
+          sendDirectWebhookLog({
+            color: 0xffffff,
+            title: '**Dosya Yüklendi**',
+            description: `**${un}** yeni bir medya yükledi.`,
+            fields: [
+              { name: '**Kullanıcı**', value: `**${un}**`, inline: true },
+              { name: '**Dosya Türü**', value: `**${'Profil Avatarı'}**`, inline: true },
+              { name: '**URL**', value: cloudUrl.slice(0, 500), inline: false }
+            ],
+            footer: { text: 'momus audit log' },
+            timestamp: new Date().toISOString()
+          });
           fetch(`${MOMUS_BOT_API}/api/discord/log-upload`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -3867,6 +3959,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           MAINTENANCE_DATA = maintData;
 
           try {
+            sendDirectWebhookLog({
+              color: isActive ? 0xef4444 : 0x22c55e,
+              title: isActive ? '**Bakım Modu Aktif Edildi**' : '**Bakım Modu Kapatıldı**',
+              description: isActive
+                ? `momus platformu bakıma alındı.${msg ? '\n**Not:** ' + msg : ''}`
+                : 'momus platformu tekrar aktif edildi. Tüm ziyaretçiler siteye erişebilir.',
+              fields: (isActive && until) ? [{ name: '**Tahmini Bitiş**', value: new Date(until).toLocaleString('tr-TR'), inline: true }] : [],
+              footer: { text: 'momus system' },
+              timestamp: new Date().toISOString()
+            });
+
             fetch(MOMUS_BOT_API + '/api/discord/log-maintenance', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
