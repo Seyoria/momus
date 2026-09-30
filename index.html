@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/main.css?v=39"/>
+  <link rel="stylesheet" href="assets/main.css?v=40"/>
 
   
   <script>
@@ -40,8 +40,17 @@
         </svg>
       </div>
       <div class="maint-logo-text" data-text="momus">momus</div>
-      <h1 class="maint-title">Bakımdayız</h1>
-      <p class="maint-desc">Platformumuzda iyileştirmeler yapıyoruz.<br>Kısa süre içinde geri döneceğiz.</p>
+      <h1 class="maint-title">Bakimdayiz</h1>
+      <div id="maint-countdown" class="maint-countdown" style="display:none;">
+        <div class="maint-countdown-grid">
+          <div class="maint-cd-item"><span id="maint-cd-hours" class="maint-cd-num">00</span><span class="maint-cd-label">Saat</span></div>
+          <div class="maint-cd-sep">:</div>
+          <div class="maint-cd-item"><span id="maint-cd-mins" class="maint-cd-num">00</span><span class="maint-cd-label">Dakika</span></div>
+          <div class="maint-cd-sep">:</div>
+          <div class="maint-cd-item"><span id="maint-cd-secs" class="maint-cd-num">00</span><span class="maint-cd-label">Saniye</span></div>
+        </div>
+      </div>
+      <p id="maint-message" class="maint-desc">Platformumuzda iyilestirmeler yapiyoruz.<br>Kisa sure icinde geri donecegiz.</p>
       <div class="maint-status">
         <span class="maint-status-dot"></span>
         <span class="maint-status-text">Bakım devam ediyor</span>
@@ -905,6 +914,7 @@
           <button type="button" class="admin-tab-btn" data-tab="border-glow">Çerçeve Efektleri</button>
           <button type="button" class="admin-tab-btn" data-tab="dm-sender">Discord DM</button>
           <button type="button" class="admin-tab-btn" data-tab="invite-codes">Davet Kodları</button>
+          <button type="button" class="admin-tab-btn" data-tab="maintenance">Bakim Modu</button>
           <button type="button" class="admin-tab-btn" data-tab="changelog">Changelog</button>
         </div>
 
@@ -950,6 +960,38 @@
             </div>
           </div>
         </div>
+
+        <div class="admin-tab-content" id="admin-tab-maintenance" style="display:none;">
+          <div class="admin-section-card">
+            <h3 class="admin-card-heading">Bakim Modu Yonetimi (Supabase)</h3>
+            <p class="admin-card-desc">Bakim modunu actiginizda tum ziyaretciler aninda bakim ekranini gorur. Kod degisikligi veya push gerektirmez. Supabase uzerinden anlik olarak kontrol edilir.</p>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Bakim Modu Durumu</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="admin-maint-toggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Bakim Mesaji (Ziyaretcilere Gosterilir)</label>
+              <input type="text" id="admin-maint-message" class="admin-input" placeholder="Orn: Yeni ozellikler ekleniyor, 30 dakika icinde geri donecegiz!"/>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Tahmini Bitis Zamani (Geri Sayim Gosterir)</label>
+              <input type="datetime-local" id="admin-maint-until" class="admin-input" style="color-scheme:dark;"/>
+            </div>
+
+            <div class="admin-form-actions">
+              <button type="button" id="admin-save-maint-btn" class="dash-btn-primary">Bakim Modunu Kaydet</button>
+            </div>
+
+            <div id="admin-maint-status" style="margin-top:16px; padding:12px; border-radius:10px; font-size:0.82rem; display:none;"></div>
+          </div>
+        </div>
+
 
         
         <div class="admin-tab-content" id="admin-tab-reserved" style="display:none;">
@@ -1307,6 +1349,6 @@
     </div>
   </div>
 
-  <script src="assets/main.js?v=39"></script>
+  <script src="assets/main.js?v=40"></script>
 </body>
 </html>
