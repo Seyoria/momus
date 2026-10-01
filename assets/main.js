@@ -746,6 +746,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     return null;
   }
 
+  function setInviteOpen(open) {
+    const wrap = document.getElementById('b-invite-code-card');
+    const toggle = document.getElementById('b-invite-toggle');
+    const input = document.getElementById('b-invite-code');
+    if (!wrap) return;
+    wrap.classList.toggle('open', !!open);
+    if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      if (input) setTimeout(() => input.focus({ preventScroll: true }), 380);
+    } else if (input) {
+      input.value = '';
+    }
+  }
+
+  function shakeInvite() {
+    const wrap = document.getElementById('b-invite-code-card');
+    if (!wrap) return;
+    wrap.classList.remove('shake');
+    void wrap.offsetWidth;
+    wrap.classList.add('shake');
+  }
+
+  (function bindInviteToggle() {
+    const toggle = document.getElementById('b-invite-toggle');
+    if (!toggle || toggle.dataset.bound) return;
+    toggle.dataset.bound = '1';
+    toggle.addEventListener('click', () => {
+      const wrap = document.getElementById('b-invite-code-card');
+      setInviteOpen(!(wrap && wrap.classList.contains('open')));
+    });
+  })();
+
   function updateNavButton() {
     const navCreateBtn = document.getElementById('nav-create-btn');
     if (!navCreateBtn) return;
@@ -2560,19 +2592,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     if (!existingProfile) {
+      // Davet kodu artık isteğe bağlı. Sadece "Davet kodum var" açılıp kod girildiyse doğrulanır.
+      // (Admin panelinden "Davet Kodu Zorunluluğu" açılırsa yine zorunlu olur.)
       const inviteCodeInput = document.getElementById('b-invite-code');
       const enteredCode = (inviteCodeInput && inviteCodeInput.value.trim().toUpperCase()) || '';
-      const validCodes = getInviteCodes();
-      if (!enteredCode) {
+      const inviteRequired = localStorage.getItem('momus_invite_required') === '1';
+      if (!enteredCode && inviteRequired) {
+        setInviteOpen(true);
+        shakeInvite();
         showToast('Profil olusturmak icin lutfen gecerli bir Davet Kodu giriniz!', 'error');
         if (inviteCodeInput) inviteCodeInput.focus();
         return false;
       }
-      const isValidCode = validCodes.some(c => c.toUpperCase() === enteredCode);
-      if (!isValidCode) {
-        showToast('Girdiginiz davet kodu gecersiz veya suresi dolmus!', 'error');
-        if (inviteCodeInput) inviteCodeInput.focus();
-        return false;
+      if (enteredCode) {
+        const validCodes = getInviteCodes();
+        const isValidCode = validCodes.some(c => c.toUpperCase() === enteredCode);
+        if (!isValidCode) {
+          setInviteOpen(true);
+          shakeInvite();
+          showToast('Girdiginiz davet kodu gecersiz veya suresi dolmus!', 'error');
+          if (inviteCodeInput) inviteCodeInput.focus();
+          return false;
+        }
       }
     }
     
