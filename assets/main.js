@@ -1287,6 +1287,73 @@ document.addEventListener('DOMContentLoaded', async () => {
     requestAnimationFrame(tick);
   }
 
+  function statsEmptyState(msg) {
+    return `<div class="stats-empty-state">${msg}</div>`;
+  }
+
+  // Grafik artık konteynerin gerçek genişliğinde çiziliyor (eskiden viewBox 600x180 sabitti,
+  // geniş ekranda SVG ~380px'e uzayıp alttaki kartların üstüne taşıyordu).
+  function drawTrendChart(chartContainer, views) {
+    if (!views) {
+      chartContainer.innerHTML = statsEmptyState('Henüz görüntülenme yok. Profilin ziyaret edildikçe grafik burada oluşacak.');
+      return;
+    }
+    const svgW = chartContainer.clientWidth || 600;
+    const svgH = chartContainer.clientHeight || 210;
+    chartContainer._statsW = chartContainer.clientWidth || 0;
+
+    const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+    const todayIdx = (new Date().getDay() + 6) % 7;
+    const orderedDays = [];
+    for (let i = 6; i >= 0; i--) orderedDays.push(days[(todayIdx - i + 7) % 7]);
+
+    const multipliers = [0.10, 0.18, 0.22, 0.35, 0.55, 0.78, 1.0];
+    const dataPoints = orderedDays.map((day, idx) => ({ day, val: Math.max(0, Math.round(views * multipliers[idx])) }));
+
+    const maxVal = Math.max(...dataPoints.map(d => d.val), 5);
+    const padX = 36, padTop = 30, padBottom = 30;
+    const graphW = svgW - padX * 2;
+    const graphH = svgH - padTop - padBottom;
+    const baseY = padTop + graphH;
+
+    const pts = dataPoints.map((d, i) => ({
+      x: padX + i * (graphW / (dataPoints.length - 1)),
+      y: padTop + graphH - (d.val / maxVal) * graphH,
+      val: d.val, day: d.day
+    }));
+
+    const linePathD = pts.reduce((acc, p, i) => {
+      if (i === 0) return `M ${p.x} ${p.y}`;
+      const prev = pts[i - 1];
+      const mx = prev.x + (p.x - prev.x) / 2;
+      return `${acc} C ${mx} ${prev.y}, ${mx} ${p.y}, ${p.x} ${p.y}`;
+    }, '');
+    const areaPathD = `${linePathD} L ${pts[pts.length - 1].x} ${baseY} L ${pts[0].x} ${baseY} Z`;
+
+    chartContainer.innerHTML = `
+      <svg class="stats-svg-chart" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">
+        <defs>
+          <linearGradient id="stats-gradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#a855f7" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <g class="stats-chart-grid">
+          <line x1="${padX}" y1="${padTop}" x2="${svgW - padX}" y2="${padTop}"/>
+          <line x1="${padX}" y1="${padTop + graphH / 2}" x2="${svgW - padX}" y2="${padTop + graphH / 2}"/>
+          <line x1="${padX}" y1="${baseY}" x2="${svgW - padX}" y2="${baseY}"/>
+        </g>
+        <path class="stats-chart-area" d="${areaPathD}" fill="url(#stats-gradient)"/>
+        <path class="stats-chart-line" d="${linePathD}"/>
+        ${pts.map((p, i) => `
+          <g class="stats-chart-point" style="animation-delay:${0.25 + i * 0.08}s">
+            <circle class="stats-chart-dot" cx="${p.x}" cy="${p.y}" r="4"/>
+            <text class="stats-chart-val-label" x="${p.x}" y="${p.y - 10}">${p.val}</text>
+            <text class="stats-chart-label" x="${p.x}" y="${baseY + 20}">${p.day}</text>
+          </g>`).join('')}
+      </svg>`;
+  }
+
   function renderStatsPanel(profile) {
     const totalViewsEl = document.getElementById('stats-total-views');
     const totalClicksEl = document.getElementById('stats-total-clicks');
@@ -1309,74 +1376,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     if (chartContainer) {
-      const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-      const todayIdx = (new Date().getDay() + 6) % 7;
-      const orderedDays = [];
-      for (let i = 6; i >= 0; i--) {
-        const dIdx = (todayIdx - i + 7) % 7;
-        orderedDays.push(days[dIdx]);
+      chartContainer._statsViews = views;
+      drawTrendChart(chartContainer, views);
+      if (!chartContainer._statsRO && 'ResizeObserver' in window) {
+        chartContainer._statsRO = new ResizeObserver(() => {
+          const w = chartContainer.clientWidth;
+          if (w && Math.abs(w - (chartContainer._statsW || 0)) > 8) drawTrendChart(chartContainer, chartContainer._statsViews || 0);
+        });
+        chartContainer._statsRO.observe(chartContainer);
       }
-
-      const multipliers = [0.10, 0.18, 0.22, 0.35, 0.55, 0.78, 1.0];
-      const dataPoints = orderedDays.map((day, idx) => {
-        const dayVal = Math.max(0, Math.round(views * multipliers[idx]));
-        return { day, val: dayVal };
-      });
-
-      const maxVal = Math.max(...dataPoints.map(d => d.val), 5);
-      const svgW = 600;
-      const svgH = 180;
-      const padX = 40;
-      const padY = 25;
-      const graphW = svgW - (padX * 2);
-      const graphH = svgH - (padY * 2);
-
-      const pts = dataPoints.map((d, i) => {
-        const x = padX + (i * (graphW / (dataPoints.length - 1)));
-        const y = padY + graphH - ((d.val / maxVal) * graphH);
-        return { x, y, val: d.val, day: d.day };
-      });
-
-      const linePathD = pts.reduce((acc, p, i) => {
-        if (i === 0) return `M ${p.x} ${p.y}`;
-        const prev = pts[i - 1];
-        const cx1 = prev.x + (p.x - prev.x) / 2;
-        const cy1 = prev.y;
-        const cx2 = prev.x + (p.x - prev.x) / 2;
-        const cy2 = p.y;
-        return `${acc} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${p.x} ${p.y}`;
-      }, '');
-
-      const areaPathD = `${linePathD} L ${pts[pts.length - 1].x} ${padY + graphH} L ${pts[0].x} ${padY + graphH} Z`;
-
-      chartContainer.innerHTML = `
-        <svg class="stats-svg-chart" viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="stats-gradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#a855f7" stop-opacity="0.4"/>
-              <stop offset="100%" stop-color="#a855f7" stop-opacity="0.0"/>
-            </linearGradient>
-          </defs>
-          <g class="stats-chart-grid">
-            <line x1="${padX}" y1="${padY}" x2="${svgW - padX}" y2="${padY}"/>
-            <line x1="${padX}" y1="${padY + graphH / 2}" x2="${svgW - padX}" y2="${padY + graphH / 2}"/>
-            <line x1="${padX}" y1="${padY + graphH}" x2="${svgW - padX}" y2="${padY + graphH}"/>
-          </g>
-          <path class="stats-chart-area" d="${areaPathD}"/>
-          <path class="stats-chart-line" d="${linePathD}"/>
-          ${pts.map((p, i) => `
-            <g class="stats-chart-point" style="animation-delay:${0.25 + (i * 0.08)}s">
-              <circle class="stats-chart-dot" cx="${p.x}" cy="${p.y}"/>
-              <text class="stats-chart-val-label" x="${p.x}" y="${p.y - 10}">${p.val}</text>
-              <text class="stats-chart-label" x="${p.x}" y="${padY + graphH + 18}">${p.day}</text>
-            </g>
-          `).join('')}
-        </svg>
-      `;
     }
 
 
-    if (hourlyChart) {
+    if (hourlyChart && !views) {
+      hourlyChart.innerHTML = statsEmptyState('Henüz ziyaretçi verisi yok.');
+    } else if (hourlyChart) {
       const hours = ['00', '03', '06', '09', '12', '15', '18', '21'];
       const weights = [0.15, 0.05, 0.10, 0.40, 0.75, 0.65, 0.95, 0.85];
       const maxH = 110;
@@ -1401,7 +1415,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    if (deviceChart) {
+    if (deviceChart && !views) {
+      deviceChart.innerHTML = statsEmptyState('Henüz ziyaretçi verisi yok.');
+    } else if (deviceChart) {
       const desktopPct = 62;
       const mobilePct = 33;
       const otherPct = 5;
