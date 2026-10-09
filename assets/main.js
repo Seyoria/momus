@@ -1,18 +1,8 @@
 let MAINTENANCE_MODE = false;
 let MAINTENANCE_DATA = { active: false, message: '', estimatedEnd: '' }; 
-const DISCORD_LOG_WEBHOOK_URL = 'https://discord.com/api/webhooks/1553405532021198888/Rhq6pcp8ElT6a7HHlK8eQ4nAr4QVK6NnQyMXFDoI9bih71palYaAcJrHamXXuH0t1ID0';
-
-async function sendDirectWebhookLog(embed) {
-  try {
-    await fetch(DISCORD_LOG_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ embeds: [embed] })
-    });
-  } catch(e) {
-    console.warn('Webhook log gönderilemedi:', e);
-  }
-}
+// Güvenlik: Discord webhook URL'si artık sitede tutulmuyor (herkes okuyup spam atabiliyordu).
+// Loglar bot üzerinden (/api/discord/log-*) zaten kanala yazılıyor; bu fonksiyon geriye dönük uyumluluk için boş bırakıldı.
+async function sendDirectWebhookLog(embed) { /* no-op */ }
 
 const MOMUS_BOT_API = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) ? 'http://localhost:3001' : 'https://momus-bot.onrender.com';
 
@@ -21,6 +11,16 @@ const SUPABASE_ANON_KEY = 'sb_publishable_bu0d1wyTaKGScvHuIqI3rg_zVcEkiC8';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const SAVE_PROFILE_FN_URL = `${SUPABASE_URL}/functions/v1/save-profile`;
 const DELETE_PROFILE_FN_URL = `${SUPABASE_URL}/functions/v1/delete-profile`;
+
+function escapeHtml(v) {
+  return String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+// Renk değerlerini (CSS enjeksiyonuna karşı) yalnızca #hex olarak kabul et
+function safeColor(c, fallback) {
+  return /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : (fallback || '#ffffff');
+}
 
 let profilesCache = {};
 
@@ -1201,7 +1201,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const uname = p.username || k;
         const card = document.createElement('a');
         card.className = 'member-card dc-nameplate-card';
-        card.href = `#${uname}`;
+        card.href = `#${encodeURIComponent(uname)}`;
 
         const defaultDiscordAv = 'https://cdn.discordapp.com/embed/avatars/0.png';
         let av = p.avatar || p.customAvatarUrl || p.discordAvatar || '';
@@ -1213,12 +1213,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           p.badges.forEach(b => {
             const bUpper = b.toUpperCase();
             const icon = bUpper === 'ADMIN' ? '⚡' : (bUpper === 'OG' ? '★' : '✦');
-            badgesHtml += `<span class="dc-clan-tag badge-${b}">${icon} ${bUpper}</span>`;
+            badgesHtml += `<span class="dc-clan-tag badge-${escapeHtml(String(b).replace(/[^\w-]/g, ''))}">${icon} ${escapeHtml(bUpper)}</span>`;
           });
         }
         if (p.customBadges && Array.isArray(p.customBadges) && p.customBadges.length > 0) {
           p.customBadges.forEach(b => {
-            badgesHtml += `<span class="dc-clan-tag" style="border-color:${b.color}; color:${b.color}; background:${b.color}22">✦ ${b.text.toUpperCase()}</span>`;
+            const bc = safeColor(b.color, '#a855f7');
+            badgesHtml += `<span class="dc-clan-tag" style="border-color:${bc}; color:${bc}; background:${bc}22">✦ ${escapeHtml(String(b.text || '').toUpperCase())}</span>`;
           });
         }
 
@@ -1228,17 +1229,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="dc-card-banner"></div>
           <div class="dc-avatar-container">
             <div class="dc-avatar-wrap">
-              <img class="dc-avatar" src="${av}" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';" alt="${uname}"/>
+              <img class="dc-avatar" src="${escapeHtml(av)}" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';" alt="${escapeHtml(uname)}"/>
             </div>
             <div class="dc-status-dot status-offline"></div>
           </div>
           <div class="dc-card-info">
             <div class="dc-name-row">
-              <span class="dc-name" style="color: ${p.color || '#fff'}">${uname}</span>
+              <span class="dc-name" style="color: ${safeColor(p.color, '#fff')}">${escapeHtml(uname)}</span>
               <div class="dc-badges-wrap">${badgesHtml}</div>
             </div>
             <div class="dc-status-row">
-              <span class="dc-status-text">${bioText}</span>
+              <span class="dc-status-text">${escapeHtml(bioText)}</span>
             </div>
           </div>
           <span class="dc-arrow">&nearr;</span>
@@ -4752,8 +4753,8 @@ function getDeviceFingerprint() {
       let customBadgesHtml = '';
       customBadges.forEach((cb, cIdx) => {
         customBadgesHtml += `
-          <span class="p-badge custom-badge" style="color:${cb.color}; border-color:${cb.color}; background:${cb.color}22;">
-            ${cb.text.toUpperCase()} <button type="button" class="admin-del-custom-badge" data-user="${k}" data-idx="${cIdx}">&times;</button>
+          <span class="p-badge custom-badge" style="color:${safeColor(cb.color, '#a855f7')}; border-color:${safeColor(cb.color, '#a855f7')}; background:${safeColor(cb.color, '#a855f7')}22;">
+            ${escapeHtml(cb.text.toUpperCase())} <button type="button" class="admin-del-custom-badge" data-user="${k}" data-idx="${cIdx}">&times;</button>
           </span>
         `;
       });
@@ -4765,14 +4766,14 @@ function getDeviceFingerprint() {
           </div>
           <div class="admin-user-info">
             <div class="admin-user-name-row">
-              <a href="#${k}" target="_blank" class="admin-user-username">${p.username}</a>
+              <a href="#${k}" target="_blank" class="admin-user-username">${escapeHtml(p.username)}</a>
               ${p.isSpotlight ? '<span class="admin-spotlight-badge">⭐ Öne Çıkan</span>' : ''}
               <span class="admin-user-views">${p.views || 0} görüntülenme</span>
             </div>
             <div class="admin-user-discord">
-              Discord ID: <code>${p.discordId || 'Giriş yapılmamış'}</code>
+              Discord ID: <code>${escapeHtml(p.discordId || 'Giriş yapılmamış')}</code>
             </div>
-            <div class="admin-user-bio">${p.bio || 'currently doing nothing'}</div>
+            <div class="admin-user-bio">${escapeHtml(p.bio || 'currently doing nothing')}</div>
           </div>
         </div>
 
