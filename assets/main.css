@@ -3591,7 +3591,7 @@ a, button, input, textarea, select, label { cursor: none; }
   border-radius: 4px;
 }
 
-/* ===== Eksik stiller (yeni özellikler) ===== */
+
 .nav-btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-weight:600}
 .footer-left,.footer-center,.footer-right{display:flex;align-items:center;gap:12px}
 .dash-panel-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -3609,7 +3609,7 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
 .del-custom-badge-btn,.admin-del-custom-badge,.admin-tag-del{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:4px 10px;font-size:.75rem}
 .admin-add-custom-badge-btn,.admin-custom-badge-action-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 
-/* Bakım ekranı (clean) */
+
 .maint-card-clean{text-align:center;padding:40px 32px}
 .maint-logo-badge{display:inline-block;font-family:var(--font-display);font-weight:800;font-size:1.3rem;color:#a855f7;padding:6px 18px;border-radius:14px;border:1px solid rgba(168,85,247,.35);background:rgba(168,85,247,.08);margin-bottom:18px}
 .maint-countdown{margin:22px 0}
@@ -3623,19 +3623,19 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
 .maint-footer-clean{margin-top:24px}
 .maint-discord-btn-clean{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;font-size:.85rem;font-weight:600;background:#5865f2;color:#fff}
 
-/* Çerez bandı */
+
 .cookie-banner-wrap{position:fixed;left:0;right:0;bottom:16px;z-index:99990;display:flex;justify-content:center;padding:0 16px}
 .cookie-banner-inner{display:flex;align-items:center;gap:16px;max-width:760px;width:100%;padding:14px 18px;border-radius:16px;background:rgba(18,18,18,.92);backdrop-filter:blur(14px);border:1px solid var(--border-light);box-shadow:0 12px 40px rgba(0,0,0,.6)}
 .cookie-banner-text{flex:1;font-size:.8rem;line-height:1.5;color:rgba(255,255,255,.75)}
 .cookie-banner-actions{flex-shrink:0}
 @media(max-width:600px){.cookie-banner-inner{flex-direction:column;align-items:stretch}}
 
-/* QR modal */
+
 .qr-modal-card{display:flex;flex-direction:column;align-items:center}
 .qr-preview-card{max-width:100%}
 .qr-modal-actions>*{flex:1}
 
-/* Liderlik tablosu */
+
 .leaderboard-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);transition:background .2s,transform .2s var(--ease)}
 .leaderboard-row:hover{background:rgba(168,85,247,.1);transform:translateX(3px)}
 .leaderboard-rank{width:38px;font-family:var(--font-stats);font-weight:700;color:var(--gray)}
@@ -3646,7 +3646,7 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
 .leaderboard-views{font-size:.75rem;color:var(--gray);white-space:nowrap}
 #leaderboard-list{display:flex;flex-direction:column;gap:8px}
 
-/* Admin */
+
 .admin-stats-grid{display:grid;gap:16px}
 .admin-tab-content{display:block}
 .admin-tags-list{display:flex;flex-wrap:wrap;gap:8px}
@@ -3658,7 +3658,7 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
 .admin-spotlight-btn{padding:6px 12px;border-radius:8px;font-size:.75rem;background:rgba(255,255,255,.05);color:var(--white);border:1px solid var(--border-light)}
 .admin-spotlight-btn.active{background:rgba(234,179,8,.15);border-color:rgba(234,179,8,.4);color:#facc15}
 
-/* İstatistik grafikleri */
+
 .stats-chart-card,.stats-dual-grid,.stats-depth-grid{display:grid;gap:16px}
 .stats-dual-grid,.stats-depth-grid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
 .stats-chart-wrap,.stats-hourly-wrap,.stats-device-wrap{width:100%}
@@ -3684,9 +3684,7 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
 .stats-legend-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
 
 
-/* =====================================================================
-   Liderlik butonu (navbar)
-   ===================================================================== */
+
 .nav-btn-leaderboard {
   position: relative;
   display: inline-flex;
@@ -3737,7 +3735,7 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
 }
 .nav-btn-leaderboard:active { transform: translateY(0) scale(0.97); }
 
-/* Liderlik modalı */
+
 .lb-modal-title {
   display: flex;
   align-items: center;
@@ -3786,9 +3784,7 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* =====================================================================
-   Davet kodu — "Davet kodum var" tıklanabilir alan
-   ===================================================================== */
+
 .invite-wrap {
   margin-bottom: 20px;
   border-radius: 16px;
@@ -3858,7 +3854,7 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
 }
 .invite-wrap.open .invite-chevron { transform: rotate(180deg); color: #a855f7; }
 
-/* Açılır panel: grid 0fr -> 1fr ile yükseklik animasyonu */
+
 .invite-panel {
   display: grid;
   grid-template-rows: 0fr;
@@ -3885,7 +3881,7 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
 .invite-input::placeholder { text-transform: none; letter-spacing: 0.02em; }
 .invite-input:focus { box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.18); }
 
-/* Hatalı kodda sallanma */
+
 .invite-wrap.shake { animation: invite-shake 0.45s cubic-bezier(.36, .07, .19, .97); border-color: rgba(239, 68, 68, 0.6); }
 @keyframes invite-shake {
   10%, 90% { transform: translateX(-1px); }
@@ -3900,9 +3896,7 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
 }
 
 
-/* =====================================================================
-   İstatistikler: grafik taşma düzeltmeleri
-   ===================================================================== */
+
 .stats-chart-card { min-width: 0; align-content: start; }
 .stats-chart-wrap, .stats-hourly-wrap, .stats-device-wrap { min-width: 0; overflow: hidden; }
 .stats-chart-wrap .stats-svg-chart { display: block; width: 100%; height: 100%; overflow: hidden; }
@@ -3930,9 +3924,7 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
 }
 
 
-/* =====================================================================
-   Admin: "+ Özel Rozet Ver" butonu (stilsizdi, tarayıcı varsayılanı beyaz görünüyordu)
-   ===================================================================== */
+
 .admin-add-custom-badge-btn {
   display: inline-flex;
   align-items: center;
@@ -3961,7 +3953,7 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
 .admin-add-custom-badge-btn:active { transform: translateY(0) scale(0.97); }
 .admin-add-custom-badge-btn:focus-visible { outline: 2px solid rgba(168, 85, 247, 0.7); outline-offset: 2px; }
 
-/* Rozet üzerindeki küçük silme (×) butonu */
+
 .custom-badge .admin-del-custom-badge {
   display: inline-flex;
   align-items: center;
@@ -3976,3 +3968,218 @@ body.crt-scanlines-active::after{content:"";position:fixed;inset:0;z-index:99998
   transition: background 0.2s, transform 0.2s var(--ease);
 }
 .custom-badge .admin-del-custom-badge:hover { background: rgba(239, 68, 68, 0.35); color: #fff; transform: scale(1.12); }
+
+
+
+#members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.dc-nameplate-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(17, 18, 20, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  overflow: hidden;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.dc-nameplate-card:hover {
+  background: rgba(30, 31, 35, 0.98) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 20px rgba(168, 85, 247, 0.12);
+}
+
+.dc-card-banner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 70%;
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+  opacity: 0.32;
+  pointer-events: none;
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,1) 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,1) 100%);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 1;
+}
+
+.dc-nameplate-card:hover .dc-card-banner {
+  opacity: 0.52;
+  transform: scale(1.03);
+}
+
+.dc-avatar-container {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.dc-avatar-wrap {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #1e1f22;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.dc-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+
+.dc-status-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid #111214;
+  box-sizing: content-box;
+  z-index: 3;
+}
+
+.dc-status-dot.status-online {
+  background: #23a55a;
+}
+
+.dc-status-dot.status-idle {
+  background: #f0b232;
+}
+
+.dc-status-dot.status-dnd {
+  background: #f23f43;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dc-status-dot.status-dnd::after {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 1px;
+}
+
+.dc-status-dot.status-offline {
+  background: #80848e;
+}
+
+
+.dc-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 2;
+}
+
+.dc-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.dc-name {
+  font-family: 'gg sans', 'Noto Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+
+.dc-badges-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dc-clan-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-family: 'gg sans', 'Inter', -apple-system, sans-serif !important;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dc-clan-tag.badge-admin {
+  background: rgba(168, 85, 247, 0.22);
+  border-color: rgba(168, 85, 247, 0.5);
+  color: #d8b4fe;
+}
+
+.dc-clan-tag.badge-og {
+  background: rgba(234, 179, 8, 0.18);
+  border-color: rgba(234, 179, 8, 0.5);
+  color: #fde047;
+}
+
+.dc-status-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dc-status-text {
+  font-family: 'gg sans', 'Noto Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 0.72rem;
+  color: #949ba4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.dc-arrow {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.25);
+  transition: all 0.2s ease;
+  z-index: 2;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.dc-nameplate-card:hover .dc-arrow {
+  color: #ffffff;
+  transform: translate(2px, -2px);
+}
