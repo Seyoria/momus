@@ -1283,6 +1283,10 @@ document.addEventListener('DOMContentLoaded', async () => {
               statusDot.className = `dc-status-dot status-${d.status}`;
             }
 
+            // Discord isim plakası (kartın arka planı) ve isim fontu/efekti
+            if (d.nameplate) applyDiscordNameplate(card, d.nameplate);
+            if (d.displayNameStyle) applyDiscordNameStyle(card.querySelector('.dc-name'), d.displayNameStyle);
+
 
             if (statusText) {
               if (d.customStatus && d.customStatus.text) {
@@ -2269,6 +2273,118 @@ document.addEventListener('DOMContentLoaded', async () => {
           bLinkLabel.value = chip.textContent.trim();
         }
       });
+    });
+  }
+
+  // ── Discord isim plakası + görünen isim fontu (bot /presence cevabından) ──
+  // Discord font_id → Google Fonts karşılığı. Eşleşme en iyi tahmindir:
+  // bir font yanlış görünüyorsa sadece buradaki id'yi düzeltmek yeter.
+  // Bilinmeyen id gelirse konsola yazılır ve site fontu + Discord renkleri kullanılır.
+  const DISCORD_NAME_FONTS = {
+    1:  { family: "'Bitcount Grid Double', 'Pixelify Sans', monospace" },
+    2:  { family: "'Zilla Slab Highlight', serif" },
+    3:  { family: "'Cherry Bomb One', cursive" },
+    4:  { family: "'Chicle', cursive" },
+    5:  { family: "'Museo Moderno', sans-serif", weight: 600 },
+    6:  { family: "'Pixelify Sans', monospace", weight: 600 },
+  };
+
+  function applyDiscordNameStyle(el, style) {
+    if (!el || !style) return;
+    const colors = Array.isArray(style.colors) ? style.colors.filter(Boolean) : [];
+    const c0 = colors[0];
+    const font = DISCORD_NAME_FONTS[style.fontId];
+
+    if (style.fontId != null && !font) {
+      console.info('[momus] eşleşmeyen Discord font id:', style.fontId, style);
+    }
+    if (font) {
+      el.style.setProperty('font-family', font.family, 'important');
+      if (font.weight) el.style.fontWeight = font.weight;
+      el.style.letterSpacing = '0.01em';
+    }
+    if (!c0 && !font) return;
+
+    el.classList.add('has-dn-style');
+    switch (style.effectId) {
+      case 2: // gradient
+        if (colors.length > 1) {
+          el.style.backgroundImage = `linear-gradient(90deg, ${colors.join(', ')})`;
+          el.style.webkitBackgroundClip = 'text';
+          el.style.backgroundClip = 'text';
+          el.style.webkitTextFillColor = 'transparent';
+          el.style.color = 'transparent';
+          break;
+        }
+        el.style.color = c0 || '';
+        break;
+      case 3: // neon
+      case 6: // glow
+        if (c0) {
+          el.style.color = c0;
+          el.style.textShadow = `0 0 6px ${c0}, 0 0 16px ${c0}88`;
+        }
+        break;
+      case 4: // toon
+        if (c0) {
+          el.style.color = c0;
+          el.style.webkitTextStroke = '0.6px rgba(0,0,0,0.65)';
+          el.style.textShadow = '0 2px 0 rgba(0,0,0,0.55)';
+        }
+        break;
+      case 5: // pop
+        if (c0) {
+          el.style.color = c0;
+          el.style.textShadow = `2px 2px 0 ${colors[1] || 'rgba(0,0,0,0.6)'}`;
+        }
+        break;
+      default: // solid
+        if (c0) el.style.color = c0;
+    }
+  }
+
+  function applyDiscordNameplate(card, np) {
+    if (!card || !np || !np.staticUrl || card.querySelector('.dc-nameplate-media')) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'dc-nameplate-media';
+    const img = document.createElement('img');
+    img.alt = '';
+    img.decoding = 'async';
+    img.src = np.staticUrl;
+    img.addEventListener('error', () => {
+      wrap.remove();
+      card.classList.remove('has-nameplate');
+      const b = card.querySelector('.dc-card-banner');
+      if (b) b.style.display = '';
+    });
+    wrap.appendChild(img);
+    card.insertBefore(wrap, card.firstChild);
+    card.classList.add('has-nameplate');
+
+    const banner = card.querySelector('.dc-card-banner');
+    if (banner) banner.style.display = 'none';
+
+    // Discord gibi: plaka hover'da hareketlenir (webm, ilk hover'da yüklenir)
+    let video = null;
+    card.addEventListener('mouseenter', () => {
+      if (!np.videoUrl) return;
+      if (!video) {
+        video = document.createElement('video');
+        video.className = 'dc-nameplate-video';
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.preload = 'auto';
+        video.src = np.videoUrl;
+        video.addEventListener('playing', () => video && video.classList.add('ready'));
+        video.addEventListener('error', () => { if (video) video.remove(); video = null; });
+        wrap.appendChild(video);
+      }
+      video.play().catch(() => {});
+    });
+    card.addEventListener('mouseleave', () => {
+      if (video) { video.pause(); video.classList.remove('ready'); }
     });
   }
 
