@@ -1182,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!grid) return;
 
     const profiles = getProfiles();
-    const keys = Object.keys(profiles).filter(k => !profiles[k]?.isBot);
+    const keys = Object.keys(profiles).filter(k => !profiles[k]?.isBot && !k.startsWith('__'));
 
     if (userCount) userCount.textContent = keys.length;
     if (keys.length === 0) {
@@ -1200,55 +1200,102 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!p || p.isBot) return;
         const uname = p.username || k;
         const card = document.createElement('a');
-        card.className = 'member-card';
+        card.className = 'member-card dc-nameplate-card';
         card.href = `#${uname}`;
 
         const defaultDiscordAv = 'https://cdn.discordapp.com/embed/avatars/0.png';
         let av = p.avatar || p.customAvatarUrl || p.discordAvatar || '';
-        if (!av) {
-          av = defaultDiscordAv;
-        }
+        if (!av) av = defaultDiscordAv;
+
 
         let badgesHtml = '';
         if (p.badges && Array.isArray(p.badges) && p.badges.length > 0) {
           p.badges.forEach(b => {
-            badgesHtml += `<span class="p-badge ${b}" style="font-size:0.55rem;padding:1px 5px;">${b.toUpperCase()}</span>`;
+            const bUpper = b.toUpperCase();
+            const icon = bUpper === 'ADMIN' ? '⚡' : (bUpper === 'OG' ? '★' : '✦');
+            badgesHtml += `<span class="dc-clan-tag badge-${b}">${icon} ${bUpper}</span>`;
           });
         }
         if (p.customBadges && Array.isArray(p.customBadges) && p.customBadges.length > 0) {
           p.customBadges.forEach(b => {
-            badgesHtml += `<span class="p-badge custom-badge" style="font-size:0.55rem;padding:1px 5px;border-color:${b.color};color:${b.color};background:${b.color}1f">${b.text.toUpperCase()}</span>`;
+            badgesHtml += `<span class="dc-clan-tag" style="border-color:${b.color}; color:${b.color}; background:${b.color}22">✦ ${b.text.toUpperCase()}</span>`;
           });
         }
 
+        const bioText = p.bio && p.bio !== 'currently doing nothing' ? p.bio : (p.location || 'currently doing nothing');
+
         card.innerHTML = `
-          <div class="mc-bg"></div>
-          <div class="mc-avatar-wrap">
-            <img class="mc-avatar" src="${av}" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';" alt="${uname}"/>
-          </div>
-          <div class="mc-info">
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-              <span class="mc-name" style="color: ${p.color || '#fff'}">${uname}</span>
-              <div class="mc-badges" style="display:inline-flex;gap:4px;">${badgesHtml}</div>
+          <div class="dc-card-banner"></div>
+          <div class="dc-avatar-container">
+            <div class="dc-avatar-wrap">
+              <img class="dc-avatar" src="${av}" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';" alt="${uname}"/>
             </div>
-            <span class="mc-bio">${p.bio || 'currently doing nothing'}</span>
+            <div class="dc-status-dot status-offline"></div>
           </div>
-          <span class="mc-arrow">&nearr;</span>
+          <div class="dc-card-info">
+            <div class="dc-name-row">
+              <span class="dc-name" style="color: ${p.color || '#fff'}">${uname}</span>
+              <div class="dc-badges-wrap">${badgesHtml}</div>
+            </div>
+            <div class="dc-status-row">
+              <span class="dc-status-text">${bioText}</span>
+            </div>
+          </div>
+          <span class="dc-arrow">&nearr;</span>
         `;
         grid.appendChild(card);
 
+
+        const bannerEl = card.querySelector('.dc-card-banner');
+        if (bannerEl && p.bgVideo && !p.bgVideo.startsWith('data:video')) {
+          bannerEl.style.backgroundImage = `url('${p.bgVideo}')`;
+        }
+
         getMediaItem(`avatar_${k.toLowerCase()}`).then(storedAvatar => {
           if (storedAvatar) {
-            const imgEl = card.querySelector('.mc-avatar');
+            const imgEl = card.querySelector('.dc-avatar');
             if (imgEl) imgEl.src = storedAvatar;
           }
         }).catch(() => {});
 
-        if (p.discordId && (!av || av.includes('embed/avatars') || av.includes('dicebear'))) {
+
+        if (p.discordId) {
           getUnifiedDiscordPresence(p.discordId).then(d => {
-            if (d && d.avatar) {
-              const imgEl = card.querySelector('.mc-avatar');
-              if (imgEl) imgEl.src = d.avatar;
+            if (!d) return;
+
+            const imgEl = card.querySelector('.dc-avatar');
+            const statusDot = card.querySelector('.dc-status-dot');
+            const statusText = card.querySelector('.dc-status-text');
+            const bannerEl = card.querySelector('.dc-card-banner');
+
+            if (d.avatar && imgEl && (!av || av.includes('embed/avatars') || av.includes('dicebear'))) {
+              imgEl.src = d.avatar;
+            }
+
+
+            if (d.banner && bannerEl) {
+              bannerEl.style.backgroundImage = `url('${d.banner}')`;
+              bannerEl.style.opacity = '0.38';
+            }
+
+
+            if (d.status && statusDot) {
+              statusDot.className = `dc-status-dot status-${d.status}`;
+            }
+
+
+            if (statusText) {
+              if (d.customStatus && d.customStatus.text) {
+                const emoji = d.customStatus.emoji ? d.customStatus.emoji + ' ' : '';
+                statusText.textContent = emoji + d.customStatus.text;
+                statusText.style.color = '#dbdee1';
+              } else if (d.activity && d.activity.name) {
+                statusText.textContent = '🎮 ' + d.activity.name + (d.activity.details ? ' - ' + d.activity.details : '');
+                statusText.style.color = '#dbdee1';
+              } else if (d.spotify && d.spotify.song) {
+                statusText.textContent = '🎧 ' + d.spotify.song + ' • ' + d.spotify.artist;
+                statusText.style.color = '#1db954';
+              }
             }
           }).catch(() => {});
         }
@@ -1291,8 +1338,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `<div class="stats-empty-state">${msg}</div>`;
   }
 
-  // Grafik artık konteynerin gerçek genişliğinde çiziliyor (eskiden viewBox 600x180 sabitti,
-  // geniş ekranda SVG ~380px'e uzayıp alttaki kartların üstüne taşıyordu).
+
+
   function drawTrendChart(chartContainer, views) {
     if (!views) {
       chartContainer.innerHTML = statsEmptyState('Henüz görüntülenme yok. Profilin ziyaret edildikçe grafik burada oluşacak.');
@@ -2608,8 +2655,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     if (!existingProfile) {
-      // Davet kodu artık isteğe bağlı. Sadece "Davet kodum var" açılıp kod girildiyse doğrulanır.
-      // (Admin panelinden "Davet Kodu Zorunluluğu" açılırsa yine zorunlu olur.)
+
+
       const inviteCodeInput = document.getElementById('b-invite-code');
       const enteredCode = (inviteCodeInput && inviteCodeInput.value.trim().toUpperCase()) || '';
       const inviteRequired = localStorage.getItem('momus_invite_required') === '1';
@@ -3186,15 +3233,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 650);
   }
 
+  
+function getDeviceFingerprint() {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 120;
+    canvas.height = 30;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.textBaseline = 'top';
+      ctx.font = '14px Arial';
+      ctx.fillStyle = '#f60';
+      ctx.fillRect(5, 5, 40, 15);
+      ctx.fillStyle = '#069';
+      ctx.fillText('momus_fp_2026', 2, 2);
+    }
+    const canvasData = canvas.toDataURL();
+    const parts = [
+      navigator.userAgent,
+      screen.width + 'x' + screen.height,
+      screen.colorDepth,
+      navigator.hardwareConcurrency || 4,
+      navigator.deviceMemory || 8,
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+      navigator.language,
+      canvasData.slice(-60)
+    ];
+    let hash = 0;
+    const str = parts.join('###');
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) - hash) + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return 'dev_' + Math.abs(hash).toString(36);
+  } catch(e) {
+    return 'dev_general';
+  }
+}
+
   async function renderProfilePage(profile) {
     const unKey = profile.username.toLowerCase();
     document.documentElement.style.setProperty('--user-color', profile.color || '#ffffff');
-    const viewedKey = `momus_viewed_${unKey}`;
-    const alreadyViewedInSession = sessionStorage.getItem(viewedKey);
+    const viewedKey = `momus_v_viewed_${unKey}`;
+    const alreadyViewedLocally = localStorage.getItem(viewedKey);
     const isOwner = isProfileOwner(unKey);
+    const devFp = getDeviceFingerprint();
 
-    if (!isOwner && !alreadyViewedInSession) {
-      sessionStorage.setItem(viewedKey, '1');
+    if (!profile.viewers || !Array.isArray(profile.viewers)) {
+      profile.viewers = [];
+    }
+    const alreadyViewedByDevice = profile.viewers.includes(devFp);
+
+    if (!isOwner && !alreadyViewedLocally && !alreadyViewedByDevice) {
+      try {
+        localStorage.setItem(viewedKey, '1');
+      } catch(e) {}
+
+      profile.viewers.push(devFp);
+      if (profile.viewers.length > 2000) {
+        profile.viewers = profile.viewers.slice(-2000);
+      }
+
       profile.views = (profile.views || 0) + 1;
       await saveProfileData(profile);
 
