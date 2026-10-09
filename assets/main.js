@@ -4,7 +4,8 @@ let MAINTENANCE_DATA = { active: false, message: '', estimatedEnd: '' };
 // Loglar bot üzerinden (/api/discord/log-*) zaten kanala yazılıyor; bu fonksiyon geriye dönük uyumluluk için boş bırakıldı.
 async function sendDirectWebhookLog(embed) { /* no-op */ }
 
-const MOMUS_BOT_API = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) ? 'http://localhost:3001' : 'https://momus-bot.onrender.com';
+const MOMUS_BOT_API = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) ? 'http://localhost:3001' : 'https://momus-bot.discloud.app';
+// ↑ Botun yayındaki adresi. Bot başka yerdeyse (Render vb.) sadece bu URL'yi değiştir.
 
 const SUPABASE_URL = 'https://qmzryknxlfebmopfgeuz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_bu0d1wyTaKGScvHuIqI3rg_zVcEkiC8';
@@ -4404,8 +4405,12 @@ function getDeviceFingerprint() {
             showToast('Discord DM bildirimi başarıyla iletildi!', 'success');
             document.getElementById('admin-dm-title').value = '';
             document.getElementById('admin-dm-message').value = '';
+          } else if (!res) {
+            showToast('Bota ulaşılamadı: bot kapalı, uyuyor ya da adres (MOMUS_BOT_API) yanlış olabilir.', 'error');
           } else {
-            showToast('DM gönderilemedi. Kullanıcının DM kutusu kapalı olabilir veya bot sunucuda değil.', 'error');
+            let reason = '';
+            try { reason = (await res.json()).error || ''; } catch (e) {}
+            showToast('DM gönderilemedi: ' + (reason || `bot ${res.status} döndürdü`), 'error');
           }
         } catch(e) {
           showToast('Bot API bağlantı hatası.', 'error');
